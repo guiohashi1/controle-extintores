@@ -28,8 +28,19 @@
   --gradient-secondary: linear-gradient(135deg, var(--secondary-color), #5856eb);
 }
 
+/* PWA & Mobile Optimizations */
 * {
   box-sizing: border-box;
+  /* Melhor toque em dispositivos móveis */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+html {
+  /* Evitar zoom no iOS */
+  -webkit-text-size-adjust: 100%;
+  /* Melhor scroll em iOS */
+  -webkit-overflow-scrolling: touch;
 }
 
 body {
@@ -40,6 +51,19 @@ body {
   color: var(--text-primary);
   min-height: 100vh;
   line-height: 1.6;
+  /* Prevenir zoom horizontal */
+  overflow-x: hidden;
+  /* Melhor performance em mobile */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* PWA Safe Areas (para notch do iPhone) */
+body {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
 }
 
 /* Main Content */
@@ -48,6 +72,9 @@ body {
   margin-bottom: 70px;
   min-height: calc(100vh - 130px);
   padding: 1rem;
+  /* Ajuste para safe areas */
+  padding-top: calc(1rem + env(safe-area-inset-top));
+  padding-bottom: calc(1rem + env(safe-area-inset-bottom));
   max-width: 600px;
   margin-left: auto;
   margin-right: auto;
@@ -65,6 +92,8 @@ body {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
+  /* Melhor toque em mobile */
+  touch-action: manipulation;
 }
 
 .card::before {
@@ -115,6 +144,20 @@ body {
   transition: all 0.2s;
   text-decoration: none;
   min-height: 44px;
+  /* PWA & Mobile Optimizations */
+  touch-action: manipulation;
+  -webkit-appearance: none;
+  appearance: none;
+  -webkit-user-select: none;
+  user-select: none;
+  /* Garantir área de toque mínima */
+  min-width: 44px;
+  position: relative;
+}
+
+/* Estados visuais para feedback tátil */
+.btn:active {
+  transform: scale(0.98);
 }
 
 .btn-primary {
@@ -224,13 +267,100 @@ body {
 @media (max-width: 640px) {
   .main-content {
     padding: 0.5rem;
+    /* Mais espaço em mobile */
+    margin-top: 70px;
+    margin-bottom: 80px;
   }
   
   .card {
     padding: 1.5rem;
+    margin-bottom: 1rem;
   }
   
   .page-header h1 {
     font-size: 1.5rem;
   }
+  
+  /* Botões maiores em mobile */
+  .btn {
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+    min-height: 48px;
+  }
+  
+  /* Formulários otimizados para mobile */
+  .form-control {
+    font-size: 16px; /* Evita zoom no iOS */
+    padding: 1rem;
+  }
+}
+
+/* PWA Específico - Paisagem em mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+  .main-content {
+    margin-top: 50px;
+    margin-bottom: 60px;
+  }
+}
+
+/* Modo Standalone PWA */
+@media all and (display-mode: standalone) {
+  /* Quando o app está instalado como PWA */
+  body {
+    background: var(--bg-primary);
+  }
+  
+  .navigation {
+    backdrop-filter: blur(20px);
+  }
+}
+
+/* High DPI / Retina Displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .card {
+    border-width: 0.5px;
+  }
+}
+
+/* Dark Mode Support (para futuras implementações) */
+@media (prefers-color-scheme: dark) {
+  /* Já estamos usando tema escuro por padrão */
+}
+
+/* Reduced Motion Preference */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* PWA Install Button Styles */
+.install-prompt {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--gradient-primary);
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  z-index: 1000;
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.install-prompt.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.install-prompt:hover {
+  transform: translateX(-50%) translateY(-2px);
+  box-shadow: var(--shadow-xl);
 }
