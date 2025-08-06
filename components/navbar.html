@@ -1,0 +1,62 @@
+<!-- Navigation Bar -->
+<nav class="main-nav">
+  <div class="nav-brand">
+    <span class="nav-logo">🔥</span>
+    <span class="nav-title">Controle de Extintores</span>
+  </div>
+  
+  <!-- User Menu -->
+  <div class="nav-user" id="user-menu">
+    <div class="user-info" onclick="toggleUserMenu()">
+      <div class="user-avatar">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+      </div>
+      <div class="user-details">
+        <span class="user-name" id="user-name">Usuário</span>
+        <span class="user-plan" id="user-plan">Basic</span>
+      </div>
+      <svg class="user-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="6,9 12,15 18,9"></polyline>
+      </svg>
+    </div>
+    
+    <div class="user-dropdown" style="display: none;">
+      <div class="dropdown-item" onclick="navigateTo('configuracoes')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+        Perfil
+      </div>
+      <div class="dropdown-item" onclick="navigateTo('configuracoes')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1 1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+        Configurações
+      </div>
+      <div class="dropdown-divider"></div>
+      <div class="dropdown-item logout" onclick="handleLogout()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+          <polyline points="16,17 21,12 16,7"></polyline>
+          <line x1="21" y1="12" x2="9" y2="12"></line>
+        </svg>
+        Sair
+      </div>
+    </div>
+  </div>
+
+  <!-- Sync Status -->
+  <div class="sync-status" id="sync-status">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polyline points="23,4 23,10 17,10"></polyline>
+      <polyline points="1,20 1,14 7,14"></polyline>
+      <path d="M20.49 9A9 9 0 0 0 5.64 5.64l1.27 1.27m4.84 11.84A9 9 0 0 0 18.36 18.36l-1.27-1.27"></path>
+    </svg>
+    <span>Sincronizado</span>
+  </div>
+</nav>

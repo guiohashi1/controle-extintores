@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#121212">
+    <title>Dashboard - Controle de Extintores</title>
+    
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/supabase-config.js"></script>
+    <script src="../js/common.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/common.css">
+    <link rel="stylesheet" href="../css/navigation.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <div id="navbar-container"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="screen-header">
+            <h1>Dashboard</h1>
+            <p>Visão geral dos seus extintores</p>
+        </div>
+        
+        <div class="card">
+            <!-- Dashboard de Estatísticas -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-content">
+                        <span class="stat-number" id="totalExtintores">0</span>
+                        <span class="stat-label">Total</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-content">
+                        <span class="stat-number" id="validosExtintores">0</span>
+                        <span class="stat-label">Válidos</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⚠️</div>
+                    <div class="stat-content">
+                        <span class="stat-number" id="alertaExtintores">0</span>
+                        <span class="stat-label">Próx. Venc.</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">❌</div>
+                    <div class="stat-content">
+                        <span class="stat-number" id="vencidosExtintores">0</span>
+                        <span class="stat-label">Vencidos</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Alertas de Vencimento -->
+            <div id="alertasVencimento" class="alertas-container" style="display: none;">
+                <div class="alert-header">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                        <line x1="12" y1="9" x2="12" y2="13"></line>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                    <h4>Alertas de Vencimento</h4>
+                </div>
+                <div id="listaAlertas" class="lista-alertas"></div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 2rem;">
+                <a href="form.html" class="btn btn-primary">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    Novo Extintor
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Bottom Navigation -->
+    <div id="bottom-nav-container"></div>
+
+    <script>
+        // Inicialização da página
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Verificar se usuário está logado
+            if (!checkAuth()) return;
+            
+            // Carregar componentes
+            await loadNavbarComponent();
+            await loadBottomNavComponent();
+            setActiveNavItem('dashboard');
+            
+            // Carregar dados do dashboard
+            await atualizarDashboard();
+        });
+
+        async function atualizarDashboard() {
+            try {
+                const extintores = await carregarExtintores();
+                
+                const total = extintores.length;
+                const validos = extintores.filter(e => calcularStatusValidade(e.validade) === 'valid').length;
+                const alertas = extintores.filter(e => calcularStatusValidade(e.validade) === 'warning').length;
+                const vencidos = extintores.filter(e => calcularStatusValidade(e.validade) === 'expired').length;
+                
+                document.getElementById('totalExtintores').textContent = total;
+                document.getElementById('validosExtintores').textContent = validos;
+                document.getElementById('alertaExtintores').textContent = alertas;
+                document.getElementById('vencidosExtintores').textContent = vencidos;
+                
+                // Mostrar alertas se houver
+                const alertasContainer = document.getElementById('alertasVencimento');
+                const listaAlertas = document.getElementById('listaAlertas');
+                
+                if (alertas > 0 || vencidos > 0) {
+                    const extintoresAlerta = extintores.filter(e => {
+                        const status = calcularStatusValidade(e.validade);
+                        return status === 'warning' || status === 'expired';
+                    });
+                    
+                    listaAlertas.innerHTML = '';
+                    extintoresAlerta.forEach(ext => {
+                        const dias = calcularDiasRestantes(ext.validade);
+                        const isVencido = dias < 0;
+                        
+                        const item = document.createElement('div');
+                        item.className = `alerta-item ${isVencido ? 'vencido' : ''}`;
+                        item.innerHTML = `
+                            <div class="alerta-info">
+                                <span class="alerta-extintor">${ext.numero}</span>
+                                <span class="alerta-local">${ext.local}</span>
+                            </div>
+                            <span class="alerta-dias ${isVencido ? 'vencido' : 'proximo'}">
+                                ${isVencido ? `${Math.abs(dias)} dias vencido` : `${dias} dias restantes`}
+                            </span>
+                        `;
+                        listaAlertas.appendChild(item);
+                    });
+                    
+                    alertasContainer.style.display = 'block';
+                } else {
+                    alertasContainer.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Erro ao carregar dashboard:', error);
+                showNotification('Erro ao carregar dados do dashboard', 'error');
+            }
+        }
+    </script>
+</body>
+</html>

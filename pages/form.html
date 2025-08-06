@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#121212">
+    <title>Cadastro de Extintor - Controle de Extintores</title>
+    
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/supabase-config.js"></script>
+    <script src="../js/common.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/common.css">
+    <link rel="stylesheet" href="../css/navigation.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <div id="navbar-container"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="screen-header">
+            <h1 id="formTitle">Novo Extintor</h1>
+            <p>Cadastre ou edite um extintor</p>
+        </div>
+        
+        <div class="card">
+            <form id="form">
+                <div class="form-group">
+                    <label for="numero">Número do Extintor *</label>
+                    <input type="text" id="numero" placeholder="Ex: EXT-001" required />
+                    <small class="form-help">Identificação única do extintor</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="local">Local *</label>
+                    <input type="text" id="local" placeholder="Ex: Seção de Faturamento" required />
+                    <small class="form-help">Localização onde o extintor está instalado</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="tipo">Tipo do Extintor *</label>
+                    <select id="tipo" required>
+                        <option value="" disabled selected>Selecione o tipo</option>
+                        <option value="Água">Água</option>
+                        <option value="CO2">CO2</option>
+                        <option value="Pó Químico">Pó Químico</option>
+                        <option value="Espuma">Espuma</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="peso">Peso (kg) *</label>
+                    <input type="number" id="peso" placeholder="Ex: 6" step="0.1" min="0" required />
+                    <small class="form-help">Peso do extintor em quilogramas</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="validade">Data de Validade *</label>
+                    <input type="date" id="validade" required />
+                    <small class="form-help">Data de vencimento do extintor</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="hidro">Data do Teste Hidrostático *</label>
+                    <input type="date" id="hidro" required />
+                    <small class="form-help">Data do último teste hidrostático realizado</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="observacoes">Observações</label>
+                    <textarea id="observacoes" rows="3" placeholder="Observações adicionais (opcional)"></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20,6 9,17 4,12"></polyline>
+                        </svg>
+                        Salvar Extintor
+                    </button>
+                    <a href="extintores.html" class="btn btn-secondary">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="m12 19-7-7 7-7"></path>
+                            <path d="m19 12-7 7-7-7"></path>
+                        </svg>
+                        Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <!-- Bottom Navigation -->
+    <div id="bottom-nav-container"></div>
+
+    <script>
+        let editandoIndex = null;
+        let editandoData = null;
+
+        // Inicialização da página
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Verificar se usuário está logado
+            if (!checkAuth()) return;
+            
+            // Carregar componentes
+            await loadNavbarComponent();
+            await loadBottomNavComponent();
+            setActiveNavItem('form');
+            
+            // Verificar se está editando
+            verificarEdicao();
+        });
+
+        function verificarEdicao() {
+            const editandoExtintor = sessionStorage.getItem('editandoExtintor');
+            
+            if (editandoExtintor) {
+                const dados = JSON.parse(editandoExtintor);
+                editandoIndex = dados.index;
+                editandoData = dados.data;
+                
+                // Atualizar título
+                document.getElementById('formTitle').textContent = 'Editar Extintor';
+                
+                // Preencher formulário
+                document.getElementById('numero').value = editandoData.numero || '';
+                document.getElementById('local').value = editandoData.local || '';
+                document.getElementById('tipo').value = editandoData.tipo || '';
+                document.getElementById('peso').value = editandoData.peso || '';
+                document.getElementById('validade').value = editandoData.validade || '';
+                document.getElementById('hidro').value = editandoData.hidro || '';
+                document.getElementById('observacoes').value = editandoData.observacoes || '';
+                
+                // Limpar sessionStorage
+                sessionStorage.removeItem('editandoExtintor');
+            }
+        }
+
+        async function validarFormulario() {
+            const numero = document.getElementById('numero').value.trim();
+            const local = document.getElementById('local').value.trim();
+            const tipo = document.getElementById('tipo').value;
+            const peso = document.getElementById('peso').value;
+            const validade = document.getElementById('validade').value;
+            const hidro = document.getElementById('hidro').value;
+
+            // Validação básica
+            if (!numero || !local || !tipo || !peso || !validade || !hidro) {
+                showNotification('Por favor, preencha todos os campos obrigatórios.', 'error');
+                return false;
+            }
+
+            // Verificar duplicatas (só se não estiver editando)
+            if (editandoIndex === null) {
+                const extintores = await carregarExtintores();
+                const numeroExistente = extintores.find(ext => ext.numero === numero);
+                
+                if (numeroExistente) {
+                    showNotification('Já existe um extintor com este número.', 'error');
+                    return false;
+                }
+            }
+
+            // Validação de datas
+            const dataValidade = new Date(validade);
+            const dataHidro = new Date(hidro);
+            const hoje = new Date();
+            
+            if (dataValidade <= hoje) {
+                showNotification('A data de validade deve ser futura.', 'warning');
+            }
+            
+            if (dataHidro > hoje) {
+                showNotification('A data do teste hidrostático não pode ser futura.', 'error');
+                return false;
+            }
+
+            // Validação de peso
+            if (parseFloat(peso) <= 0) {
+                showNotification('O peso deve ser maior que zero.', 'error');
+                return false;
+            }
+
+            return true;
+        }
+
+        async function handleFormSubmit(event) {
+            event.preventDefault();
+            
+            if (!(await validarFormulario())) {
+                return;
+            }
+            
+            const extintor = {
+                numero: document.getElementById('numero').value.trim(),
+                local: document.getElementById('local').value.trim(),
+                tipo: document.getElementById('tipo').value,
+                peso: parseFloat(document.getElementById('peso').value),
+                validade: document.getElementById('validade').value,
+                hidro: document.getElementById('hidro').value,
+                observacoes: document.getElementById('observacoes').value.trim() || null
+            };
+            
+            // Se estiver editando, incluir ID
+            if (editandoData && editandoData.id) {
+                extintor.id = editandoData.id;
+            }
+            
+            try {
+                const sucesso = await salvarExtintor(extintor);
+                
+                if (sucesso) {
+                    const mensagem = editandoIndex !== null 
+                        ? 'Extintor atualizado com sucesso!' 
+                        : 'Extintor cadastrado com sucesso!';
+                    
+                    showNotification(mensagem);
+                    
+                    // Redirecionar para lista
+                    setTimeout(() => {
+                        window.location.href = 'extintores.html';
+                    }, 1500);
+                }
+            } catch (error) {
+                console.error('Erro ao salvar extintor:', error);
+                showNotification('Erro ao salvar extintor. Tente novamente.', 'error');
+            }
+        }
+
+        // Event listeners
+        document.getElementById('form').addEventListener('submit', handleFormSubmit);
+
+        // Definir data mínima para o teste hidrostático (não pode ser futura)
+        document.getElementById('hidro').max = new Date().toISOString().split('T')[0];
+        
+        // Definir data mínima para validade (hoje)
+        document.getElementById('validade').min = new Date().toISOString().split('T')[0];
+    </script>
+
+    <style>
+        .form-help {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+            font-style: italic;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .form-actions .btn {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        @media (max-width: 640px) {
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .form-actions .btn {
+                width: 100%;
+            }
+        }
+
+        /* Adicionar indicador de campo obrigatório */
+        .form-group label::after {
+            content: "";
+        }
+
+        .form-group label[for="numero"]::after,
+        .form-group label[for="local"]::after,
+        .form-group label[for="tipo"]::after,
+        .form-group label[for="peso"]::after,
+        .form-group label[for="validade"]::after,
+        .form-group label[for="hidro"]::after {
+            content: " *";
+            color: var(--danger-color);
+        }
+
+        /* Estilo para campos inválidos */
+        .form-group input:invalid,
+        .form-group select:invalid {
+            border-color: var(--danger-color);
+        }
+
+        .form-group input:valid,
+        .form-group select:valid {
+            border-color: var(--success-color);
+        }
+    </style>
+</body>
+</html>

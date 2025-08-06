@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste de Autenticação Local</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .resultado { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .sucesso { background: #d4edda; color: #155724; }
+        .erro { background: #f8d7da; color: #721c24; }
+        button { padding: 10px 15px; margin: 5px; }
+        input { padding: 8px; margin: 5px; width: 200px; }
+    </style>
+</head>
+<body>
+    <h1>🔐 Teste de Autenticação Local</h1>
+    
+    <div>
+        <h3>Teste 1: Função de Hash</h3>
+        <input id="senhaInput" type="text" placeholder="Digite uma senha" value="123456">
+        <button onclick="testarHash()">Gerar Hash</button>
+        <div id="hashResult"></div>
+    </div>
+    
+    <div>
+        <h3>Teste 2: Verificação de Senha</h3>
+        <input id="senhaVerifica" type="text" placeholder="Senha" value="123456">
+        <input id="hashVerifica" type="text" placeholder="Hash" value="MTIzNDU2c2FsdDEyMw==">
+        <button onclick="verificarSenha()">Verificar</button>
+        <div id="verificaResult"></div>
+    </div>
+    
+    <div>
+        <h3>Teste 3: Simulação de Login</h3>
+        <input id="emailLogin" type="email" placeholder="Email" value="demo@exemplo.com">
+        <input id="senhaLogin" type="password" placeholder="Senha" value="123456">
+        <button onclick="simularLogin()">Simular Login</button>
+        <div id="loginResult"></div>
+    </div>
+
+    <script>
+        // Funções de hash (mesmas do projeto)
+        function hashPassword(password) {
+            const result = btoa(password + 'salt123');
+            console.log(`Hash para '${password}': ${result}`);
+            return result;
+        }
+
+        function verifyPassword(password, hash) {
+            const calculatedHash = hashPassword(password);
+            const isMatch = calculatedHash === hash;
+            console.log(`Verificação:`);
+            console.log(`  Senha: '${password}'`);
+            console.log(`  Hash calculado: '${calculatedHash}'`);
+            console.log(`  Hash esperado: '${hash}'`);
+            console.log(`  Resultado: ${isMatch ? '✅ MATCH' : '❌ NO MATCH'}`);
+            return isMatch;
+        }
+
+        function testarHash() {
+            const senha = document.getElementById('senhaInput').value;
+            const hash = hashPassword(senha);
+            
+            document.getElementById('hashResult').innerHTML = `
+                <div class="resultado sucesso">
+                    <strong>Senha:</strong> ${senha}<br>
+                    <strong>Hash:</strong> ${hash}
+                </div>
+            `;
+        }
+
+        function verificarSenha() {
+            const senha = document.getElementById('senhaVerifica').value;
+            const hash = document.getElementById('hashVerifica').value;
+            const resultado = verifyPassword(senha, hash);
+            
+            document.getElementById('verificaResult').innerHTML = `
+                <div class="resultado ${resultado ? 'sucesso' : 'erro'}">
+                    <strong>Resultado:</strong> ${resultado ? '✅ Senha correta!' : '❌ Senha incorreta!'}
+                </div>
+            `;
+        }
+
+        function simularLogin() {
+            const email = document.getElementById('emailLogin').value;
+            const senha = document.getElementById('senhaLogin').value;
+            
+            // Simular dados do banco
+            const usuarioMock = {
+                email: 'demo@exemplo.com',
+                password_hash: 'MTIzNDU2c2FsdDEyMw==',
+                name: 'Usuário Demo'
+            };
+            
+            let resultado;
+            if (email !== usuarioMock.email) {
+                resultado = { success: false, error: 'Email não encontrado' };
+            } else if (!verifyPassword(senha, usuarioMock.password_hash)) {
+                resultado = { success: false, error: 'Senha incorreta' };
+            } else {
+                resultado = { 
+                    success: true, 
+                    user: { name: usuarioMock.name, email: usuarioMock.email }
+                };
+            }
+            
+            document.getElementById('loginResult').innerHTML = `
+                <div class="resultado ${resultado.success ? 'sucesso' : 'erro'}">
+                    ${resultado.success 
+                        ? `✅ Login bem-sucedido! Usuário: ${resultado.user.name}`
+                        : `❌ ${resultado.error}`
+                    }
+                </div>
+            `;
+        }
+
+        // Teste automático ao carregar
+        window.onload = function() {
+            console.log('🧪 Testes carregados. Hash para "123456":', hashPassword('123456'));
+        };
+    </script>
+</body>
+</html>

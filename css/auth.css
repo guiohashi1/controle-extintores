@@ -1,0 +1,227 @@
+/* =============================================================================
+   TELA DE AUTENTICAÇÃO - LOGIN E REGISTRO
+   ============================================================================= */
+
+.auth-main-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+}
+
+.auth-container {
+  background: var(--bg-secondary);
+  padding: 3rem;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--border-color);
+  width: 100%;
+  max-width: 400px;
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+}
+
+.auth-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.auth-header h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.auth-header p {
+  color: var(--text-muted);
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+/* Container para os formulários */
+.auth-forms-container {
+  position: relative;
+  min-height: 400px; /* Altura mínima para evitar saltos */
+}
+
+/* Controle de visibilidade dos formulários */
+.auth-form {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transform: translateY(-10px);
+  transition: all 0.4s ease;
+  margin-bottom: 0;
+}
+
+.auth-form.active {
+  max-height: 800px; /* Altura suficiente para qualquer formulário */
+  opacity: 1;
+  transform: translateY(0);
+  margin-bottom: 1.5rem;
+}
+
+.auth-switch {
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.auth-switch a {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.auth-switch a:hover {
+  color: var(--primary-dark);
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  margin: 1.5rem 0;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border-color);
+}
+
+.auth-divider span {
+  padding: 0 1rem;
+}
+
+/* Form específico para auth */
+.auth-form .form-group input {
+  background: var(--bg-primary);
+  border-color: var(--border-color);
+}
+
+.auth-form .form-group input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.auth-form .btn {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+/* Demo info */
+.demo-info {
+  background: var(--bg-tertiary);
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  margin-top: 1rem;
+  border-left: 3px solid var(--secondary-color);
+}
+
+.demo-info h4 {
+  margin: 0 0 0.5rem 0;
+  color: var(--secondary-color);
+  font-size: 0.875rem;
+}
+
+.demo-info p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.demo-credentials {
+  font-family: 'Monaco', 'Menlo', monospace;
+  background: var(--bg-primary);
+  padding: 0.5rem;
+  border-radius: var(--radius-sm);
+  margin-top: 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+}
+
+/* Loading state */
+.loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.loading .btn {
+  position: relative;
+}
+
+.loading .btn::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  margin: auto;
+  border: 2px solid white;
+  border-radius: 50%;
+  border-top-color: transparent;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Error states */
+.form-group.error input {
+  border-color: var(--danger-color);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.error-message {
+  color: var(--danger-color);
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* Success states */
+.success-message {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--success-color);
+  padding: 0.75rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 1rem;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  font-size: 0.875rem;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .auth-main-container {
+    padding: 1rem;
+  }
+  
+  .auth-container {
+    padding: 2rem;
+  }
+  
+  .auth-header h1 {
+    font-size: 1.5rem;
+  }
+}

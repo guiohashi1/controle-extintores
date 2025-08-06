@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Supabase - Controle de Extintores</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0f172a;
+            color: #f8fafc;
+            padding: 2rem;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #1e293b;
+            border-radius: 1rem;
+            padding: 2rem;
+            border: 1px solid #475569;
+        }
+        h1 {
+            text-align: center;
+            color: #ef4444;
+            margin-bottom: 2rem;
+        }
+        .test-section {
+            background: #334155;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid #ef4444;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #cbd5e1;
+        }
+        button {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            margin: 0.5rem 0.5rem 0.5rem 0;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #dc2626;
+        }
+        .result {
+            background: #475569;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-top: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+        .warning { color: #f59e0b; }
+        .info { color: #3b82f6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔥 Teste de Configuração Supabase</h1>
+        
+        <div class="test-section">
+            <h3>1. Verificar Configuração</h3>
+            <p>Testa se as credenciais do Supabase estão corretas</p>
+            <button onclick="testarConfiguracao()">Testar Configuração</button>
+            <div id="config-result" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>2. Testar Conexão</h3>
+            <p>Verifica se consegue conectar com o banco de dados</p>
+            <button onclick="testarConexao()">Testar Conexão</button>
+            <div id="conexao-result" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>3. Verificar Tabelas</h3>
+            <p>Verifica se as tabelas existem no banco</p>
+            <button onclick="verificarTabelas()">Verificar Tabelas</button>
+            <div id="tabelas-result" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>4. Testar Login Demo</h3>
+            <p>Testa o login com as credenciais demo</p>
+            <button onclick="testarLoginDemo()">Testar Login</button>
+            <div id="login-result" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>5. Listar Usuários</h3>
+            <p>Lista todos os usuários cadastrados</p>
+            <button onclick="listarUsuarios()">Listar Usuários</button>
+            <div id="usuarios-result" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>6. Teste Completo</h3>
+            <p>Executa todos os testes em sequência</p>
+            <button onclick="executarTodosOsTestes()">Executar Todos</button>
+            <div id="completo-result" class="result" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        function log(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            
+            const timestamp = new Date().toLocaleTimeString();
+            const colorClass = type;
+            
+            element.innerHTML += `<span class="${colorClass}">[${timestamp}] ${message}</span>\n`;
+            element.scrollTop = element.scrollHeight;
+        }
+
+        function clearLog(elementId) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = '';
+            element.style.display = 'none';
+        }
+
+        async function testarConfiguracao() {
+            clearLog('config-result');
+            
+            try {
+                log('config-result', 'Verificando configuração...', 'info');
+                
+                if (!window.SUPABASE_CONFIG) {
+                    log('config-result', '❌ SUPABASE_CONFIG não encontrado', 'error');
+                    return;
+                }
+                
+                log('config-result', `✅ URL: ${SUPABASE_CONFIG.url}`, 'success');
+                log('config-result', `✅ API Key: ${SUPABASE_CONFIG.anonKey.substring(0, 20)}...`, 'success');
+                
+                if (!window.supabase) {
+                    log('config-result', '❌ Objeto supabase não encontrado', 'error');
+                    return;
+                }
+                
+                log('config-result', '✅ Objeto supabase criado com sucesso', 'success');
+                log('config-result', '✅ Configuração OK!', 'success');
+                
+            } catch (error) {
+                log('config-result', `❌ Erro na configuração: ${error.message}`, 'error');
+            }
+        }
+
+        async function testarConexao() {
+            clearLog('conexao-result');
+            
+            try {
+                log('conexao-result', 'Testando conexão com Supabase...', 'info');
+                
+                const response = await fetch(`${SUPABASE_CONFIG.url}/rest/v1/`, {
+                    headers: {
+                        'apikey': SUPABASE_CONFIG.anonKey,
+                        'Authorization': `Bearer ${SUPABASE_CONFIG.anonKey}`
+                    }
+                });
+                
+                if (response.ok) {
+                    log('conexao-result', '✅ Conexão estabelecida com sucesso!', 'success');
+                    log('conexao-result', `Status: ${response.status}`, 'info');
+                } else {
+                    log('conexao-result', `❌ Erro na conexão: ${response.status}`, 'error');
+                    log('conexao-result', `Detalhes: ${await response.text()}`, 'error');
+                }
+                
+            } catch (error) {
+                log('conexao-result', `❌ Erro de rede: ${error.message}`, 'error');
+            }
+        }
+
+        async function verificarTabelas() {
+            clearLog('tabelas-result');
+            
+            try {
+                log('tabelas-result', 'Verificando tabelas no banco...', 'info');
+                
+                const tabelas = ['users', 'extintores', 'inspecoes'];
+                
+                for (const tabela of tabelas) {
+                    try {
+                        const response = await fetch(`${SUPABASE_CONFIG.url}/rest/v1/${tabela}?limit=1`, {
+                            headers: {
+                                'apikey': SUPABASE_CONFIG.anonKey,
+                                'Authorization': `Bearer ${SUPABASE_CONFIG.anonKey}`
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            log('tabelas-result', `✅ Tabela "${tabela}" existe`, 'success');
+                        } else {
+                            log('tabelas-result', `❌ Tabela "${tabela}" não encontrada (${response.status})`, 'error');
+                        }
+                    } catch (error) {
+                        log('tabelas-result', `❌ Erro ao verificar tabela "${tabela}": ${error.message}`, 'error');
+                    }
+                }
+                
+            } catch (error) {
+                log('tabelas-result', `❌ Erro geral: ${error.message}`, 'error');
+            }
+        }
+
+        async function testarLoginDemo() {
+            clearLog('login-result');
+            
+            try {
+                log('login-result', 'Testando login com credenciais demo...', 'info');
+                log('login-result', 'Email: demo@exemplo.com', 'info');
+                log('login-result', 'Senha: 123456', 'info');
+                
+                const result = await supabase.login('demo@exemplo.com', '123456');
+                
+                log('login-result', `Resultado: ${JSON.stringify(result, null, 2)}`, 'info');
+                
+                if (result.success) {
+                    log('login-result', '✅ Login realizado com sucesso!', 'success');
+                    log('login-result', `Usuário: ${result.user.name}`, 'success');
+                } else {
+                    log('login-result', `❌ Falha no login: ${result.error}`, 'error');
+                    log('login-result', 'Possíveis causas:', 'warning');
+                    log('login-result', '- Usuário demo não foi criado no banco', 'warning');
+                    log('login-result', '- Hash da senha incorreto', 'warning');
+                    log('login-result', '- Problema na configuração', 'warning');
+                }
+                
+            } catch (error) {
+                log('login-result', `❌ Erro no teste de login: ${error.message}`, 'error');
+            }
+        }
+
+        async function listarUsuarios() {
+            clearLog('usuarios-result');
+            
+            try {
+                log('usuarios-result', 'Listando usuários cadastrados...', 'info');
+                
+                const response = await fetch(`${SUPABASE_CONFIG.url}/rest/v1/users?select=id,name,email,subscription`, {
+                    headers: {
+                        'apikey': SUPABASE_CONFIG.anonKey,
+                        'Authorization': `Bearer ${SUPABASE_CONFIG.anonKey}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const usuarios = await response.json();
+                    log('usuarios-result', `✅ Encontrados ${usuarios.length} usuário(s):`, 'success');
+                    
+                    usuarios.forEach((user, index) => {
+                        log('usuarios-result', `${index + 1}. ${user.name} (${user.email}) - Plano: ${user.subscription}`, 'info');
+                    });
+                    
+                    if (usuarios.length === 0) {
+                        log('usuarios-result', '⚠️ Nenhum usuário encontrado. Execute o SQL de setup!', 'warning');
+                    }
+                } else {
+                    log('usuarios-result', `❌ Erro ao listar usuários: ${response.status}`, 'error');
+                    log('usuarios-result', await response.text(), 'error');
+                }
+                
+            } catch (error) {
+                log('usuarios-result', `❌ Erro: ${error.message}`, 'error');
+            }
+        }
+
+        async function executarTodosOsTestes() {
+            clearLog('completo-result');
+            
+            log('completo-result', '🚀 Iniciando bateria de testes...', 'info');
+            
+            // Teste 1: Configuração
+            log('completo-result', '\n=== TESTE 1: CONFIGURAÇÃO ===', 'info');
+            try {
+                if (SUPABASE_CONFIG && supabase) {
+                    log('completo-result', '✅ Configuração OK', 'success');
+                } else {
+                    log('completo-result', '❌ Configuração FALHOU', 'error');
+                    return;
+                }
+            } catch (error) {
+                log('completo-result', `❌ Erro na configuração: ${error.message}`, 'error');
+                return;
+            }
+            
+            // Teste 2: Conexão
+            log('completo-result', '\n=== TESTE 2: CONEXÃO ===', 'info');
+            try {
+                const response = await fetch(`${SUPABASE_CONFIG.url}/rest/v1/`, {
+                    headers: {
+                        'apikey': SUPABASE_CONFIG.anonKey,
+                        'Authorization': `Bearer ${SUPABASE_CONFIG.anonKey}`
+                    }
+                });
+                
+                if (response.ok) {
+                    log('completo-result', '✅ Conexão OK', 'success');
+                } else {
+                    log('completo-result', '❌ Conexão FALHOU', 'error');
+                    return;
+                }
+            } catch (error) {
+                log('completo-result', `❌ Erro de conexão: ${error.message}`, 'error');
+                return;
+            }
+            
+            // Teste 3: Tabelas
+            log('completo-result', '\n=== TESTE 3: TABELAS ===', 'info');
+            const tabelas = ['users', 'extintores'];
+            let tabelasOK = true;
+            
+            for (const tabela of tabelas) {
+                try {
+                    const response = await fetch(`${SUPABASE_CONFIG.url}/rest/v1/${tabela}?limit=1`, {
+                        headers: {
+                            'apikey': SUPABASE_CONFIG.anonKey,
+                            'Authorization': `Bearer ${SUPABASE_CONFIG.anonKey}`
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        log('completo-result', `✅ Tabela "${tabela}" OK`, 'success');
+                    } else {
+                        log('completo-result', `❌ Tabela "${tabela}" FALHOU`, 'error');
+                        tabelasOK = false;
+                    }
+                } catch (error) {
+                    log('completo-result', `❌ Erro na tabela "${tabela}": ${error.message}`, 'error');
+                    tabelasOK = false;
+                }
+            }
+            
+            if (!tabelasOK) {
+                log('completo-result', '❌ Execute o SQL de setup no Supabase!', 'error');
+                return;
+            }
+            
+            // Teste 4: Login
+            log('completo-result', '\n=== TESTE 4: LOGIN ===', 'info');
+            try {
+                const result = await supabase.login('demo@exemplo.com', '123456');
+                
+                if (result.success) {
+                    log('completo-result', '✅ Login OK', 'success');
+                } else {
+                    log('completo-result', `❌ Login FALHOU: ${result.error}`, 'error');
+                    return;
+                }
+            } catch (error) {
+                log('completo-result', `❌ Erro no login: ${error.message}`, 'error');
+                return;
+            }
+            
+            // Resultado final
+            log('completo-result', '\n🎉 TODOS OS TESTES PASSARAM!', 'success');
+            log('completo-result', '✅ O Supabase está configurado corretamente', 'success');
+            log('completo-result', '✅ Você pode usar o app normalmente', 'success');
+        }
+
+        // Executar teste básico ao carregar a página
+        window.addEventListener('load', () => {
+            setTimeout(testarConfiguracao, 500);
+        });
+    </script>
+</body>
+</html>

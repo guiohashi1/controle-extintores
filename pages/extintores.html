@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#121212">
+    <title>Extintores - Controle de Extintores</title>
+    
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/supabase-config.js"></script>
+    <script src="../js/common.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/common.css">
+    <link rel="stylesheet" href="../css/navigation.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <div id="navbar-container"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="screen-header">
+            <h1>Extintores</h1>
+            <p>Gerencie seus equipamentos</p>
+        </div>
+        
+        <!-- Filtros -->
+        <div class="card" style="margin-bottom: 1rem;">
+            <div class="filtros-container">
+                <div class="filtro-group">
+                    <label for="filtroStatus">Status:</label>
+                    <select id="filtroStatus" onchange="aplicarFiltros()">
+                        <option value="">Todos</option>
+                        <option value="valid">Válidos</option>
+                        <option value="warning">Próximo ao vencimento</option>
+                        <option value="expired">Vencidos</option>
+                    </select>
+                </div>
+                <div class="filtro-group">
+                    <label for="filtroTipo">Tipo:</label>
+                    <select id="filtroTipo" onchange="aplicarFiltros()">
+                        <option value="">Todos</option>
+                        <option value="Água">Água</option>
+                        <option value="CO2">CO2</option>
+                        <option value="Pó Químico">Pó Químico</option>
+                        <option value="Espuma">Espuma</option>
+                    </select>
+                </div>
+                <div class="filtro-group">
+                    <label for="filtroLocal">Buscar por local:</label>
+                    <input type="text" id="filtroLocal" placeholder="Digite o local..." oninput="aplicarFiltros()">
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div id="lista"></div>
+            
+            <div style="text-align: center; margin-top: 2rem;">
+                <a href="form.html" class="btn btn-primary">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    Novo Extintor
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Bottom Navigation -->
+    <div id="bottom-nav-container"></div>
+
+    <script>
+        let extintores = [];
+        let extintoresFiltrados = [];
+
+        // Inicialização da página
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Verificar se usuário está logado
+            if (!checkAuth()) return;
+            
+            // Carregar componentes
+            await loadNavbarComponent();
+            await loadBottomNavComponent();
+            setActiveNavItem('extintores');
+            
+            // Carregar lista de extintores
+            await atualizarLista();
+        });
+
+        async function atualizarLista() {
+            try {
+                extintores = await carregarExtintores();
+                extintoresFiltrados = [...extintores];
+                renderizarLista();
+            } catch (error) {
+                console.error('Erro ao carregar extintores:', error);
+                showNotification('Erro ao carregar lista de extintores', 'error');
+            }
+        }
+
+        function aplicarFiltros() {
+            const filtroStatus = document.getElementById('filtroStatus').value;
+            const filtroTipo = document.getElementById('filtroTipo').value;
+            const filtroLocal = document.getElementById('filtroLocal').value.toLowerCase();
+
+            extintoresFiltrados = extintores.filter(extintor => {
+                // Filtro por status
+                if (filtroStatus) {
+                    const status = calcularStatusValidade(extintor.validade);
+                    if (status !== filtroStatus) return false;
+                }
+
+                // Filtro por tipo
+                if (filtroTipo && extintor.tipo !== filtroTipo) return false;
+
+                // Filtro por local
+                if (filtroLocal && !extintor.local.toLowerCase().includes(filtroLocal)) return false;
+
+                return true;
+            });
+
+            renderizarLista();
+        }
+
+        function renderizarLista() {
+            const lista = document.getElementById('lista');
+            
+            lista.innerHTML = '';
+            
+            if (extintoresFiltrados.length === 0) {
+                lista.innerHTML = '<div class="vencimento-empty">Nenhum extintor encontrado</div>';
+                return;
+            }
+            
+            extintoresFiltrados.forEach((item, index) => {
+                // Encontrar o índice original no array completo
+                const indexOriginal = extintores.findIndex(e => e.id === item.id);
+                
+                const hoje = new Date();
+                const validade = new Date(item.validade);
+                const diffTime = validade - hoje;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                
+                const statusValidade = calcularStatusValidade(item.validade);
+                const statusBadge = getStatusBadge(statusValidade, diffDays);
+                
+                const div = document.createElement('div');
+                div.className = "extintor-card";
+                div.innerHTML = `
+                    <div class="extintor-header">
+                        <h3>${item.numero}</h3>
+                        <span class="status-badge ${statusBadge.class}">${statusBadge.text}</span>
+                    </div>
+                    
+                    <div class="extintor-info">
+                        <div class="info-item">
+                            <strong>Local:</strong> ${item.local}
+                        </div>
+                        <div class="info-item">
+                            <strong>Tipo:</strong> ${item.tipo} (${item.peso}kg)
+                        </div>
+                        <div class="info-item">
+                            <strong>Validade:</strong> ${formatDate(item.validade)}
+                        </div>
+                        <div class="info-item">
+                            <strong>Teste Hidrostático:</strong> ${formatDate(item.hidro)}
+                        </div>
+                    </div>
+                    
+                    <div class="extintor-actions">
+                        <button onclick="editar(${indexOriginal})" class="btn btn-secondary">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="m18 2 4 4-10 10H8v-4L18 2z"></path>
+                            </svg>
+                            Editar
+                        </button>
+                        <button onclick="confirmarRemocao(${indexOriginal}, '${item.numero}')" class="btn btn-warning">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="3,6 5,6 21,6"></polyline>
+                                <path d="m19,6v14a2,2 0 0,1-2,2H7a2,2 0 0,1-2-2V6m3,0V4a2,2 0 0,1,2-2h4a2,2 0 0,1,2,2v2"></path>
+                            </svg>
+                            Remover
+                        </button>
+                    </div>
+                `;
+                lista.appendChild(div);
+            });
+        }
+
+        async function editar(index) {
+            const ext = extintores[index];
+            
+            if (!ext) {
+                showNotification('Extintor não encontrado.', 'error');
+                return;
+            }
+            
+            // Salvar dados no sessionStorage para edição
+            sessionStorage.setItem('editandoExtintor', JSON.stringify({
+                index: index,
+                data: ext
+            }));
+            
+            // Redirecionar para formulário
+            window.location.href = 'form.html';
+        }
+
+        async function confirmarRemocao(index, numero) {
+            if (confirm(`Tem certeza que deseja remover o extintor ${numero}?`)) {
+                await remover(index);
+            }
+        }
+
+        async function remover(index) {
+            const extintor = extintores[index];
+            
+            if (!extintor) {
+                showNotification('Extintor não encontrado.', 'error');
+                return;
+            }
+            
+            try {
+                if (await deletarExtintor(extintor.id)) {
+                    showNotification(`Extintor ${extintor.numero} removido com sucesso!`);
+                    await atualizarLista();
+                }
+            } catch (error) {
+                console.error('Erro ao remover extintor:', error);
+                showNotification('Erro ao remover extintor', 'error');
+            }
+        }
+    </script>
+
+    <style>
+        .filtros-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .filtro-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .filtro-group label {
+            font-weight: 500;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+
+        .extintor-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .extintor-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .extintor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .extintor-header h3 {
+            margin: 0;
+            color: var(--text-primary);
+            font-size: 1.25rem;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: var(--radius-md);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .extintor-info {
+            display: grid;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .info-item {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .extintor-actions {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 640px) {
+            .filtros-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .extintor-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</body>
+</html>

@@ -1,0 +1,70 @@
+{
+  "name": "controle-extintores",
+  "version": "2.0.0",
+  "description": "Sistema profissional para gestão e controle de extintores de incêndio",
+  "main": "index.html",
+  "keywords": [
+    "extintores",
+    "segurança",
+    "gestão",
+    "controle",
+    "pwa",
+    "supabase",
+    "javascript",
+    "html5",
+    "css3"
+  ],
+  "author": {
+    "name": "Guilherme",
+    "email": "guilherme@exemplo.com"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/seu-usuario/controle-extintores.git"
+  },
+  "bugs": {
+    "url": "https://github.com/seu-usuario/controle-extintores/issues"
+  },
+  "homepage": "https://seu-usuario.github.io/controle-extintores",
+  "scripts": {
+    "start": "npx http-server . -p 3000 -o",
+    "build": "echo 'Este é um projeto frontend puro - sem build necessário'",
+    "test": "echo 'Testes não configurados ainda'",
+    "deploy": "echo 'Configure seu provedor de hospedagem (Vercel, Netlify, etc.)'"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ],
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "config": {
+    "supabase": {
+      "required": true,
+      "url": "Configure em js/supabase-config.js",
+      "key": "Configure em js/supabase-config.js"
+    }
+  },
+  "features": {
+    "authentication": true,
+    "cloud_sync": true,
+    "pdf_reports": true,
+    "pwa": true,
+    "responsive": true,
+    "multi_tenant": true,
+    "subscription_plans": true
+  },
+  "tech_stack": {
+    "frontend": ["HTML5", "CSS3", "JavaScript ES6+"],
+    "backend": ["Supabase", "PostgreSQL"],
+    "libraries": ["jsPDF", "jsPDF-autoTable"],
+    "architecture": "SPA (Single Page Application)"
+  }
+}

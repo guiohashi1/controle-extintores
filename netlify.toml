@@ -1,0 +1,35 @@
+# Configuração para deploy no Netlify
+# Este arquivo é opcional, mas pode ser útil para configurações avançadas
+
+[build]
+  # Comando de build (não necessário para projeto estático)
+  command = ""
+  
+  # Diretório de publicação
+  publish = "."
+
+# Configurações de cabeçalhos para segurança
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# Cache para recursos estáticos
+[[headers]]
+  for = "/css/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000"
+
+[[headers]]
+  for = "/js/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000"
+
+# Redirects (se necessário)
+# [[redirects]]
+#   from = "/api/*"
+#   to = "https://japgbufsqbjfkbkrncgg.supabase.co/:splat"
+#   status = 200

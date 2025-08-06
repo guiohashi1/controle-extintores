@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#121212">
+    <title>Relatórios - Controle de Extintores</title>
+    
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- jsPDF para geração de PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    
+    <script src="../js/supabase-config.js"></script>
+    <script src="../js/common.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/common.css">
+    <link rel="stylesheet" href="../css/navigation.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <div id="navbar-container"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="screen-header">
+            <h1>Relatórios</h1>
+            <p>Vencimentos e análises</p>
+        </div>
+        
+        <!-- Relatório de Vencimentos -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Relatório de Vencimentos</h3>
+                <div class="card-actions">
+                    <button onclick="gerarPDF()" class="btn btn-primary">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14,2 14,8 20,8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10,9 9,9 8,9"></polyline>
+                        </svg>
+                        Gerar PDF
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Filtros de Período -->
+            <div class="filtros-periodo">
+                <div class="filtro-group">
+                    <label for="filtroPeríodo">Período:</label>
+                    <select id="filtroPeríodo" onchange="filtrarPorPeriodo()">
+                        <option value="30">Próximos 30 dias</option>
+                        <option value="60">Próximos 60 dias</option>
+                        <option value="90">Próximos 90 dias</option>
+                        <option value="vencidos">Já vencidos</option>
+                        <option value="todos">Todos</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div id="relatorioVencimentos"></div>
+        </div>
+        
+        <!-- Estatísticas por Tipo -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Estatísticas por Tipo</h3>
+            </div>
+            <div id="estatisticasTipo" class="stats-grid"></div>
+        </div>
+        
+        <!-- Estatísticas por Local -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Distribuição por Local</h3>
+            </div>
+            <div id="estatisticasLocal"></div>
+        </div>
+    </main>
+
+    <!-- Bottom Navigation -->
+    <div id="bottom-nav-container"></div>
+
+    <script>
+        let extintores = [];
+        let relatorioAtual = [];
+
+        // Inicialização da página
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Verificar se usuário está logado
+            if (!checkAuth()) return;
+            
+            // Carregar componentes
+            await loadNavbarComponent();
+            await loadBottomNavComponent();
+            setActiveNavItem('relatorios');
+            
+            // Carregar dados e gerar relatórios
+            await carregarDados();
+            await gerarRelatorios();
+        });
+
+        async function carregarDados() {
+            try {
+                extintores = await carregarExtintores();
+            } catch (error) {
+                console.error('Erro ao carregar dados:', error);
+                showNotification('Erro ao carregar dados para relatórios', 'error');
+            }
+        }
+
+        async function gerarRelatorios() {
+            gerarRelatorioVencimentos();
+            gerarEstatisticasTipo();
+            gerarEstatisticasLocal();
+        }
+
+        function filtrarPorPeriodo() {
+            const periodo = document.getElementById('filtroPeríodo').value;
+            gerarRelatorioVencimentos(periodo);
+        }
+
+        function gerarRelatorioVencimentos(filtro = '30') {
+            const hoje = new Date();
+            let extintoresFiltrados = [];
+
+            if (filtro === 'vencidos') {
+                extintoresFiltrados = extintores.filter(ext => {
+                    const vencimento = new Date(ext.validade);
+                    return vencimento < hoje;
+                });
+            } else if (filtro === 'todos') {
+                extintoresFiltrados = [...extintores];
+            } else {
+                const diasFuturos = parseInt(filtro);
+                const dataLimite = new Date();
+                dataLimite.setDate(hoje.getDate() + diasFuturos);
+                
+                extintoresFiltrados = extintores.filter(ext => {
+                    const vencimento = new Date(ext.validade);
+                    return vencimento >= hoje && vencimento <= dataLimite;
+                });
+            }
+
+            // Ordenar por data de vencimento
+            extintoresFiltrados.sort((a, b) => new Date(a.validade) - new Date(b.validade));
+            
+            relatorioAtual = extintoresFiltrados;
+            renderizarRelatorioVencimentos(extintoresFiltrados, filtro);
+        }
+
+        function renderizarRelatorioVencimentos(extintores, filtro) {
+            const container = document.getElementById('relatorioVencimentos');
+            
+            if (extintores.length === 0) {
+                container.innerHTML = `
+                    <div class="relatorio-empty">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M12 6v6l4 2"></path>
+                        </svg>
+                        <p>Nenhum extintor encontrado para o período selecionado</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = `<div class="relatorio-resumo">
+                <p>Encontrados <strong>${extintores.length}</strong> extintor(es) 
+                ${filtro === 'vencidos' ? 'vencidos' : 
+                  filtro === 'todos' ? 'no total' : 
+                  `nos próximos ${filtro} dias`}</p>
+            </div>`;
+
+            html += '<div class="relatorio-lista">';
+            
+            extintores.forEach(ext => {
+                const diasRestantes = calcularDiasRestantes(ext.validade);
+                const status = calcularStatusValidade(ext.validade);
+                const statusBadge = getStatusBadge(status, diasRestantes);
+                
+                html += `
+                    <div class="relatorio-item ${status}">
+                        <div class="item-info">
+                            <div class="item-header">
+                                <span class="item-numero">${ext.numero}</span>
+                                <span class="status-badge ${statusBadge.class}">${statusBadge.text}</span>
+                            </div>
+                            <div class="item-details">
+                                <span class="item-local">${ext.local}</span>
+                                <span class="item-tipo">${ext.tipo} (${ext.peso}kg)</span>
+                                <span class="item-vencimento">Vence em: ${formatDate(ext.validade)}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function gerarEstatisticasTipo() {
+            const tipoCount = {};
+            
+            extintores.forEach(ext => {
+                if (!tipoCount[ext.tipo]) {
+                    tipoCount[ext.tipo] = { total: 0, validos: 0, vencidos: 0, alertas: 0 };
+                }
+                
+                tipoCount[ext.tipo].total++;
+                
+                const status = calcularStatusValidade(ext.validade);
+                switch(status) {
+                    case 'valid':
+                        tipoCount[ext.tipo].validos++;
+                        break;
+                    case 'warning':
+                        tipoCount[ext.tipo].alertas++;
+                        break;
+                    case 'expired':
+                        tipoCount[ext.tipo].vencidos++;
+                        break;
+                }
+            });
+
+            const container = document.getElementById('estatisticasTipo');
+            let html = '';
+
+            Object.entries(tipoCount).forEach(([tipo, stats]) => {
+                html += `
+                    <div class="tipo-stats">
+                        <h4>${tipo}</h4>
+                        <div class="stats-mini-grid">
+                            <div class="mini-stat">
+                                <span class="mini-number">${stats.total}</span>
+                                <span class="mini-label">Total</span>
+                            </div>
+                            <div class="mini-stat valid">
+                                <span class="mini-number">${stats.validos}</span>
+                                <span class="mini-label">Válidos</span>
+                            </div>
+                            <div class="mini-stat warning">
+                                <span class="mini-number">${stats.alertas}</span>
+                                <span class="mini-label">Alertas</span>
+                            </div>
+                            <div class="mini-stat expired">
+                                <span class="mini-number">${stats.vencidos}</span>
+                                <span class="mini-label">Vencidos</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html || '<div class="relatorio-empty"><p>Nenhum dado disponível</p></div>';
+        }
+
+        function gerarEstatisticasLocal() {
+            const localCount = {};
+            
+            extintores.forEach(ext => {
+                if (!localCount[ext.local]) {
+                    localCount[ext.local] = 0;
+                }
+                localCount[ext.local]++;
+            });
+
+            const container = document.getElementById('estatisticasLocal');
+            
+            if (Object.keys(localCount).length === 0) {
+                container.innerHTML = '<div class="relatorio-empty"><p>Nenhum dado disponível</p></div>';
+                return;
+            }
+
+            let html = '<div class="locais-lista">';
+            
+            Object.entries(localCount)
+                .sort(([,a], [,b]) => b - a)
+                .forEach(([local, count]) => {
+                    const porcentagem = ((count / extintores.length) * 100).toFixed(1);
+                    html += `
+                        <div class="local-item">
+                            <div class="local-info">
+                                <span class="local-nome">${local}</span>
+                                <span class="local-count">${count} extintor${count > 1 ? 'es' : ''} (${porcentagem}%)</span>
+                            </div>
+                            <div class="local-barra">
+                                <div class="barra-progresso" style="width: ${porcentagem}%"></div>
+                            </div>
+                        </div>
+                    `;
+                });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        async function gerarPDF() {
+            if (relatorioAtual.length === 0) {
+                showNotification('Nenhum dado para gerar PDF', 'warning');
+                return;
+            }
+
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                // Título
+                doc.setFontSize(18);
+                doc.text('Relatório de Extintores', 20, 20);
+                
+                // Data de geração
+                doc.setFontSize(12);
+                doc.text(`Gerado em: ${new Date().toLocaleDateString('pt-BR')}`, 20, 30);
+                
+                // Preparar dados para tabela
+                const tableData = relatorioAtual.map(ext => {
+                    const dias = calcularDiasRestantes(ext.validade);
+                    const status = dias < 0 ? 'Vencido' : dias <= 30 ? 'Próximo vencimento' : 'Válido';
+                    
+                    return [
+                        ext.numero,
+                        ext.local,
+                        ext.tipo,
+                        `${ext.peso}kg`,
+                        formatDate(ext.validade),
+                        status
+                    ];
+                });
+
+                // Gerar tabela
+                doc.autoTable({
+                    head: [['Número', 'Local', 'Tipo', 'Peso', 'Validade', 'Status']],
+                    body: tableData,
+                    startY: 40,
+                    styles: { fontSize: 8 },
+                    headStyles: { fillColor: [239, 68, 68] }
+                });
+
+                // Salvar PDF
+                const fileName = `relatorio-extintores-${new Date().toISOString().split('T')[0]}.pdf`;
+                doc.save(fileName);
+                
+                showNotification('PDF gerado com sucesso!');
+            } catch (error) {
+                console.error('Erro ao gerar PDF:', error);
+                showNotification('Erro ao gerar PDF', 'error');
+            }
+        }
+    </script>
+
+    <style>
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .card-header h3 {
+            margin: 0;
+            color: var(--text-primary);
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .filtros-periodo {
+            margin-bottom: 1.5rem;
+        }
+
+        .filtro-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .filtro-group label {
+            font-weight: 500;
+            color: var(--text-primary);
+            min-width: 60px;
+        }
+
+        .relatorio-empty {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-muted);
+        }
+
+        .relatorio-empty svg {
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .relatorio-resumo {
+            background: var(--bg-tertiary);
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .relatorio-lista {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .relatorio-item {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            transition: transform 0.2s;
+        }
+
+        .relatorio-item:hover {
+            transform: translateY(-1px);
+        }
+
+        .relatorio-item.expired {
+            border-left: 4px solid var(--danger-color);
+        }
+
+        .relatorio-item.warning {
+            border-left: 4px solid var(--warning-color);
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .item-numero {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 1.1rem;
+        }
+
+        .item-details {
+            display: grid;
+            gap: 0.25rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .item-vencimento {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .tipo-stats {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+        }
+
+        .tipo-stats h4 {
+            margin: 0 0 1rem 0;
+            color: var(--text-primary);
+            text-align: center;
+        }
+
+        .stats-mini-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+
+        .mini-stat {
+            text-align: center;
+            padding: 0.75rem;
+            border-radius: var(--radius-md);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .mini-stat.valid {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--success-color);
+        }
+
+        .mini-stat.warning {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid var(--warning-color);
+        }
+
+        .mini-stat.expired {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--danger-color);
+        }
+
+        .mini-number {
+            display: block;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .mini-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+
+        .locais-lista {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .local-item {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+        }
+
+        .local-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .local-nome {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .local-count {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .local-barra {
+            background: rgba(255, 255, 255, 0.1);
+            height: 6px;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .barra-progresso {
+            background: var(--primary-color);
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        @media (max-width: 640px) {
+            .card-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: stretch;
+            }
+
+            .stats-mini-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .local-info {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.25rem;
+            }
+        }
+    </style>
+</body>
+</html>

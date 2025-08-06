@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#121212">
+    <title>Controle de Extintores - Login</title>
+    
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/common.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/auth.css">
+</head>
+<body>
+    <div class="auth-main-container">
+        <div class="auth-container">
+            <div class="auth-header">
+                <div class="auth-logo">
+                    <span class="logo-icon">🔥</span>
+                    <h1>Controle de Extintores</h1>
+                </div>
+                <p class="auth-subtitle">Sistema profissional de gestão</p>
+            </div>
+
+            <div class="auth-forms-container">
+                <!-- Login Form -->
+                <form id="login-form" class="auth-form active">
+                <h2>Entrar na Conta</h2>
+                
+                <div class="form-group">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" value="demo@exemplo.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="login-password">Senha</label>
+                    <input type="password" id="login-password" value="123456" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-full">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                        <polyline points="10,17 15,12 10,7"></polyline>
+                        <line x1="15" y1="12" x2="3" y2="12"></line>
+                    </svg>
+                    Entrar
+                </button>
+                
+                <div class="auth-divider">
+                    <span>ou</span>
+                </div>
+                
+                <button type="button" class="btn btn-secondary btn-full" onclick="showRegister()">
+                    Criar nova conta
+                </button>
+            </form>
+
+            <!-- Register Form -->
+            <form id="register-form" class="auth-form">
+                <h2>Criar Conta</h2>
+                
+                <div class="form-group">
+                    <label for="register-name">Nome completo</label>
+                    <input type="text" id="register-name" placeholder="Seu nome completo" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="register-email">Email</label>
+                    <input type="email" id="register-email" placeholder="seu@email.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="register-password">Senha</label>
+                    <input type="password" id="register-password" placeholder="Mínimo 6 caracteres" required minlength="6">
+                </div>
+                
+                <div class="form-group">
+                    <label for="register-confirm-password">Confirmar senha</label>
+                    <input type="password" id="register-confirm-password" placeholder="Digite a senha novamente" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-full">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                        <line x1="8" y1="21" x2="16" y2="21"></line>
+                    </svg>
+                    Criar Conta
+                </button>
+                
+                <div class="auth-divider">
+                    <span>ou</span>
+                </div>
+                
+                <button type="button" class="btn btn-secondary btn-full" onclick="showLogin()">
+                    Já tenho uma conta
+                </button>
+            </form>
+            </div>
+
+            <!-- Demo Info -->
+            <div class="demo-info">
+                <h4>📋 Dados para Teste</h4>
+                <div class="demo-credentials">
+                    <div class="demo-item">
+                        <strong>Email:</strong> demo@exemplo.com
+                    </div>
+                    <div class="demo-item">
+                        <strong>Senha:</strong> 123456
+                    </div>
+                </div>
+                <p class="demo-note">Use essas credenciais para testar o sistema</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Verificar se já está logado
+        document.addEventListener('DOMContentLoaded', () => {
+            if (getCurrentUser()) {
+                window.location.href = 'pages/dashboard.html';
+            }
+        });
+
+        // Alternar entre login e registro
+        function showLogin() {
+            document.getElementById('login-form').classList.add('active');
+            document.getElementById('register-form').classList.remove('active');
+        }
+
+        function showRegister() {
+            document.getElementById('login-form').classList.remove('active');
+            document.getElementById('register-form').classList.add('active');
+        }
+
+        // Handle Login
+        document.getElementById('login-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            try {
+                showNotification('Fazendo login...', 'info');
+                
+                const result = await supabase.login(email, password);
+                
+                if (result.success) {
+                    const user = result.user;
+                    
+                    // Salvar usuário no sessionStorage
+                    sessionStorage.setItem('currentUser', JSON.stringify(user));
+                    
+                    showNotification(`Bem-vindo, ${user.name || user.email}!`);
+                    
+                    // Redirecionar para dashboard
+                    setTimeout(() => {
+                        window.location.href = 'pages/dashboard.html';
+                    }, 1000);
+                } else {
+                    showNotification(result.error || 'Erro ao fazer login. Verifique suas credenciais.', 'error');
+                }
+            } catch (error) {
+                console.error('Erro no login:', error);
+                showNotification('Erro ao fazer login. Verifique suas credenciais.', 'error');
+            }
+        });
+
+        // Handle Register
+        document.getElementById('register-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            
+            const name = document.getElementById('register-name').value;
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+            const confirmPassword = document.getElementById('register-confirm-password').value;
+            
+            if (password !== confirmPassword) {
+                showNotification('As senhas não coincidem.', 'error');
+                return;
+            }
+            
+            try {
+                showNotification('Criando conta...', 'info');
+                
+                const result = await supabase.register({
+                    email: email,
+                    password: password,
+                    name: name
+                });
+                
+                if (result.success) {
+                    showNotification('Conta criada com sucesso! Faça login.', 'success');
+                    showLogin();
+                    
+                    // Preencher dados no formulário de login
+                    document.getElementById('login-email').value = email;
+                    document.getElementById('login-password').value = '';
+                } else {
+                    showNotification(result.error || 'Erro ao criar conta.', 'error');
+                }
+            } catch (error) {
+                console.error('Erro no registro:', error);
+                showNotification('Erro ao criar conta. Tente novamente.', 'error');
+            }
+        });
+    </script>
+</body>
+</html>
