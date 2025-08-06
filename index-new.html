@@ -23,12 +23,11 @@
                     <span class="logo-icon">🔥</span>
                     <h1>Controle de Extintores</h1>
                 </div>
-                <p class="auth-subtitle">Sistema profissional de gestão - v1.0</p>
+                <p class="auth-subtitle">Sistema profissional de gestão</p>
             </div>
 
-            <div class="auth-forms-container">
-                <!-- Login Form -->
-                <form id="login-form" class="auth-form active">
+            <!-- Login Form -->
+            <form id="login-form" class="auth-form active">
                 <h2>Entrar na Conta</h2>
                 
                 <div class="form-group">
@@ -100,7 +99,6 @@
                     Já tenho uma conta
                 </button>
             </form>
-            </div>
 
             <!-- Demo Info -->
             <div class="demo-info">
@@ -147,11 +145,9 @@
             try {
                 showNotification('Fazendo login...', 'info');
                 
-                const result = await supabase.login(email, password);
+                const user = await supabase.signIn(email, password);
                 
-                if (result.success) {
-                    const user = result.user;
-                    
+                if (user) {
                     // Salvar usuário no sessionStorage
                     sessionStorage.setItem('currentUser', JSON.stringify(user));
                     
@@ -161,8 +157,6 @@
                     setTimeout(() => {
                         window.location.href = 'pages/dashboard.html';
                     }, 1000);
-                } else {
-                    showNotification(result.error || 'Erro ao fazer login. Verifique suas credenciais.', 'error');
                 }
             } catch (error) {
                 console.error('Erro no login:', error);
@@ -187,21 +181,15 @@
             try {
                 showNotification('Criando conta...', 'info');
                 
-                const result = await supabase.register({
-                    email: email,
-                    password: password,
-                    name: name
-                });
+                const user = await supabase.signUp(name, email, password);
                 
-                if (result.success) {
+                if (user) {
                     showNotification('Conta criada com sucesso! Faça login.', 'success');
                     showLogin();
                     
                     // Preencher dados no formulário de login
                     document.getElementById('login-email').value = email;
                     document.getElementById('login-password').value = '';
-                } else {
-                    showNotification(result.error || 'Erro ao criar conta.', 'error');
                 }
             } catch (error) {
                 console.error('Erro no registro:', error);
