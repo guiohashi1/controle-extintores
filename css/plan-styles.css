@@ -1,0 +1,384 @@
+/* 
+=== ESTILOS PARA SISTEMA DE PLANOS ===
+Modais de upgrade e validação de planos
+*/
+
+.plan-upgrade-modal {
+    max-width: 500px;
+    width: 90%;
+    text-align: center;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.upgrade-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.plan-upgrade-modal h3 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    font-size: 1.8rem;
+}
+
+.plan-upgrade-modal p {
+    color: var(--text-color);
+    margin-bottom: 1rem;
+    line-height: 1.6;
+}
+
+.upgrade-suggestion {
+    background: linear-gradient(135deg, #f8f9ff 0%, #e8f4fd 100%);
+    border: 2px solid var(--primary-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+}
+
+.upgrade-suggestion h4 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    font-size: 1.3rem;
+}
+
+.upgrade-suggestion ul {
+    text-align: left;
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0;
+}
+
+.upgrade-suggestion li {
+    padding: 0.3rem 0;
+    color: var(--success-color);
+    font-weight: 500;
+}
+
+.upgrade-price {
+    background: var(--primary-color);
+    color: white;
+    padding: 0.8rem 1rem;
+    border-radius: 6px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-top: 1rem;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.modal-actions .btn {
+    flex: 1;
+    min-width: 120px;
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-actions .btn-secondary {
+    background: var(--bg-secondary);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+}
+
+.modal-actions .btn-secondary:hover {
+    background: var(--border-color);
+}
+
+.modal-actions .btn-primary {
+    background: var(--primary-color);
+    color: white;
+}
+
+.modal-actions .btn-primary:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+/* Indicador de plano no header */
+.plan-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--primary-color);
+    color: white;
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-left: 1rem;
+}
+
+.plan-indicator.starter {
+    background: var(--warning-color);
+}
+
+.plan-indicator.professional {
+    background: var(--success-color);
+}
+
+.plan-indicator.enterprise {
+    background: linear-gradient(135deg, #8e44ad 0%, #3498db 100%);
+}
+
+/* Status de limites */
+.limits-status {
+    display: flex;
+    gap: 1rem;
+    margin: 1rem 0;
+    flex-wrap: wrap;
+}
+
+.limit-item {
+    flex: 1;
+    min-width: 140px;
+    background: var(--bg-secondary);
+    padding: 0.8rem;
+    border-radius: 6px;
+    border-left: 4px solid var(--primary-color);
+}
+
+.limit-item.warning {
+    border-left-color: var(--warning-color);
+    background: rgba(241, 196, 15, 0.1);
+}
+
+.limit-item.danger {
+    border-left-color: var(--error-color);
+    background: rgba(231, 76, 60, 0.1);
+}
+
+.limit-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.3rem;
+}
+
+.limit-value {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--text-color);
+}
+
+.limit-bar {
+    width: 100%;
+    height: 6px;
+    background: var(--border-color);
+    border-radius: 3px;
+    margin-top: 0.5rem;
+    overflow: hidden;
+}
+
+.limit-bar-fill {
+    height: 100%;
+    background: var(--success-color);
+    border-radius: 3px;
+    transition: all 0.3s ease;
+}
+
+.limit-bar-fill.warning {
+    background: var(--warning-color);
+}
+
+.limit-bar-fill.danger {
+    background: var(--error-color);
+}
+
+/* Animação dos modais */
+.modal-overlay {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+}
+
+.modal-overlay .modal-content {
+    transform: scale(0.9) translateY(-20px);
+    transition: transform 0.3s ease;
+}
+
+.modal-overlay.active .modal-content {
+    transform: scale(1) translateY(0);
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+    .plan-upgrade-modal {
+        width: 95%;
+        max-width: none;
+        margin: 1rem;
+    }
+    
+    .modal-actions {
+        flex-direction: column;
+    }
+    
+    .limits-status {
+        flex-direction: column;
+    }
+    
+    .plan-indicator {
+        margin-left: 0;
+        margin-top: 0.5rem;
+    }
+}
+
+/* 
+=== MODAL DE EMERGÊNCIA (PROTEÇÃO ANTICACHE) ===
+Estilos para o modal de proteção de emergência
+*/
+.emergency-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    backdrop-filter: blur(4px);
+    animation: emergencyFadeIn 0.3s ease;
+}
+
+.emergency-modal-content {
+    background: #ffffff;
+    padding: 2rem;
+    border-radius: 12px;
+    max-width: 450px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: emergencySlideIn 0.3s ease;
+    color: #333;
+}
+
+.emergency-modal-content h3 {
+    color: #e74c3c;
+    margin-bottom: 1rem;
+    font-size: 1.8rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.emergency-modal-content p {
+    color: #555;
+    margin-bottom: 1rem;
+    line-height: 1.6;
+    font-size: 1rem;
+}
+
+.emergency-modal-content p:last-of-type {
+    margin-bottom: 1.5rem;
+}
+
+.emergency-modal-content p strong {
+    color: #2c3e50;
+    font-weight: bold;
+}
+
+.emergency-btn {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    color: white;
+    padding: 0.8rem 2rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+}
+
+.emergency-btn:hover {
+    background: linear-gradient(135deg, #2980b9 0%, #1f6f93 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+}
+
+@keyframes emergencyFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes emergencySlideIn {
+    from { 
+        transform: scale(0.8) translateY(-30px);
+        opacity: 0;
+    }
+    to { 
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+}
+
+/* 
+=== CORREÇÕES PARA MODAL PRINCIPAL ===
+Garantir que texto seja sempre legível
+*/
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    backdrop-filter: blur(4px);
+}
+
+.modal-content {
+    background: #ffffff;
+    color: #333333;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    position: relative;
+}
+
+.modal-content h3 {
+    color: #2c3e50 !important;
+    font-weight: bold;
+}
+
+.modal-content p {
+    color: #555555 !important;
+}
+
+.upgrade-suggestion {
+    background: linear-gradient(135deg, #f8f9ff 0%, #e8f4fd 100%);
+    border: 2px solid #3498db;
+    color: #2c3e50;
+}
+
+.upgrade-suggestion h4 {
+    color: #3498db !important;
+}
+
+.upgrade-suggestion li {
+    color: #27ae60 !important;
+}

@@ -38,6 +38,13 @@
         </svg>
         Configurações
       </div>
+      <!-- Admin Panel - só aparece para admins -->
+      <div class="dropdown-item admin-only" onclick="navigateToAdmin()" style="display: none;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 1l3 6 6 1-3 5 1 6-6-3-6 3 1-6-3-5 6-1z"></path>
+        </svg>
+        Painel Admin
+      </div>
       <div class="dropdown-divider"></div>
       <div class="dropdown-item logout" onclick="handleLogout()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

@@ -10,10 +10,12 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../js/supabase-config.js"></script>
     <script src="../js/common.js"></script>
+    <script src="../js/plan-validator.js"></script>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/common.css">
     <link rel="stylesheet" href="../css/navigation.css">
+    <link rel="stylesheet" href="../css/plan-styles.css">
     <link rel="stylesheet" href="../css/pwa.css">
 </head>
 <body>
@@ -25,6 +27,14 @@
         <div class="screen-header">
             <h1>Dashboard</h1>
             <p>Visão geral dos seus extintores</p>
+        </div>
+        
+        <!-- Status do Plano -->
+        <div class="card" id="plan-status-card" style="display: none;">
+            <h3>Status do Plano</h3>
+            <div class="limits-status" id="limits-status">
+                <!-- Limites serão inseridos aqui pelo JavaScript -->
+            </div>
         </div>
         
         <div class="card">
@@ -101,7 +111,80 @@
             
             // Carregar dados do dashboard
             await atualizarDashboard();
+            
+            // Mostrar status do plano
+            await mostrarStatusPlano();
         });
+
+        // Função para mostrar status dos limites do plano
+        async function mostrarStatusPlano() {
+            const user = getCurrentUser();
+            if (!user || !window.PlanValidator) return;
+            
+            const planInfo = PlanValidator.getCurrentPlanInfo();
+            const limitsContainer = document.getElementById('limits-status');
+            const planCard = document.getElementById('plan-status-card');
+            
+            if (!limitsContainer || !planInfo) return;
+            
+            // Obter dados atuais
+            const extintoresCount = await PlanValidator.getCurrentExtintorCount();
+            const extintoresLimit = planInfo.limits.extintores;
+            
+            let limitsHtml = '';
+            
+            // Limite de extintores
+            if (extintoresLimit !== -1) {
+                const percentage = Math.min((extintoresCount / extintoresLimit) * 100, 100);
+                let statusClass = 'success';
+                
+                if (percentage >= 90) statusClass = 'danger';
+                else if (percentage >= 75) statusClass = 'warning';
+                
+                limitsHtml += `
+                    <div class="limit-item ${statusClass === 'success' ? '' : statusClass}">
+                        <div class="limit-label">Extintores</div>
+                        <div class="limit-value">${extintoresCount} / ${extintoresLimit}</div>
+                        <div class="limit-bar">
+                            <div class="limit-bar-fill ${statusClass}" style="width: ${percentage}%"></div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Limite de usuários (simulado)
+            const usersLimit = planInfo.limits.users;
+            if (usersLimit !== -1) {
+                const currentUsers = 1; // Usuário atual
+                const userPercentage = Math.min((currentUsers / usersLimit) * 100, 100);
+                
+                limitsHtml += `
+                    <div class="limit-item">
+                        <div class="limit-label">Usuários</div>
+                        <div class="limit-value">${currentUsers} / ${usersLimit}</div>
+                        <div class="limit-bar">
+                            <div class="limit-bar-fill success" style="width: ${userPercentage}%"></div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Funcionalidades do plano
+            const features = planInfo.limits;
+            limitsHtml += `
+                <div class="limit-item">
+                    <div class="limit-label">Funcionalidades</div>
+                    <div class="limit-value">
+                        ${features.photos ? '📷' : '🚫'} Fotos
+                        ${features.reports === 'premium' ? '📊' : features.reports === 'advanced' ? '📈' : '📋'} Relatórios
+                        ${features.api ? '🔌' : '🚫'} API
+                    </div>
+                </div>
+            `;
+            
+            limitsContainer.innerHTML = limitsHtml;
+            planCard.style.display = 'block';
+        }
 
         async function atualizarDashboard() {
             try {

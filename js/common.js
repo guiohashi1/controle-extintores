@@ -6,6 +6,42 @@
 let currentUser = null;
 let currentRoute = 'dashboard';
 
+// ===== SISTEMA DE AUTENTICAÇÃO E PLANOS =====
+function getCurrentUser() {
+  if (!currentUser) {
+    const userData = sessionStorage.getItem('currentUser');
+    if (userData) {
+      currentUser = JSON.parse(userData);
+    }
+  }
+  return currentUser;
+}
+
+async function checkUserAccess() {
+  const user = getCurrentUser();
+  if (!user) {
+    window.location.href = '../index.html';
+    return false;
+  }
+  
+  // Inicializar validador de planos
+  if (window.PlanValidator && !PlanValidator.initialize(user)) {
+    return false;
+  }
+  
+  // 👥 VALIDAÇÃO DE USUÁRIOS SIMULTÂNEOS - V1.0
+  if (window.PlanValidator) {
+    const canAccess = await PlanValidator.canAddUser();
+    if (!canAccess) {
+      console.log('🚫 Acesso negado - limite de usuários atingido');
+      // Modal já foi exibido pela função canAddUser
+      return false;
+    }
+  }
+  
+  return true;
+}
+
 // ===== SISTEMA DE NOTIFICAÇÕES =====
 function showNotification(message, type = 'success') {
   // Remove notificação existente se houver
@@ -75,6 +111,9 @@ function setCurrentUser(user) {
     // Salvar no sessionStorage
     sessionStorage.setItem('currentUser', JSON.stringify(user));
     
+    // Atualizar indicador de plano se existir
+    updatePlanIndicator(user);
+    
     // Atualizar interface se elementos existirem
     const userNameElement = document.getElementById('user-name');
     const userPlanElement = document.getElementById('user-plan');
@@ -92,7 +131,34 @@ function setCurrentUser(user) {
   }
 }
 
-function getCurrentUser() {
+function updatePlanIndicator(user) {
+  const planIndicator = document.querySelector('.plan-indicator');
+  if (!planIndicator) return;
+  
+  const plan = user.plan || 'starter';
+  const planNames = {
+    starter: 'Starter',
+    professional: 'Professional', 
+    enterprise: 'Enterprise'
+  };
+  
+  planIndicator.textContent = planNames[plan] || 'Starter';
+  planIndicator.className = `plan-indicator ${plan}`;
+}
+
+function createPlanIndicator() {
+  const user = getCurrentUser();
+  if (!user) return '';
+  
+  const plan = user.plan || 'starter';
+  const planNames = {
+    starter: 'Starter',
+    professional: 'Professional',
+    enterprise: 'Enterprise'
+  };
+  
+  return `<span class="plan-indicator ${plan}">${planNames[plan]}</span>`;
+}function getCurrentUser() {
   if (!currentUser) {
     // Tentar recuperar do sessionStorage
     const storedUser = sessionStorage.getItem('currentUser');
@@ -228,6 +294,13 @@ async function loadComponent(componentName, containerId) {
 
 async function loadNavbarComponent() {
   await loadComponent('navbar', 'navbar-container');
+  
+  // Atualizar visibilidade do botão admin após carregar navbar
+  setTimeout(() => {
+    if (typeof updateAdminVisibility === 'function') {
+      updateAdminVisibility();
+    }
+  }, 100);
 }
 
 async function loadBottomNavComponent() {
@@ -329,6 +402,40 @@ function initAuth() {
   }
   
   return true;
+}
+
+// ===== VALIDAÇÃO DE PLANOS PARA FAB BUTTON =====
+/**
+ * Função global para validar limites antes de criar extintor
+ * Chamada pelo botão FAB (+) na navegação inferior
+ * Cache bust: V2.0-FINAL-ATUALIZADO
+ */
+async function validarECriarExtintor() {
+    console.log('🔥 VALIDAÇÃO V2.0 - FAB (+) clicado - Validando limites...');
+    
+    // Verificar se PlanValidator está disponível
+    if (!window.PlanValidator) {
+        console.log('⚠️ PlanValidator não disponível, redirecionando diretamente');
+        window.location.href = 'form.html';
+        return;
+    }
+    
+    try {
+        // Validar limite do plano
+        const canCreate = await PlanValidator.canCreateExtintor();
+        
+        if (canCreate) {
+            console.log('✅ Validação passou - redirecionando para formulário');
+            window.location.href = 'form.html';
+        } else {
+            console.log('🚫 Limite atingido - modal deve ter aparecido');
+            // Modal já foi exibido pela função canCreateExtintor
+        }
+    } catch (error) {
+        console.error('❌ Erro na validação:', error);
+        // Em caso de erro, permitir acesso
+        window.location.href = 'form.html';
+    }
 }
 
 // ===== INICIALIZAÇÃO =====

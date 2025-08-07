@@ -10,10 +10,12 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../js/supabase-config.js"></script>
     <script src="../js/common.js"></script>
+    <script src="../js/plan-validator.js"></script>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/common.css">
     <link rel="stylesheet" href="../css/navigation.css">
+    <link rel="stylesheet" href="../css/plan-styles.css">
     <link rel="stylesheet" href="../css/pwa.css">
 </head>
 <body>
@@ -60,13 +62,13 @@
             <div id="lista"></div>
             
             <div style="text-align: center; margin-top: 2rem;">
-                <a href="form.html" class="btn btn-primary">
+                <button onclick="adicionarNovoExtintor()" class="btn btn-primary">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="12" y1="5" x2="12" y2="19"></line>
                         <line x1="5" y1="12" x2="19" y2="12"></line>
                     </svg>
                     Novo Extintor
-                </a>
+                </button>
             </div>
         </div>
     </main>
@@ -233,6 +235,31 @@
                 console.error('Erro ao remover extintor:', error);
                 showNotification('Erro ao remover extintor', 'error');
             }
+        }
+
+        /**
+         * Função para adicionar novo extintor com validação de plano
+         */
+        async function adicionarNovoExtintor() {
+            console.log('🔥 Tentativa de adicionar novo extintor');
+            
+            // Validar limite do plano antes de redirecionar
+            if (window.PlanValidator) {
+                console.log('🔍 Validando limites do plano...');
+                const canCreate = await PlanValidator.canCreateExtintor();
+                
+                if (!canCreate) {
+                    console.log('🚫 Não pode criar - modal deve ter aparecido');
+                    return; // Modal de upgrade já foi exibido
+                }
+                
+                console.log('✅ Validação passou - redirecionando para formulário');
+            } else {
+                console.log('⚠️ PlanValidator não disponível');
+            }
+            
+            // Se chegou aqui, pode criar
+            window.location.href = 'form.html';
         }
     </script>
 

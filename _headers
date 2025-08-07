@@ -1,0 +1,29 @@
+# Headers para segurança - Controle de Extintores
+
+# Admin Panel - Segurança extra
+/admin/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  X-XSS-Protection: 1; mode=block
+  Referrer-Policy: strict-origin-when-cross-origin
+  Cache-Control: no-cache, no-store, must-revalidate
+
+# App Principal
+/pages/*
+  X-Frame-Options: SAMEORIGIN
+  X-Content-Type-Options: nosniff
+  X-XSS-Protection: 1; mode=block
+
+# Assets estáticos  
+/css/*
+  Cache-Control: public, max-age=31536000
+
+/js/*
+  Cache-Control: public, max-age=31536000
+
+/icons/*
+  Cache-Control: public, max-age=31536000
+
+# Service Worker
+/sw.js
+  Cache-Control: no-cache

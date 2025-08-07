@@ -1,0 +1,15 @@
+# Redirects para Netlify - Controle de Extintores
+
+# Admin Panel
+/admin /admin/index.html 200
+/admin/* /admin/:splat 200
+
+# App Routes (URLs amigáveis)
+/dashboard /pages/dashboard.html 200
+/extintores /pages/extintores.html 200  
+/form /pages/form.html 200
+/relatorios /pages/relatorios.html 200
+/configuracoes /pages/configuracoes.html 200
+
+# Fallback para SPA
+/* /index.html 200

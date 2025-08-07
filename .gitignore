@@ -18,6 +18,23 @@ logs
 # Cache
 .cache/
 .temp/
+
+# Arquivos de teste temporários
+test-*.html
+teste-*.html
+test-*.js
+*-test.html
+verificacao-*.html
+debug-*.html
+
+# Backups e arquivos temporários
+backup/
+temp/
+*.backup
+*.tmp
+
+# Manter pasta admin
+!admin/
 .tmp/
 
 # Sistema operacional

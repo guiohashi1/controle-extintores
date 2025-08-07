@@ -22,6 +22,9 @@ CREATE TABLE IF NOT EXISTS users (
   email VARCHAR(255) UNIQUE NOT NULL,
   password_hash VARCHAR(255) NOT NULL,
   name VARCHAR(255) NOT NULL,
+  plan VARCHAR(20) DEFAULT 'starter' CHECK (plan IN ('starter', 'professional', 'enterprise')),
+  plan_expires_at TIMESTAMP WITH TIME ZONE DEFAULT (timezone('utc'::text, now()) + INTERVAL '30 days'),
+  plan_status VARCHAR(20) DEFAULT 'active' CHECK (plan_status IN ('active', 'expired', 'cancelled')),
   subscription VARCHAR(50) DEFAULT 'basic' CHECK (subscription IN ('basic', 'professional', 'enterprise')),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
@@ -78,10 +81,12 @@ ALTER TABLE extintores DISABLE ROW LEVEL SECURITY;
 ALTER TABLE inspecoes DISABLE ROW LEVEL SECURITY;
 
 -- 5. Inserir usuário demo para testes (com hash correto para '123456')
-INSERT INTO users (id, email, password_hash, name, subscription) VALUES
-('11111111-1111-1111-1111-111111111111', 'demo@exemplo.com', 'MTIzNDU2c2FsdDEyMw==', 'Usuário Demo', 'professional')
+INSERT INTO users (id, email, password_hash, name, plan, plan_status, subscription) VALUES
+('11111111-1111-1111-1111-111111111111', 'demo@exemplo.com', 'MTIzNDU2c2FsdDEyMw==', 'Usuário Demo', 'professional', 'active', 'professional')
 ON CONFLICT (email) DO UPDATE SET 
   name = EXCLUDED.name,
+  plan = EXCLUDED.plan,
+  plan_status = EXCLUDED.plan_status,
   subscription = EXCLUDED.subscription;
 
 -- 6. Inserir alguns extintores demo

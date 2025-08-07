@@ -170,11 +170,14 @@ class SupabaseManager {
       this.authToken = this.generateSessionToken(user);
       this.currentUser = user;
       
-      // Salvar no sessionStorage
+      // Salvar no sessionStorage com dados de plano
       sessionStorage.setItem('currentUser', JSON.stringify({
         id: user.id,
         name: user.name,
         email: user.email,
+        plan: user.plan || 'starter',
+        plan_status: user.plan_status || 'active',
+        plan_expires_at: user.plan_expires_at,
         created_at: user.created_at
       }));
       
@@ -313,6 +316,32 @@ class SupabaseManager {
 
     try {
       console.log('💾 Salvando extintor no Supabase:', extintor.numero);
+      
+      // 🛡️ VALIDAÇÃO DEFINITIVA DE PLANOS - V4.0 FINAL
+      // Só validar limites para NOVOS extintores (não para edição)
+      if (!extintor.id && window.PlanValidator) {
+        console.log('🛡️ PROTEÇÃO SUPABASE V4.0 - Validando limites antes de salvar...');
+        
+        try {
+          // Inicializar PlanValidator se necessário
+          if (!PlanValidator.currentUser) {
+            const currentUser = this.currentUser;
+            if (!PlanValidator.initialize(currentUser)) {
+              throw new Error('Plano vencido ou inativo');
+            }
+          }
+          
+          const canCreate = await PlanValidator.canCreateExtintor();
+          if (!canCreate) {
+            console.log('🚫 SALVAMENTO BLOQUEADO - Limite atingido');
+            throw new Error('Limite do plano atingido. Faça upgrade para criar mais extintores.');
+          }
+          console.log('✅ SALVAMENTO AUTORIZADO - Dentro do limite');
+        } catch (planError) {
+          console.error('❌ Erro na validação de planos:', planError);
+          throw new Error(`Validação de plano falhou: ${planError.message}`);
+        }
+      }
       
       // Garantir que o extintor tenha o user_id correto
       const extintorData = {
@@ -575,6 +604,53 @@ class SupabaseManager {
 const supabase = new SupabaseManager();
 
 // =============================================================================
+// FUNÇÕES PARA CONTROLE DE ADMIN
+// =============================================================================
+
+// Verificar se o usuário é admin
+function isAdmin() {
+  try {
+    const currentUser = supabase.currentUser;
+    if (!currentUser) return false;
+    
+    // Verificar se o usuário tem privilégios admin
+    return currentUser.tipo === 'admin' || currentUser.admin === true;
+  } catch (error) {
+    console.warn('Erro ao verificar admin:', error);
+    return false;
+  }
+}
+
+// Mostrar/esconder botões admin no navbar
+function updateAdminVisibility() {
+  const adminElements = document.querySelectorAll('.admin-only');
+  const isUserAdmin = isAdmin();
+  
+  adminElements.forEach(element => {
+    element.style.display = isUserAdmin ? 'flex' : 'none';
+  });
+  
+  console.log(isUserAdmin ? '👑 Admin detectado - botões visíveis' : '👤 Usuário comum - botões admin ocultos');
+}
+
+// Navegar para o painel admin
+function navigateToAdmin() {
+  if (!isAdmin()) {
+    alert('Acesso negado! Apenas administradores podem acessar o painel.');
+    return;
+  }
+  
+  // Navegar para o painel admin
+  window.location.href = '/admin/';
+}
+
+// Atualizar visibilidade quando a navbar for carregada
+document.addEventListener('DOMContentLoaded', () => {
+  // Aguardar um pouco para garantir que o usuário foi carregado
+  setTimeout(updateAdminVisibility, 500);
+});
+
+// =============================================================================
 // APP TOTALMENTE INTEGRADO! 
 // =============================================================================
 
@@ -586,12 +662,14 @@ O app já está 100% integrado com o Supabase:
 - Extintores são salvos na nuvem
 - Sincronização entre dispositivos ativa
 - Teste de conexão roda ao abrir o app
+- Painel admin integrado para usuários autorizados
 
 Para usar:
 1. ✅ Configuração já feita (suas credenciais estão corretas)
 2. ✅ SQL já deve ser executado no Supabase (veja instruções abaixo)
 3. ✅ Integração já está completa
 4. ✅ Teste abrindo o app no navegador
+5. ✅ Painel admin disponível em /admin/ para administradores
 
 PRÓXIMO PASSO: Execute o SQL no seu Supabase!
 */

@@ -1,5 +1,5 @@
 // Service Worker para PWA - Controle de Extintores
-const CACHE_NAME = 'controle-extintores-v1.0';
+const CACHE_NAME = 'controle-extintores-v5.2-PLAN-FIX';
 const urlsToCache = [
   '/',
   '/index.html',
