@@ -232,9 +232,10 @@
         </div>
 
         <div class="demo-credentials">
-            <strong>🔐 Credenciais de Teste:</strong><br>
-            Email: admin@teste.com<br>
-            Senha: admin123
+            <strong>🔐 Credenciais Admin:</strong><br>
+            admin@teste.com / admin123<br>
+            admin@extintores.com / admin456<br>
+            root@admin.com / root123
         </div>
 
         <div class="error-message" id="error-message">
@@ -293,7 +294,6 @@
         </div>
     </div>
 
-    <script src="../js/supabase-config.js"></script>
     <script>
         class AdminLogin {
             constructor() {
@@ -333,36 +333,33 @@
 
             checkExistingAuth() {
                 try {
-                    // Verificar se já está logado
-                    let user = null;
+                    // Verificar se já há sessão admin ativa
+                    const adminSession = sessionStorage.getItem('adminSession');
                     
-                    const sessionData = sessionStorage.getItem('currentUser');
-                    if (sessionData) {
-                        user = JSON.parse(sessionData);
-                    }
-                    
-                    if (!user && typeof supabase !== 'undefined' && supabase.currentUser) {
-                        user = supabase.currentUser;
-                    }
-                    
-                    if (user && this.isAdmin(user)) {
-                        console.log('✅ Usuário admin já logado, redirecionando...');
-                        this.redirectToAdmin();
-                        return;
+                    if (adminSession) {
+                        const session = JSON.parse(adminSession);
+                        const now = new Date();
+                        const sessionTime = new Date(session.timestamp);
+                        const diffHours = (now - sessionTime) / (1000 * 60 * 60);
+                        
+                        // Sessão válida por 8 horas
+                        if (diffHours < 8) {
+                            console.log('✅ Sessão admin já ativa, redirecionando...');
+                            this.redirectToAdmin();
+                            return;
+                        } else {
+                            console.log('⏰ Sessão admin expirada, removendo...');
+                            sessionStorage.removeItem('adminSession');
+                        }
                     }
                 } catch (error) {
-                    console.warn('⚠️ Erro ao verificar auth existente:', error);
+                    console.warn('⚠️ Erro ao verificar sessão existente:', error);
                 }
             }
 
             isAdmin(user) {
-                if (!user) return false;
-                
-                const isUserAdmin = user.admin === true || user.tipo === 'admin';
-                const adminEmails = ['admin@teste.com', 'admin@extintores.com'];
-                const isInAdminList = adminEmails.includes(user.email);
-                
-                return isUserAdmin || isInAdminList;
+                // Esta função não é mais necessária, mas mantemos para compatibilidade
+                return true;
             }
 
             async handleLogin(e) {
@@ -384,32 +381,31 @@
                     this.setLoading(true);
                     this.hideMessages();
                     
-                    console.log('🔐 Tentando fazer login como:', email);
+                    console.log('🔐 Tentando fazer login admin:', email);
                     
-                    // Verificar se o supabase está disponível
-                    if (typeof supabase === 'undefined') {
-                        throw new Error('Sistema de autenticação não disponível');
+                    // Credenciais admin fixas (independentes do sistema principal)
+                    const adminCredentials = {
+                        'admin@teste.com': 'admin123',
+                        'admin@extintores.com': 'admin456',
+                        'root@admin.com': 'root123'
+                    };
+                    
+                    // Verificar credenciais
+                    if (!adminCredentials[email] || adminCredentials[email] !== password) {
+                        throw new Error('Credenciais inválidas para acesso administrativo');
                     }
                     
-                    // Tentar fazer login
-                    const loginResult = await supabase.login(email, password);
+                    console.log('✅ Credenciais admin válidas');
                     
-                    if (!loginResult) {
-                        throw new Error('Credenciais inválidas');
-                    }
+                    // Criar sessão admin independente
+                    const adminSession = {
+                        email: email,
+                        timestamp: new Date().toISOString(),
+                        sessionId: 'admin_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
+                    };
                     
-                    console.log('✅ Login realizado:', loginResult);
-                    
-                    // Verificar se é admin
-                    const user = supabase.currentUser || loginResult;
-                    
-                    if (!this.isAdmin(user)) {
-                        // Fazer logout
-                        sessionStorage.removeItem('currentUser');
-                        throw new Error('Acesso negado. Apenas administradores podem acessar este painel.');
-                    }
-                    
-                    console.log('👑 Usuário admin confirmado');
+                    sessionStorage.setItem('adminSession', JSON.stringify(adminSession));
+                    console.log('✅ Sessão admin criada:', adminSession.sessionId);
                     
                     // Mostrar sucesso e redirecionar
                     this.showSuccess();

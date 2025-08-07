@@ -19,20 +19,26 @@ class AdminCore {
         };
     }
 
-    static init() {
+    static init(skipAuthCheck = false) {
         const admin = new AdminCore();
-        admin.initialize();
+        admin.initialize(skipAuthCheck);
         return admin;
     }
 
-    initialize() {
+    initialize(skipAuthCheck = false) {
         console.log('🚀 Inicializando Admin Panel...');
         
         try {
-            // Verificar autenticação admin
-            console.log('🔐 Verificando autenticação...');
-            if (!this.checkAdminAuth()) {
-                return;
+            // Verificar autenticação admin (skip se já verificado)
+            if (!skipAuthCheck) {
+                console.log('🔐 Verificando autenticação...');
+                if (!this.checkAdminAuth()) {
+                    return;
+                }
+            } else {
+                console.log('🔐 Autenticação já verificada, pulando...');
+                // Apenas mostrar usuário no dashboard
+                this.showCurrentUser();
             }
             
             // Setup navigation
@@ -117,6 +123,29 @@ class AdminCore {
         
         console.log(`✅ Admin autenticado: ${user.email} (admin: ${isUserAdmin})`);
         return true;
+    }
+
+    showCurrentUser() {
+        try {
+            // Buscar usuário atual
+            let user = null;
+            
+            const sessionData = sessionStorage.getItem('currentUser');
+            if (sessionData) {
+                user = JSON.parse(sessionData);
+            }
+            
+            if (!user && typeof supabase !== 'undefined' && supabase.currentUser) {
+                user = supabase.currentUser;
+            }
+            
+            if (user && document.getElementById('admin-user')) {
+                document.getElementById('admin-user').textContent = user.email;
+                console.log(`👤 Usuário atual exibido: ${user.email}`);
+            }
+        } catch (error) {
+            console.warn('⚠️ Erro ao exibir usuário atual:', error);
+        }
     }
 
     // ==========================================

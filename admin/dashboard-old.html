@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Controle de Extintores</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/admin.css">
+    
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/supabase-config.js"></script>
+    <script src="../js/plan-validator.js"></script>
+</head>
+<body>
+    <div class="admin-container">
+        
+        <!-- Header -->
+        <header class="admin-header">
+            <div class="header-content">
+                <div class="header-left">
+                    <h1><i class="fas fa-fire-extinguisher"></i> Admin Panel</h1>
+                    <span class="version">v2.0</span>
+                </div>
+                <div class="header-right">
+                    <div class="admin-info">
+                        <span id="admin-user">Carregando...</span>
+                        <button class="btn btn-outline" onclick="logout()">
+                            <i class="fas fa-sign-out-alt"></i> Sair
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Layout -->
+        <div class="admin-layout">
+            
+            <!-- Sidebar -->
+            <aside class="admin-sidebar">
+                <nav class="sidebar-nav">
+                    <a href="#dashboard" class="nav-item active" data-section="dashboard">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="#usuarios" class="nav-item" data-section="usuarios">
+                        <i class="fas fa-users"></i>
+                        <span>Usuários</span>
+                    </a>
+                    <a href="#planos" class="nav-item" data-section="planos">
+                        <i class="fas fa-crown"></i>
+                        <span>Planos B2B</span>
+                    </a>
+                    <a href="#extintores" class="nav-item" data-section="extintores">
+                        <i class="fas fa-fire-extinguisher"></i>
+                        <span>Extintores</span>
+                    </a>
+                    <a href="#sessoes" class="nav-item" data-section="sessoes">
+                        <i class="fas fa-desktop"></i>
+                        <span>Sessões Ativas</span>
+                    </a>
+                    <a href="#configuracoes" class="nav-item" data-section="configuracoes">
+                        <i class="fas fa-cog"></i>
+                        <span>Configurações</span>
+                    </a>
+                </nav>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="admin-main">
+                
+                <!-- Dashboard Section -->
+                <section id="dashboard-section" class="admin-section active">
+                    <div class="section-header">
+                        <h2><i class="fas fa-chart-line"></i> Dashboard</h2>
+                        <p>Visão geral do sistema</p>
+                    </div>
+
+                    <!-- Stats Cards -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3 id="total-usuarios">-</h3>
+                                <p>Usuários Ativos</p>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-fire-extinguisher"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3 id="total-extintores">-</h3>
+                                <p>Total Extintores</p>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-desktop"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3 id="sessoes-ativas">-</h3>
+                                <p>Sessões Online</p>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-chart-pie"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3 id="receita-mensal">-</h3>
+                                <p>Receita Mensal</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="dashboard-sections">
+                        <div class="dashboard-card">
+                            <h3><i class="fas fa-clock"></i> Atividade Recente</h3>
+                            <div id="recent-activity">
+                                <div class="activity-item">
+                                    <i class="fas fa-user-plus text-success"></i>
+                                    <span>Novo usuário cadastrado: starter@test-plans.com</span>
+                                    <small>2 horas atrás</small>
+                                </div>
+                                <div class="activity-item">
+                                    <i class="fas fa-fire-extinguisher text-info"></i>
+                                    <span>50 extintores adicionados ao plano Starter</span>
+                                    <small>1 dia atrás</small>
+                                </div>
+                                <div class="activity-item">
+                                    <i class="fas fa-crown text-warning"></i>
+                                    <span>Sistema B2B implementado</span>
+                                    <small>2 dias atrás</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="dashboard-card">
+                            <h3><i class="fas fa-chart-bar"></i> Distribuição de Planos</h3>
+                            <div class="plan-distribution">
+                                <div class="plan-item">
+                                    <div class="plan-info">
+                                        <span class="plan-name">Starter</span>
+                                        <span class="plan-count" id="starter-count">1</span>
+                                    </div>
+                                    <div class="plan-bar">
+                                        <div class="plan-fill starter" style="width: 60%"></div>
+                                    </div>
+                                </div>
+                                <div class="plan-item">
+                                    <div class="plan-info">
+                                        <span class="plan-name">Professional</span>
+                                        <span class="plan-count" id="professional-count">0</span>
+                                    </div>
+                                    <div class="plan-bar">
+                                        <div class="plan-fill professional" style="width: 20%"></div>
+                                    </div>
+                                </div>
+                                <div class="plan-item">
+                                    <div class="plan-info">
+                                        <span class="plan-name">Enterprise</span>
+                                        <span class="plan-count" id="enterprise-count">0</span>
+                                    </div>
+                                    <div class="plan-bar">
+                                        <div class="plan-fill enterprise" style="width: 20%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Usuários Section -->
+                <section id="usuarios-section" class="admin-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-users"></i> Gerenciar Usuários</h2>
+                        <button class="btn btn-primary" onclick="showAddUserModal()">
+                            <i class="fas fa-plus"></i> Novo Usuário
+                        </button>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Email</th>
+                                    <th>Plano</th>
+                                    <th>Extintores</th>
+                                    <th>Sessões Ativas</th>
+                                    <th>Criado em</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usuarios-tbody">
+                                <tr>
+                                    <td colspan="6" class="text-center">Carregando usuários...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Planos Section -->
+                <section id="planos-section" class="admin-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-crown"></i> Planos B2B</h2>
+                        <p>Configurar limites e preços dos planos</p>
+                    </div>
+
+                    <div class="plans-grid">
+                        <div class="plan-card starter">
+                            <div class="plan-header">
+                                <h3>Starter</h3>
+                                <div class="plan-price">R$ 97<small>/mês</small></div>
+                            </div>
+                            <div class="plan-features">
+                                <div class="feature">
+                                    <i class="fas fa-fire-extinguisher"></i>
+                                    <span>50 Extintores</span>
+                                </div>
+                                <div class="feature">
+                                    <i class="fas fa-users"></i>
+                                    <span>2 Usuários</span>
+                                </div>
+                                <div class="feature">
+                                    <i class="fas fa-file-pdf"></i>
+                                    <span>Exports Básicos</span>
+                                </div>
+                                <div class="feature">
+                                    <i class="fas fa-camera"></i>
+                                    <span>5 Fotos/Extintor</span>
+                                </div>
+                            </div>
+                            <div class="plan-actions">
+                                <button class="btn btn-sm btn-outline">Editar</button>
+                            </div>
+                        </div>
+
+                        <div class="plan-card professional">
+                            <div class="plan-header">
+                                <h3>Professional</h3>
+                                <div class="plan-price">R$ 197<small>/mês</small></div>
+                            </div>
+                            <div class="plan-features">
+                                <div class="feature">
+                                    <i class="fas fa-fire-extinguisher"></i>
+                                    <span>200 Extintores</span>
+                                </div>
+                                <div class="feature">
+                                    <i class="fas fa-users"></i>
+                                    <span>10 Usuários</span>
+                                </div>
+                                <div class="feature">
+                                    <i class="fas fa-file-excel"></i>
+                                    <span>Exports Avançados</span>
+                                </div>
+                                <div class="feature">
+                                    <i class="fas fa-images"></i>
+                                    <span>15 Fotos/Extintor</span>
+                                </div>
+                            </div>
+                            <div class="plan-actions">
+                                <button class="btn btn-sm btn-outline">Editar</button>
+                            </div>
+                        </div>
+
+                        <div class="plan-card enterprise">
+                            <div class="plan-header">
+                                <h3>Enterprise</h3>
+                                <div class="plan-price">R$ 397<small>/mês</small></div>
+                            </div>
+                            <div class="plan-features">
+                                <div class="feature">
+                                    <i class="fas fa-infinity"></i>
+                                    <span>Extintores Ilimitados</span>
+                                </div>
+                                <div class="feature">
+                                    <i class="fas fa-users-cog"></i>
+                                    <span>Usuários Ilimitados</span>
+                                </div>
+                                <div class="feature">
+                                    <i class="fas fa-download"></i>
+                                    <span>Todos os Exports</span>
+                                </div>
+                                <div class="feature">
+                                    <i class="fas fa-cloud"></i>
+                                    <span>Fotos Ilimitadas</span>
+                                </div>
+                            </div>
+                            <div class="plan-actions">
+                                <button class="btn btn-sm btn-outline">Editar</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Extintores Section -->
+                <section id="extintores-section" class="admin-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-fire-extinguisher"></i> Todos os Extintores</h2>
+                        <div class="header-actions">
+                            <input type="search" placeholder="Buscar extintores..." id="search-extintores">
+                            <button class="btn btn-outline" onclick="exportExtintores()">
+                                <i class="fas fa-download"></i> Exportar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="filters">
+                        <select id="filter-usuario">
+                            <option value="">Todos os usuários</option>
+                        </select>
+                        <select id="filter-tipo">
+                            <option value="">Todos os tipos</option>
+                            <option value="PQS">PQS</option>
+                            <option value="Água">Água</option>
+                            <option value="CO2">CO2</option>
+                        </select>
+                        <select id="filter-status">
+                            <option value="">Todos os status</option>
+                            <option value="Ativo">Ativo</option>
+                            <option value="Vencido">Vencido</option>
+                            <option value="Manutenção">Manutenção</option>
+                        </select>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Patrimônio</th>
+                                    <th>Tipo</th>
+                                    <th>Local</th>
+                                    <th>Usuário</th>
+                                    <th>Próxima Inspeção</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="extintores-tbody">
+                                <tr>
+                                    <td colspan="7" class="text-center">Carregando extintores...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Sessões Section -->
+                <section id="sessoes-section" class="admin-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-desktop"></i> Sessões Ativas</h2>
+                        <button class="btn btn-outline" onclick="refreshSessions()">
+                            <i class="fas fa-sync"></i> Atualizar
+                        </button>
+                    </div>
+
+                    <div class="sessions-grid" id="sessions-grid">
+                        <div class="session-card">
+                            <div class="session-info">
+                                <h4>Carregando sessões...</h4>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Configurações Section -->
+                <section id="configuracoes-section" class="admin-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-cog"></i> Configurações do Sistema</h2>
+                    </div>
+
+                    <div class="config-sections">
+                        <div class="config-card">
+                            <h3>Configurações Gerais</h3>
+                            <div class="config-item">
+                                <label>Nome da Aplicação</label>
+                                <input type="text" value="Controle de Extintores" id="app-name">
+                            </div>
+                            <div class="config-item">
+                                <label>Tempo de Sessão (minutos)</label>
+                                <input type="number" value="30" id="session-timeout">
+                            </div>
+                            <div class="config-item">
+                                <label>Email de Suporte</label>
+                                <input type="email" value="suporte@extintores.com" id="support-email">
+                            </div>
+                        </div>
+
+                        <div class="config-card">
+                            <h3>Configurações B2B</h3>
+                            <div class="config-item">
+                                <label>WhatsApp para Vendas</label>
+                                <input type="text" value="5511999999999" id="whatsapp-sales">
+                            </div>
+                            <div class="config-item">
+                                <label>Comissão Afiliados (%)</label>
+                                <input type="number" value="15" id="affiliate-commission">
+                            </div>
+                            <div class="config-item">
+                                <label>Período Trial (dias)</label>
+                                <input type="number" value="7" id="trial-period">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="config-actions">
+                        <button class="btn btn-success" onclick="saveSettings()">
+                            <i class="fas fa-save"></i> Salvar Configurações
+                        </button>
+                    </div>
+                </section>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/admin-core.js"></script>
+    <script>
+        // Initialize admin panel (with independent admin session)
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔥 Admin Dashboard carregado');
+            
+            // Verificar sessão admin antes de carregar
+            if (!checkAdminSession()) {
+                return; // Redirecionado para login
+            }
+            
+            // Carregar painel
+            AdminCore.init(true); // true = skip auth check
+        });
+
+        function checkAdminSession() {
+            try {
+                const adminSession = sessionStorage.getItem('adminSession');
+                
+                if (!adminSession) {
+                    console.log('❌ Nenhuma sessão admin, redirecionando para login');
+                    window.location.href = 'login.html';
+                    return false;
+                }
+                
+                const session = JSON.parse(adminSession);
+                const now = new Date();
+                const sessionTime = new Date(session.timestamp);
+                const diffHours = (now - sessionTime) / (1000 * 60 * 60);
+                
+                // Sessão válida por 8 horas
+                if (diffHours >= 8) {
+                    console.log('⏰ Sessão admin expirada, removendo...');
+                    sessionStorage.removeItem('adminSession');
+                    window.location.href = 'login.html';
+                    return false;
+                }
+                
+                // Mostrar email do admin
+                if (document.getElementById('admin-user')) {
+                    document.getElementById('admin-user').textContent = session.email;
+                }
+                
+                console.log('✅ Sessão admin válida:', session.email);
+                return true;
+                
+            } catch (error) {
+                console.error('❌ Erro ao verificar sessão admin:', error);
+                window.location.href = 'login.html';
+                return false;
+            }
+        }
+
+        function logout() {
+            if (confirm('Deseja realmente sair do painel administrativo?')) {
+                console.log('🚪 Fazendo logout admin...');
+                sessionStorage.removeItem('adminSession');
+                window.location.href = 'login.html';
+            }
+        }
+    </script>
+</body>
+</html>
