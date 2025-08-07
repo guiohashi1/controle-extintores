@@ -59,34 +59,63 @@ class AdminCore {
     // ==========================================
     
     checkAdminAuth() {
-        const user = JSON.parse(localStorage.getItem('supabase_user') || '{}');
+        // Primeiro tenta sessionStorage (sistema atual)
+        let user = null;
+        try {
+            const sessionUser = sessionStorage.getItem('currentUser');
+            if (sessionUser) {
+                user = JSON.parse(sessionUser);
+                console.log('✅ Usuário encontrado no sessionStorage:', user.email);
+            }
+        } catch (error) {
+            console.warn('⚠️ Erro ao ler sessionStorage:', error);
+        }
         
-        // Para desenvolvimento/teste, permitir qualquer usuário logado
-        if (!user.email) {
+        // Se não encontrou no sessionStorage, tenta no supabase manager
+        if (!user && typeof supabase !== 'undefined' && supabase.currentUser) {
+            user = supabase.currentUser;
+            console.log('✅ Usuário encontrado no supabase manager:', user.email);
+        }
+        
+        // Se não encontrou usuário, redireciona para login
+        if (!user || !user.email) {
+            console.log('❌ Nenhum usuário logado encontrado');
             alert('❌ Faça login primeiro para acessar o painel administrativo.');
             window.location.href = '../index.html';
             return false;
         }
         
-        // Verificar se é admin (pode ser melhorado com roles no Supabase)
+        // Verificar se é admin
+        const isUserAdmin = user.admin === true || user.tipo === 'admin';
+        
+        // Lista de emails admin para fallback
         const adminEmails = [
+            'admin@teste.com', // Usuário de teste criado
             'admin@extintores.com',
-            'starter@test-plans.com', // Para testes
             'suporte@extintores.com'
         ];
         
-        // Em modo de desenvolvimento, aceitar qualquer usuário
-        const isDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        // Em modo de desenvolvimento, ser mais flexível
+        const isDevelopment = window.location.hostname === 'localhost' || 
+                             window.location.hostname === '127.0.0.1' ||
+                             window.location.hostname.includes('netlify');
         
-        if (!isDevelopment && !adminEmails.includes(user.email)) {
+        const isAdmin = isUserAdmin || adminEmails.includes(user.email) || 
+                       (isDevelopment && user.email); // Em dev, qualquer usuário logado
+        
+        if (!isAdmin) {
+            console.log('❌ Usuário não é admin:', user);
             alert('❌ Acesso negado. Apenas administradores podem acessar este painel.');
             window.location.href = '../index.html';
             return false;
         }
         
         // Mostrar info do admin
-        document.getElementById('admin-user').textContent = user.email;
-        console.log(`✅ Admin autenticado: ${user.email}`);
+        if (document.getElementById('admin-user')) {
+            document.getElementById('admin-user').textContent = user.email;
+        }
+        
+        console.log(`✅ Admin autenticado: ${user.email} (admin: ${isUserAdmin})`);
         return true;
     }
 
@@ -178,15 +207,21 @@ class AdminCore {
     
     async getSystemStats() {
         try {
+            // Usar a instância global do supabase manager
+            if (typeof supabase === 'undefined') {
+                console.error('❌ Supabase manager não disponível');
+                throw new Error('Supabase não inicializado');
+            }
+            
+            console.log('📊 Carregando estatísticas...');
+            
             // Contar usuários
-            const { data: usuarios } = await supabase
-                .from('usuarios')
-                .select('*');
+            const usuarios = await supabase.request('users?select=*');
+            console.log('👥 Usuários carregados:', usuarios.length);
             
             // Contar extintores
-            const { data: extintores } = await supabase
-                .from('extintores')
-                .select('*');
+            const extintores = await supabase.request('extintores?select=*');
+            console.log('🧯 Extintores carregados:', extintores.length);
                 
             // Contar sessões ativas
             const globalSessions = JSON.parse(localStorage.getItem('globalSessions') || '{}');
@@ -207,12 +242,15 @@ class AdminCore {
                 });
             }
             
-            return {
+            const stats = {
                 totalUsuarios: usuarios?.length || 0,
                 totalExtintores: extintores?.length || 0,
                 sessoesAtivas,
                 receitaMensal
             };
+            
+            console.log('📊 Estatísticas carregadas:', stats);
+            return stats;
             
         } catch (error) {
             console.error('❌ Erro ao obter estatísticas:', error);
@@ -234,9 +272,8 @@ class AdminCore {
     
     async getPlanDistribution() {
         try {
-            const { data: usuarios } = await supabase
-                .from('usuarios')
-                .select('plan');
+            console.log('📊 Carregando distribuição de planos...');
+            const usuarios = await supabase.request('users?select=plan');
                 
             const distribution = {
                 starter: 0,
@@ -251,6 +288,7 @@ class AdminCore {
                 });
             }
             
+            console.log('📊 Distribuição de planos:', distribution);
             return distribution;
             
         } catch (error) {
@@ -286,10 +324,7 @@ class AdminCore {
         try {
             console.log('👥 Carregando usuários...');
             
-            const { data: usuarios, error } = await supabase
-                .from('usuarios')
-                .select('*')
-                .order('created_at', { ascending: false });
+            const usuarios = await supabase.request('users?select=*&order=created_at.desc');
                 
             if (error) throw error;
             
