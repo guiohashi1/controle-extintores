@@ -1,6 +1,8 @@
 # Redirects para Netlify - Controle de Extintores
 
 # Admin Panel
+/admin/login /admin/login.html 200
+/admin/dashboard /admin/dashboard.html 200
 /admin /admin/index.html 200
 /admin/* /admin/:splat 200
 
