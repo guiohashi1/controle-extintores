@@ -11,6 +11,7 @@
     <script src="../js/supabase-config.js"></script>
     <script src="../js/common.js"></script>
     <script src="../js/plan-validator.js"></script>
+    <script src="../js/exporter.js"></script>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/common.css">
@@ -60,6 +61,24 @@
         
         <div class="card">
             <div id="lista"></div>
+            
+            <div class="export-section">
+                <h3>📊 Exportar Relatórios</h3>
+                <div class="export-buttons">
+                    <button onclick="exportarPDF()" class="export-btn" data-export="pdf">
+                        📄 Exportar PDF
+                    </button>
+                    <button onclick="exportarExcel()" class="export-btn" data-export="excel">
+                        📈 Exportar Excel
+                    </button>
+                    <button onclick="exportarCSV()" class="export-btn" data-export="csv">
+                        📋 Exportar CSV
+                    </button>
+                    <button onclick="exportarJSON()" class="export-btn" data-export="json">
+                        🔧 Exportar JSON
+                    </button>
+                </div>
+            </div>
             
             <div style="text-align: center; margin-top: 2rem;">
                 <button onclick="adicionarNovoExtintor()" class="btn btn-primary">
@@ -155,22 +174,49 @@
                 div.className = "extintor-card";
                 div.innerHTML = `
                     <div class="extintor-header">
-                        <h3>${item.numero}</h3>
-                        <span class="status-badge ${statusBadge.class}">${statusBadge.text}</span>
+                        <div class="extintor-info">
+                            <h3>${item.numero}</h3>
+                            <span class="status-badge ${statusBadge.class}">${statusBadge.text}</span>
+                        </div>
+                        ${item.photo_url ? `
+                            <div class="extintor-photo" onclick="showPhotoModal('${item.photo_url}', '${item.numero}')">
+                                <img src="${item.photo_url}" alt="Foto do ${item.numero}" loading="lazy" onerror="this.closest('.extintor-photo').style.display='none'">
+                                <div class="photo-overlay">
+                                    <span class="photo-zoom">🔍</span>
+                                </div>
+                            </div>
+                        ` : `
+                            <div class="extintor-photo-placeholder">
+                                <div class="photo-icon">📷</div>
+                                <small>Sem foto</small>
+                            </div>
+                        `}
                     </div>
                     
-                    <div class="extintor-info">
-                        <div class="info-item">
-                            <strong>Local:</strong> ${item.local}
-                        </div>
-                        <div class="info-item">
-                            <strong>Tipo:</strong> ${item.tipo} (${item.peso}kg)
-                        </div>
-                        <div class="info-item">
-                            <strong>Validade:</strong> ${formatDate(item.validade)}
-                        </div>
-                        <div class="info-item">
-                            <strong>Teste Hidrostático:</strong> ${formatDate(item.hidro)}
+                    <div class="extintor-content">
+                        <div class="extintor-details">
+                            <div class="detail-item">
+                                <span class="label">Local:</span>
+                                <span class="value">${item.local}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="label">Tipo:</span>
+                                <span class="value">${item.tipo} (${item.peso}kg)</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="label">Validade:</span>
+                                <span class="value">${formatDate(item.validade)}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="label">Teste Hidrostático:</span>
+                                <span class="value">${formatDate(item.hidro)}</span>
+                            </div>
+                            ${item.observacoes ? `
+                                <div class="detail-item">
+                                    <span class="label">Observações:</span>
+                                    <span class="value">${item.observacoes}</span>
+                                </div>
+                            ` : ''}
                         </div>
                     </div>
                     
@@ -261,6 +307,24 @@
             // Se chegou aqui, pode criar
             window.location.href = 'form.html';
         }
+
+        function showPhotoModal(photoUrl) {
+            // Criar modal para exibir foto
+            const modal = document.createElement('div');
+            modal.className = 'photo-modal';
+            modal.onclick = (e) => {
+                if (e.target === modal) modal.remove();
+            };
+            
+            modal.innerHTML = `
+                <div class="photo-modal-content">
+                    <button class="photo-modal-close" onclick="this.parentNode.parentNode.remove()">×</button>
+                    <img src="${photoUrl}" alt="Foto do extintor" />
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
     </script>
 
     <style>
@@ -338,6 +402,119 @@
             flex-wrap: wrap;
         }
 
+        /* Estilos para fotos dos extintores */
+        .extintor-content {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .extintor-photo {
+            flex-shrink: 0;
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            border: 2px solid #e0e0e0;
+        }
+
+        .extintor-photo:hover {
+            transform: scale(1.05);
+        }
+
+        .extintor-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            color: white;
+        }
+
+        .extintor-photo:hover .photo-overlay {
+            opacity: 1;
+        }
+
+        /* Modal para exibir foto */
+        .photo-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            backdrop-filter: blur(3px);
+        }
+
+        .photo-modal-content {
+            position: relative;
+            max-width: 90%;
+            max-height: 90%;
+            animation: photoModalFadeIn 0.3s ease;
+        }
+
+        .photo-modal-content img {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 8px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .photo-modal-close {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            background: white;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+            transition: all 0.2s ease;
+        }
+
+        .photo-modal-close:hover {
+            background: #f0f0f0;
+            transform: scale(1.1);
+        }
+
+        @keyframes photoModalFadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
         @media (max-width: 640px) {
             .filtros-container {
                 grid-template-columns: 1fr;
@@ -346,9 +523,126 @@
             .extintor-actions {
                 flex-direction: column;
             }
+            
+            .extintor-content {
+                flex-direction: column;
+            }
+
+            .extintor-photo {
+                align-self: center;
+                width: 120px;
+                height: 120px;
+            }
+        }
+
+        /* Seção de Exportação */
+        .export-section {
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px;
+            border: 1px solid #dee2e6;
+        }
+
+        .export-section h3 {
+            margin-bottom: 1rem;
+            color: #495057;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+
+        .export-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .export-btn {
+            padding: 12px 16px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            background: white;
+            color: #495057;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+
+        .export-btn:hover:not(.plan-disabled) {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            .export-buttons {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .export-buttons {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
     
-    <script src="../js/pwa-manager.js"></script>
+    <script>
+        // ===== MODAL DE FOTO =====
+        
+        // Função para mostrar modal da foto
+        function showPhotoModal(photoUrl, numero) {
+            const modal = document.createElement('div');
+            modal.className = 'photo-modal-overlay';
+            modal.innerHTML = `
+                <div class="photo-modal">
+                    <div class="photo-modal-header">
+                        <h3>📷 ${numero || 'Foto do Extintor'}</h3>
+                        <button class="modal-close" onclick="this.closest('.photo-modal-overlay').remove()">&times;</button>
+                    </div>
+                    <div class="photo-modal-body">
+                        <img src="${photoUrl}" alt="Foto do ${numero || 'extintor'}" class="photo-modal-image" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZWVlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zNWVtIj5JbWFnZW0gbsOjbyBlbmNvbnRyYWRhPC90ZXh0Pjwvc3ZnPg=='">
+                    </div>
+                    <div class="photo-modal-footer">
+                        <button class="btn-secondary" onclick="window.open('${photoUrl}', '_blank')">
+                            🔗 Abrir em nova aba
+                        </button>
+                        <button class="btn-secondary" onclick="this.closest('.photo-modal-overlay').remove()">
+                            Fechar
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Fechar com ESC
+            const closeOnEsc = (e) => {
+                if (e.key === 'Escape') {
+                    modal.remove();
+                    document.removeEventListener('keydown', closeOnEsc);
+                }
+            };
+            document.addEventListener('keydown', closeOnEsc);
+            
+            // Fechar clicando fora
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            });
+        }
+    </script>
+    
+    <!-- <script src="../js/pwa-manager.js"></script> -->
 </body>
 </html>

@@ -297,6 +297,8 @@ class SupabaseManager {
         fabricante: ext.fabricante,
         data_fabricacao: ext.data_fabricacao,
         observacoes: ext.observacoes,
+        photo_url: ext.photo_url, // 📸 INCLUIR CAMPO DE FOTO
+        photo_path: ext.photo_path, // Incluir caminho da foto também
         created_at: ext.created_at,
         updated_at: ext.updated_at
       }));
@@ -654,6 +656,136 @@ document.addEventListener('DOMContentLoaded', () => {
 // APP TOTALMENTE INTEGRADO! 
 // =============================================================================
 
+// ========================================
+// FUNÇÕES DE UPLOAD DE FOTOS
+// ========================================
+
+/**
+ * Upload de foto para Supabase Storage
+ */
+async function uploadExtintorPhoto(file, extintorId) {
+  try {
+    console.log('📸 Iniciando upload da foto para extintor:', extintorId);
+    
+    if (!file || !extintorId) {
+      throw new Error('Arquivo ou ID do extintor não fornecido');
+    }
+    
+    // Validar tipo de arquivo
+    if (!file.type.startsWith('image/')) {
+      throw new Error('Apenas arquivos de imagem são permitidos');
+    }
+    
+    // Verificar limites do plano
+    const user = getCurrentUser();
+    if (!user) throw new Error('Usuário não encontrado');
+    
+    const maxSize = user.plan === 'enterprise' ? 10 * 1024 * 1024 : 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      const maxSizeMB = maxSize / (1024 * 1024);
+      throw new Error(`Arquivo muito grande. Limite: ${maxSizeMB}MB`);
+    }
+    
+    // Criar nome único para o arquivo
+    const fileExt = file.name.split('.').pop().toLowerCase();
+    const fileName = `extintor_${extintorId}_${Date.now()}.${fileExt}`;
+    const filePath = `fotos-extintores/${fileName}`;
+    
+    // Fazer upload para Supabase Storage
+    const { data, error } = await supabase.storage
+      .from('extintor-photos')
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false
+      });
+    
+    if (error) {
+      console.error('❌ Erro no upload:', error);
+      throw error;
+    }
+    
+    // Obter URL pública da imagem
+    const { data: { publicUrl } } = supabase.storage
+      .from('extintor-photos')
+      .getPublicUrl(filePath);
+    
+    console.log('✅ Upload realizado com sucesso:', publicUrl);
+    
+    return {
+      success: true,
+      url: publicUrl,
+      path: filePath,
+      fileName: fileName
+    };
+    
+  } catch (error) {
+    console.error('❌ Erro no upload da foto:', error);
+    throw error;
+  }
+}
+
+/**
+ * Upload completo: arquivo + banco
+ */
+async function uploadAndSaveExtintorPhoto(file, extintorId) {
+  try {
+    console.log('🔄 Processo completo de upload iniciado');
+    
+    // 1. Upload do arquivo
+    const uploadResult = await uploadExtintorPhoto(file, extintorId);
+    
+    // 2. Salvar URL no banco
+    await updateExtintorPhotoUrl(extintorId, uploadResult.url, uploadResult.path);
+    
+    console.log('✅ Processo completo de upload finalizado');
+    return uploadResult;
+    
+  } catch (error) {
+    console.error('❌ Erro no processo completo:', error);
+    throw error;
+  }
+}
+
+/**
+ * Atualizar URL da foto no extintor
+ */
+async function updateExtintorPhotoUrl(extintorId, photoUrl, photoPath = null) {
+  try {
+    console.log('💾 Atualizando URL da foto no extintor:', extintorId);
+    
+    const headers = {
+      'apikey': SUPABASE_CONFIG.anonKey,
+      'Content-Type': 'application/json'
+    };
+    
+    const updateData = {
+      photo_url: photoUrl,
+      photo_path: photoPath,
+      updated_at: new Date().toISOString()
+    };
+    
+    const response = await fetch(
+      `${SUPABASE_CONFIG.url}/rest/v1/extintores?id=eq.${extintorId}`,
+      {
+        method: 'PATCH',
+        headers: headers,
+        body: JSON.stringify(updateData)
+      }
+    );
+    
+    if (!response.ok) {
+      throw new Error(`Erro ao atualizar foto: ${response.status}`);
+    }
+    
+    console.log('✅ URL da foto atualizada no banco');
+    return true;
+    
+  } catch (error) {
+    console.error('❌ Erro ao atualizar URL da foto:', error);
+    throw error;
+  }
+}
+
 /*
 ✅ TUDO JÁ ESTÁ FUNCIONANDO!
 
@@ -673,3 +805,200 @@ Para usar:
 
 PRÓXIMO PASSO: Execute o SQL no seu Supabase!
 */
+
+// =============================================================================
+// FUNÇÕES DE UPLOAD DE FOTOS
+// =============================================================================
+
+/**
+ * Upload de foto de extintor para o Supabase Storage
+ * @param {File} file - Arquivo de imagem
+ * @param {string} fileName - Nome do arquivo
+ * @returns {Promise<string>} URL pública da foto
+ */
+async function uploadExtintorPhoto(file, fileName) {
+    try {
+        console.log('📤 Iniciando upload de foto:', fileName);
+        console.log('📂 Arquivo:', { name: file.name, size: file.size, type: file.type });
+        
+        // Verificar se o supabase está disponível
+        if (!window.supabase) {
+            throw new Error('Supabase SDK não encontrado');
+        }
+        console.log('✅ Supabase SDK disponível');
+        
+        const supabaseClient = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+        console.log('✅ Cliente Supabase criado');
+        
+        // Verificar autenticação
+        const { data: authData, error: authError } = await supabaseClient.auth.getUser();
+        console.log('🔐 Status da autenticação:', {
+            user: authData?.user?.email || 'não autenticado',
+            role: authData?.user?.role || 'anônimo',
+            authenticated: !!authData?.user,
+            error: authError?.message || 'nenhum erro'
+        });
+        
+        // Verificar se o bucket existe
+        const { data: buckets, error: bucketsError } = await supabaseClient.storage.listBuckets();
+        if (bucketsError) {
+            console.error('❌ Erro ao listar buckets:', bucketsError);
+        } else {
+            console.log('📦 Buckets disponíveis:', buckets.map(b => b.name));
+            const bucketExists = buckets.some(b => b.name === 'extintor-photos');
+            console.log('🎯 Bucket extintor-photos existe:', bucketExists);
+        }
+        
+        // Upload para o bucket
+        console.log('🚀 Iniciando upload para bucket extintor-photos...');
+        const { data, error } = await supabaseClient.storage
+            .from('extintor-photos')
+            .upload(fileName, file, {
+                cacheControl: '3600',
+                upsert: true,
+                contentType: file.type
+            });
+
+        if (error) {
+            console.error('❌ Erro detalhado no upload:', {
+                message: error.message,
+                statusCode: error.statusCode,
+                name: error.name,
+                details: error.details,
+                hint: error.hint,
+                code: error.code,
+                error: error
+            });
+            throw new Error(`Erro no upload: ${error.message}`);
+        }
+
+        console.log('✅ Upload realizado com sucesso:', data);
+
+        // Obter URL pública
+        console.log('🔗 Obtendo URL pública...');
+        const { data: publicData } = supabaseClient.storage
+            .from('extintor-photos')
+            .getPublicUrl(fileName);
+
+        console.log('✅ URL pública obtida:', publicData.publicUrl);
+        return publicData.publicUrl;
+
+    } catch (error) {
+        console.error('❌ Erro completo no upload de foto:', {
+            message: error.message,
+            stack: error.stack,
+            error: error
+        });
+        throw error;
+    }
+}
+
+/**
+ * Atualizar registro do extintor com URL da foto
+ * @param {string} extintorId - ID do extintor
+ * @param {string} photoUrl - URL pública da foto
+ * @param {string} photoPath - Caminho da foto no storage
+ * @returns {Promise<boolean>} Sucesso da operação
+ */
+async function updateExtintorPhotoUrl(extintorId, photoUrl, photoPath) {
+    try {
+        console.log('💾 Atualizando registro com foto:', extintorId);
+        
+        if (!window.supabase) {
+            throw new Error('Supabase SDK não encontrado');
+        }
+        
+        const supabaseClient = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+        
+        const { data, error } = await supabaseClient
+            .from('extintores')
+            .update({
+                photo_url: photoUrl,
+                photo_path: photoPath,
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', extintorId);
+
+        if (error) {
+            console.error('❌ Erro ao atualizar registro:', error);
+            throw error;
+        }
+
+        console.log('✅ Registro atualizado com sucesso');
+        return true;
+
+    } catch (error) {
+        console.error('❌ Erro ao atualizar registro:', error);
+        throw error;
+    }
+}
+
+/**
+ * Deletar foto do storage quando extintor for excluído
+ * @param {string} photoPath - Caminho da foto no storage
+ * @returns {Promise<boolean>} Sucesso da operação
+ */
+async function deleteExtintorPhoto(photoPath) {
+    if (!photoPath) return true;
+    
+    try {
+        console.log('🗑️ Deletando foto:', photoPath);
+        
+        if (!window.supabase) {
+            console.warn('⚠️ Supabase SDK não encontrado para deletar foto');
+            return false;
+        }
+        
+        const supabaseClient = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+        
+        const { error } = await supabaseClient.storage
+            .from('extintor-photos')
+            .remove([photoPath]);
+
+        if (error) {
+            console.error('❌ Erro ao deletar foto:', error);
+            // Não vamos falhar a operação por causa da foto
+            return false;
+        }
+
+        console.log('✅ Foto deletada com sucesso');
+        return true;
+
+    } catch (error) {
+        console.error('❌ Erro ao deletar foto:', error);
+        return false;
+    }
+}
+
+/**
+ * Upload completo: enviar foto e atualizar registro
+ * @param {File} file - Arquivo de imagem
+ * @param {string} extintorNumero - Número do extintor
+ * @returns {Promise<object>} Resultado com URL e path
+ */
+async function uploadAndSaveExtintorPhoto(file, extintorNumero) {
+    try {
+        // Gerar nome único do arquivo
+        const timestamp = Date.now();
+        const extension = file.name.split('.').pop().toLowerCase();
+        const fileName = `extintor_${extintorNumero}_${timestamp}.${extension}`;
+        
+        // Fazer upload
+        const photoUrl = await uploadExtintorPhoto(file, fileName);
+        
+        return {
+            url: photoUrl,
+            path: fileName
+        };
+        
+    } catch (error) {
+        console.error('❌ Erro no upload completo:', error);
+        throw error;
+    }
+}
+
+// Exportar funções para uso global
+window.uploadExtintorPhoto = uploadExtintorPhoto;
+window.updateExtintorPhotoUrl = updateExtintorPhotoUrl;
+window.deleteExtintorPhoto = deleteExtintorPhoto;
+window.uploadAndSaveExtintorPhoto = uploadAndSaveExtintorPhoto;

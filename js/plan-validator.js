@@ -16,13 +16,24 @@ class PlanValidator {
                 exports: ['pdf'],
                 photos: false,
                 reports: 'basic',
-                api: false
+                api: false,
+                backup: false,
+                alerts: 'basic',
+                dashboard: 'basic'
             },
             features: [
                 'Cadastro de até 50 extintores',
                 'Até 2 usuários',
                 'Relatórios básicos',
-                'Exportação em PDF'
+                'Exportação em PDF',
+                'Alertas básicos',
+                'Dashboard básico'
+            ],
+            restrictions: [
+                'Sem upload de fotos',
+                'Sem backup automático',
+                'Sem API',
+                'Sem relatórios avançados'
             ]
         },
         professional: {
@@ -34,7 +45,10 @@ class PlanValidator {
                 exports: ['pdf', 'excel'],
                 photos: true,
                 reports: 'advanced',
-                api: 'limited'
+                api: 'limited',
+                backup: true,
+                alerts: 'advanced',
+                dashboard: 'advanced'
             },
             features: [
                 'Cadastro de até 200 extintores',
@@ -42,7 +56,13 @@ class PlanValidator {
                 'Upload de fotos',
                 'Relatórios avançados',
                 'Exportação PDF + Excel',
-                'API limitada'
+                'API limitada',
+                'Backup automático',
+                'Alertas avançados',
+                'Dashboard avançado'
+            ],
+            restrictions: [
+                'API com limitações de requisições'
             ]
         },
         enterprise: {
@@ -54,7 +74,10 @@ class PlanValidator {
                 exports: ['pdf', 'excel', 'csv', 'json'],
                 photos: true,
                 reports: 'premium',
-                api: 'full'
+                api: 'full',
+                backup: true,
+                alerts: 'premium',
+                dashboard: 'premium'
             },
             features: [
                 'Extintores ilimitados',
@@ -63,8 +86,12 @@ class PlanValidator {
                 'Relatórios premium',
                 'Todas as exportações',
                 'API completa',
+                'Backup automático',
+                'Alertas premium',
+                'Dashboard premium',
                 'Suporte prioritário'
-            ]
+            ],
+            restrictions: []
         }
     };
 
@@ -72,11 +99,262 @@ class PlanValidator {
     static currentPlan = null;
 
     /**
-     * Inicializar o validador com dados do usuário
+     * Mostrar modal de upgrade com informações específicas da funcionalidade
      */
+    static showFeatureUpgradeModal(feature, featureName, requiredPlan = 'Professional') {
+        const modal = document.createElement('div');
+        modal.className = 'plan-upgrade-modal';
+        modal.innerHTML = `
+            <div class="plan-upgrade-content">
+                <div class="plan-upgrade-header">
+                    <i class="fas fa-star-of-life" style="color: #e74c3c;"></i>
+                    <h3>Recurso Premium</h3>
+                </div>
+                <div class="plan-upgrade-body">
+                    <p><strong>${featureName}</strong> está disponível apenas nos planos ${requiredPlan}+</p>
+                    <div class="current-vs-required">
+                        <div class="current-plan">
+                            <span class="plan-label">Seu Plano Atual</span>
+                            <span class="plan-name">${this.PLANS[this.currentPlan]?.name || 'Starter'}</span>
+                        </div>
+                        <div class="upgrade-arrow">→</div>
+                        <div class="required-plan">
+                            <span class="plan-label">Plano Necessário</span>
+                            <span class="plan-name">${requiredPlan}</span>
+                        </div>
+                    </div>
+                    <div class="feature-benefits">
+                        <h4>Com o upgrade você também ganha:</h4>
+                        <ul id="upgrade-benefits-list">
+                            <!-- Será preenchido dinamicamente -->
+                        </ul>
+                    </div>
+                </div>
+                <div class="plan-upgrade-actions">
+                    <button class="btn-cancel" onclick="this.closest('.plan-upgrade-modal').remove()">
+                        Cancelar
+                    </button>
+                    <button class="btn-upgrade" onclick="PlanValidator.redirectToUpgrade('${requiredPlan.toLowerCase()}')">
+                        Fazer Upgrade
+                    </button>
+                </div>
+            </div>
+        `;
+
+        // Adicionar benefícios específicos do plano
+        this.populateUpgradeBenefits(modal, requiredPlan.toLowerCase());
+        
+        document.body.appendChild(modal);
+        
+        // Adicionar estilos se não existirem
+        this.addUpgradeModalStyles();
+    }
+
+    /**
+     * Preencher benefícios do upgrade
+     */
+    static populateUpgradeBenefits(modal, targetPlan) {
+        const benefitsList = modal.querySelector('#upgrade-benefits-list');
+        const planData = this.PLANS[targetPlan];
+        
+        if (planData && planData.features) {
+            planData.features.forEach(feature => {
+                const li = document.createElement('li');
+                li.innerHTML = `<i class="fas fa-check" style="color: #27ae60; margin-right: 8px;"></i>${feature}`;
+                benefitsList.appendChild(li);
+            });
+        }
+    }
+
+    /**
+     * Redirecionar para página de upgrade
+     */
+    static redirectToUpgrade(planType) {
+        // Remove o modal
+        document.querySelector('.plan-upgrade-modal')?.remove();
+        
+        // Redireciona para página de planos ou abre modal de contato
+        if (confirm('Deseja ser redirecionado para nossa página de planos?')) {
+            window.open('https://seusite.com/planos', '_blank');
+        }
+    }
+
+    /**
+     * Adicionar estilos para o modal de upgrade
+     */
+    static addUpgradeModalStyles() {
+        if (document.getElementById('plan-upgrade-styles')) return;
+        
+        const styles = document.createElement('style');
+        styles.id = 'plan-upgrade-styles';
+        styles.textContent = `
+            .plan-upgrade-modal {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.7);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+                backdrop-filter: blur(3px);
+            }
+            .plan-upgrade-content {
+                background: white;
+                border-radius: 12px;
+                max-width: 500px;
+                width: 90%;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+                animation: modalSlideIn 0.3s ease-out;
+            }
+            @keyframes modalSlideIn {
+                from { opacity: 0; transform: translateY(-50px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            .plan-upgrade-header {
+                padding: 24px;
+                text-align: center;
+                border-bottom: 1px solid #eee;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                border-radius: 12px 12px 0 0;
+            }
+            .plan-upgrade-header i {
+                font-size: 32px;
+                margin-bottom: 12px;
+                color: #ffd700 !important;
+            }
+            .plan-upgrade-header h3 {
+                margin: 0;
+                font-size: 22px;
+                font-weight: 600;
+            }
+            .plan-upgrade-body {
+                padding: 24px;
+            }
+            .current-vs-required {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin: 20px 0;
+                padding: 16px;
+                background: #f8f9fa;
+                border-radius: 8px;
+            }
+            .current-plan, .required-plan {
+                text-align: center;
+                flex: 1;
+            }
+            .plan-label {
+                display: block;
+                font-size: 12px;
+                color: #666;
+                text-transform: uppercase;
+                margin-bottom: 4px;
+            }
+            .plan-name {
+                display: block;
+                font-weight: bold;
+                font-size: 16px;
+                color: #2c3e50;
+            }
+            .upgrade-arrow {
+                font-size: 24px;
+                color: #3498db;
+                margin: 0 16px;
+            }
+            .feature-benefits h4 {
+                color: #2c3e50;
+                margin: 20px 0 12px 0;
+                font-size: 16px;
+            }
+            .feature-benefits ul {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+            }
+            .feature-benefits li {
+                padding: 6px 0;
+                color: #555;
+            }
+            .plan-upgrade-actions {
+                padding: 20px 24px;
+                border-top: 1px solid #eee;
+                display: flex;
+                gap: 12px;
+                justify-content: flex-end;
+            }
+            .plan-upgrade-actions button {
+                padding: 10px 20px;
+                border: none;
+                border-radius: 6px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.2s ease;
+            }
+            .btn-cancel {
+                background: #f8f9fa;
+                color: #6c757d;
+                border: 1px solid #dee2e6;
+            }
+            .btn-cancel:hover {
+                background: #e9ecef;
+            }
+            .btn-upgrade {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+            }
+            .btn-upgrade:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            }
+        `;
+        document.head.appendChild(styles);
+    }
     static initialize(user) {
         this.currentUser = user;
-        this.currentPlan = user?.plan || 'starter';
+        
+        console.log('🔧 INITIALIZE - DADOS RECEBIDOS:', {
+            userObject: user,
+            userEmail: user?.email,
+            userPlan: user?.plan,
+            userSubscription: user?.subscription,
+            allUserProps: Object.keys(user || {})
+        });
+        
+        // 🔧 NORMALIZAR NOME DO PLANO - Corrigir inconsistências
+        let planName = user?.plan || user?.subscription || 'starter';
+        
+        console.log('🔧 PLANO ANTES DA NORMALIZAÇÃO:', planName);
+        
+        // Converter nomes alternativos para padrão
+        const planNormalization = {
+            'basic': 'starter',
+            'basico': 'starter',
+            'profissional': 'professional',
+            'prof': 'professional',
+            'empresarial': 'enterprise',
+            'empresa': 'enterprise',
+            'premium': 'enterprise'
+        };
+        
+        // Normalizar para minúsculo
+        planName = planName.toLowerCase();
+        
+        // Aplicar normalização se necessário
+        if (planNormalization[planName]) {
+            planName = planNormalization[planName];
+        }
+        
+        this.currentPlan = planName;
+        
+        console.log('🔧 PLANO NORMALIZADO:', {
+            original: user?.plan || user?.subscription,
+            normalizado: this.currentPlan,
+            planDataExists: !!this.PLANS[this.currentPlan]
+        });
         
         // 🔧 CORREÇÃO: Para usuários de teste, considerar plano sempre ativo
         // Em produção, você pode remover esta verificação especial
@@ -144,8 +422,109 @@ class PlanValidator {
      */
     static canUsePhotos() {
         const planLimits = this.PLANS[this.currentPlan];
-        if (!planLimits || !planLimits.limits.photos) {
-            this.showFeatureUpgradeModal('photos');
+        
+        console.log('📸 VALIDAÇÃO DE FOTOS DETALHADA:', {
+            currentPlan: this.currentPlan,
+            currentUser: this.currentUser?.email,
+            planExists: !!planLimits,
+            photosAllowed: planLimits?.limits?.photos,
+            allPlans: Object.keys(this.PLANS),
+            planLimitsObj: planLimits?.limits,
+            fullPlanData: planLimits
+        });
+        
+        if (!planLimits) {
+            console.log('❌ PLANO NÃO ENCONTRADO:', this.currentPlan);
+            console.log('❌ Planos disponíveis:', Object.keys(this.PLANS));
+            this.showFeatureUpgradeModal('photos', 'Upload de Fotos', 'Professional');
+            return false;
+        }
+        
+        if (!planLimits.limits || !planLimits.limits.photos) {
+            console.log('❌ FOTOS BLOQUEADAS para plano:', this.currentPlan);
+            console.log('❌ Limite de fotos encontrado:', planLimits.limits?.photos);
+            this.showFeatureUpgradeModal('photos', 'Upload de Fotos', 'Professional');
+            return false;
+        }
+        
+        console.log('✅ FOTOS PERMITIDAS para plano:', this.currentPlan);
+        return true;
+    }
+
+    /**
+     * Verificar se pode fazer backup automático
+     */
+    static canUseBackup() {
+        const planLimits = this.PLANS[this.currentPlan];
+        if (!planLimits || !planLimits.limits.backup) {
+            this.showFeatureUpgradeModal('backup', 'Backup Automático', 'Professional');
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Verificar se pode usar exportações avançadas
+     */
+    static canExport(format) {
+        const planLimits = this.PLANS[this.currentPlan];
+        if (!planLimits || !planLimits.limits.exports.includes(format)) {
+            this.showFeatureUpgradeModal('export', `Exportação ${format.toUpperCase()}`, 
+                format === 'excel' ? 'Professional' : 'Enterprise');
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Verificar se pode usar relatórios avançados
+     */
+    static canUseAdvancedReports() {
+        const planLimits = this.PLANS[this.currentPlan];
+        const reportLevel = planLimits?.limits.reports || 'basic';
+        
+        if (reportLevel === 'basic') {
+            this.showFeatureUpgradeModal('reports', 'Relatórios Avançados', 'Professional');
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Verificar se pode usar dashboard avançado
+     */
+    static canUseAdvancedDashboard() {
+        const planLimits = this.PLANS[this.currentPlan];
+        const dashboardLevel = planLimits?.limits.dashboard || 'basic';
+        
+        if (dashboardLevel === 'basic') {
+            this.showFeatureUpgradeModal('dashboard', 'Dashboard Avançado', 'Professional');
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Verificar se pode usar API
+     */
+    static canUseAPI() {
+        const planLimits = this.PLANS[this.currentPlan];
+        if (!planLimits || !planLimits.limits.api) {
+            this.showFeatureUpgradeModal('api', 'Acesso à API', 'Professional');
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Verificar se pode usar alertas avançados
+     */
+    static canUseAdvancedAlerts() {
+        const planLimits = this.PLANS[this.currentPlan];
+        const alertLevel = planLimits?.limits.alerts || 'basic';
+        
+        if (alertLevel === 'basic') {
+            this.showFeatureUpgradeModal('alerts', 'Alertas Avançados', 'Professional');
             return false;
         }
         return true;
@@ -196,6 +575,241 @@ class PlanValidator {
 
         console.log('✅ Pode adicionar usuário');
         return true;
+    }
+
+    /**
+     * Validar e configurar elementos da UI baseado no plano
+     */
+    static validateUIElements() {
+        console.log('🎨 Validando elementos da UI para plano:', this.currentPlan);
+        
+        // Validar elementos de foto
+        this.validatePhotoElements();
+        
+        // Validar elementos de exportação
+        this.validateExportElements();
+        
+        // Validar elementos de backup
+        this.validateBackupElements();
+        
+        // Validar elementos de relatórios
+        this.validateReportElements();
+        
+        // Validar elementos de API
+        this.validateAPIElements();
+        
+        // Adicionar badges de plano onde necessário
+        this.addPlanBadges();
+    }
+
+    /**
+     * Validar elementos relacionados a fotos
+     */
+    static validatePhotoElements() {
+        const photoElements = document.querySelectorAll('[data-feature="photos"], .photo-upload, #photo-upload, .upload-photo');
+        const canUsePhotos = this.PLANS[this.currentPlan]?.limits.photos;
+        
+        console.log('🎨 VALIDANDO ELEMENTOS DE FOTO:', {
+            elementsFound: photoElements.length,
+            canUsePhotos: canUsePhotos,
+            currentPlan: this.currentPlan
+        });
+        
+        photoElements.forEach((element, index) => {
+            console.log(`📸 Elemento ${index + 1}:`, {
+                classList: Array.from(element.classList),
+                tagName: element.tagName,
+                canUsePhotos: canUsePhotos
+            });
+            
+            if (!canUsePhotos) {
+                this.disableElement(element, 'Disponível nos planos Professional+');
+                element.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.showFeatureUpgradeModal('photos', 'Upload de Fotos', 'Professional');
+                });
+            } else {
+                console.log('✅ HABILITANDO elemento de foto:', element.className);
+                this.enableElement(element);
+            }
+        });
+    }
+
+    /**
+     * Validar elementos de exportação
+     */
+    static validateExportElements() {
+        const exportButtons = document.querySelectorAll('[data-export], .export-btn');
+        
+        exportButtons.forEach(button => {
+            const format = button.dataset.export || button.dataset.format;
+            if (format) {
+                const canExport = this.PLANS[this.currentPlan]?.limits.exports?.includes(format);
+                
+                if (!canExport) {
+                    const requiredPlan = format === 'excel' ? 'Professional' : 
+                                       format === 'csv' ? 'Professional' : 'Enterprise';
+                    
+                    this.disableElement(button, `${format.toUpperCase()} disponível no plano ${requiredPlan}+`);
+                    button.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.showFeatureUpgradeModal('export', `Exportação ${format.toUpperCase()}`, requiredPlan);
+                    });
+                } else {
+                    this.enableElement(button);
+                }
+            }
+        });
+    }
+
+    /**
+     * Validar elementos de backup
+     */
+    static validateBackupElements() {
+        const backupElements = document.querySelectorAll('[data-feature="backup"], .backup-btn, #backup-auto');
+        const canUseBackup = this.PLANS[this.currentPlan]?.limits.backup;
+        
+        backupElements.forEach(element => {
+            if (!canUseBackup) {
+                this.disableElement(element, 'Backup automático disponível no plano Professional+');
+                element.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.showFeatureUpgradeModal('backup', 'Backup Automático', 'Professional');
+                });
+            } else {
+                this.enableElement(element);
+            }
+        });
+    }
+
+    /**
+     * Validar elementos de relatórios
+     */
+    static validateReportElements() {
+        const reportElements = document.querySelectorAll('[data-feature="reports"], .advanced-reports, .premium-reports');
+        const reportLevel = this.PLANS[this.currentPlan]?.limits.reports || 'basic';
+        
+        reportElements.forEach(element => {
+            const requiredLevel = element.dataset.level || 'advanced';
+            
+            if ((requiredLevel === 'advanced' && reportLevel === 'basic') ||
+                (requiredLevel === 'premium' && reportLevel !== 'premium')) {
+                
+                const requiredPlan = requiredLevel === 'premium' ? 'Enterprise' : 'Professional';
+                this.disableElement(element, `Relatórios ${requiredLevel} disponíveis no plano ${requiredPlan}+`);
+                element.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.showFeatureUpgradeModal('reports', `Relatórios ${requiredLevel}`, requiredPlan);
+                });
+            } else {
+                this.enableElement(element);
+            }
+        });
+    }
+
+    /**
+     * Validar elementos de API
+     */
+    static validateAPIElements() {
+        const apiElements = document.querySelectorAll('[data-feature="api"], .api-access, .api-docs');
+        const hasAPI = this.PLANS[this.currentPlan]?.limits.api;
+        
+        apiElements.forEach(element => {
+            if (!hasAPI) {
+                this.disableElement(element, 'Acesso à API disponível no plano Professional+');
+                element.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.showFeatureUpgradeModal('api', 'Acesso à API', 'Professional');
+                });
+            } else {
+                this.enableElement(element);
+            }
+        });
+    }
+
+    /**
+     * Desabilitar elemento com tooltip
+     */
+    static disableElement(element, message) {
+        element.classList.add('plan-disabled');
+        element.style.opacity = '0.5';
+        element.style.cursor = 'not-allowed';
+        element.setAttribute('title', message);
+        
+        // Adicionar badge de upgrade se não existir
+        if (!element.querySelector('.plan-upgrade-badge')) {
+            const badge = document.createElement('span');
+            badge.className = 'plan-upgrade-badge';
+            badge.innerHTML = '⭐ PRO';
+            badge.style.cssText = `
+                position: absolute;
+                top: -8px;
+                right: -8px;
+                background: linear-gradient(45deg, #ffd700, #ffed4e);
+                color: #333;
+                font-size: 10px;
+                font-weight: bold;
+                padding: 2px 6px;
+                border-radius: 10px;
+                z-index: 1000;
+            `;
+            
+            // Tornar container relativo se necessário
+            if (getComputedStyle(element).position === 'static') {
+                element.style.position = 'relative';
+            }
+            
+            element.appendChild(badge);
+        }
+    }
+
+    /**
+     * Habilitar elemento
+     */
+    static enableElement(element) {
+        console.log('🔧 HABILITANDO ELEMENTO:', {
+            classListBefore: Array.from(element.classList),
+            disabled: element.disabled
+        });
+        
+        // Remover classes de desabilitação
+        element.classList.remove('plan-disabled', 'disabled');
+        
+        // Resetar estilos
+        element.style.opacity = '';
+        element.style.cursor = '';
+        element.style.pointerEvents = '';
+        
+        // Remover atributos de desabilitação
+        element.removeAttribute('title');
+        element.removeAttribute('disabled');
+        
+        // Remover badge se existir
+        const badge = element.querySelector('.plan-upgrade-badge');
+        if (badge) badge.remove();
+        
+        console.log('✅ ELEMENTO HABILITADO:', {
+            classListAfter: Array.from(element.classList),
+            disabled: element.disabled,
+            pointerEvents: element.style.pointerEvents,
+            opacity: element.style.opacity
+        });
+    }
+
+    /**
+     * Adicionar badges de plano em elementos específicos
+     */
+    static addPlanBadges() {
+        const currentPlanData = this.PLANS[this.currentPlan];
+        if (!currentPlanData) return;
+        
+        // Adicionar badge do plano atual no header/sidebar se existir
+        const planDisplays = document.querySelectorAll('.current-plan, #current-plan');
+        planDisplays.forEach(display => {
+            display.textContent = currentPlanData.name;
+            display.className = `current-plan plan-${this.currentPlan}`;
+        });
     }
 
     /**
@@ -552,33 +1166,116 @@ class PlanValidator {
         // Salvar no sessionStorage
         sessionStorage.setItem('currentUser', JSON.stringify(user));
     }
-}
 
-// Inicializar automaticamente se há usuário logado
-document.addEventListener('DOMContentLoaded', async () => {
-    const currentUser = getCurrentUser();
-    if (currentUser) {
-        const initialized = PlanValidator.initialize(currentUser);
-        if (initialized) {
-            // Registrar sessão do usuário
-            await PlanValidator.registerUserSession();
+    /**
+     * Inicializar automaticamente quando o DOM estiver pronto
+     */
+    static autoInitialize() {
+        // Verificar se há usuário logado
+        const currentUser = JSON.parse(sessionStorage.getItem('currentUser') || 'null');
+        
+        if (currentUser) {
+            console.log('🚀 Auto-inicializando PlanValidator para:', currentUser.email);
             
-            // Iniciar monitoramento
-            PlanValidator.startPlanMonitoring();
+            // Inicializar o validador
+            const initialized = this.initialize(currentUser);
             
-            // Atualizar atividade a cada 5 minutos
-            setInterval(() => {
-                PlanValidator.updateUserActivity();
-            }, 5 * 60 * 1000);
-            
-            // Verificar limite de usuários periodicamente
-            setInterval(async () => {
-                const canContinue = await PlanValidator.canAddUser();
-                if (!canContinue) {
-                    console.log('🚫 Limite de usuários excedido - forçando logout');
-                    setTimeout(() => PlanValidator.logout(), 3000);
-                }
-            }, 10 * 60 * 1000); // Verificar a cada 10 minutos
+            if (initialized) {
+                // Registrar sessão
+                this.registerUserSession();
+                
+                // Configurar UI baseada no plano
+                setTimeout(() => {
+                    this.validateUIElements();
+                }, 100);
+                
+                // Configurar monitoramento de atividade
+                this.setupActivityMonitoring();
+                
+                console.log('✅ PlanValidator inicializado com sucesso');
+                return true;
+            } else {
+                console.log('❌ Falha na inicialização do PlanValidator');
+                return false;
+            }
+        } else {
+            console.log('ℹ️ Nenhum usuário logado encontrado');
+            return false;
         }
     }
+
+    /**
+     * Configurar monitoramento de atividade do usuário
+     */
+    static setupActivityMonitoring() {
+        if (this.activityMonitoringSetup) return;
+        this.activityMonitoringSetup = true;
+        
+        // Atualizar atividade a cada 5 minutos
+        setInterval(() => {
+            this.updateUserActivity();
+        }, 5 * 60 * 1000);
+        
+        // Verificar limite de usuários periodicamente
+        setInterval(async () => {
+            const canContinue = await this.canAddUser();
+            if (!canContinue) {
+                console.log('🚫 Limite de usuários excedido - forçando logout');
+                setTimeout(() => this.logout(), 3000);
+            }
+        }, 10 * 60 * 1000); // Verificar a cada 10 minutos
+        
+        // Escutar eventos de atividade
+        const events = ['click', 'keypress', 'mousemove', 'scroll'];
+        events.forEach(eventType => {
+            document.addEventListener(eventType, () => {
+                if (this.lastActivityUpdate && Date.now() - this.lastActivityUpdate < 60000) return; // Throttle
+                this.updateUserActivity();
+                this.lastActivityUpdate = Date.now();
+            });
+        });
+    }
+
+    /**
+     * Forçar logout do usuário
+     */
+    static logout() {
+        console.log('👋 Fazendo logout do usuário...');
+        
+        // Limpar dados locais
+        sessionStorage.removeItem('currentUser');
+        sessionStorage.removeItem('userSession');
+        if (this.currentUser) {
+            localStorage.removeItem(`session_${this.currentUser.id}`);
+        }
+        
+        // Limpar estado
+        this.currentUser = null;
+        this.currentPlan = 'starter';
+        
+        // Redirecionar para login
+        if (typeof redirectToLogin === 'function') {
+            redirectToLogin();
+        } else {
+            window.location.href = '/login.html';
+        }
+    }
+}
+
+// Auto-inicializar quando o DOM estiver pronto
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('📄 DOM carregado - verificando auto-inicialização do PlanValidator');
+    PlanValidator.autoInitialize();
 });
+
+// Também tentar inicializar se o script for carregado depois do DOM
+if (document.readyState === 'loading') {
+    console.log('📄 DOM ainda carregando - aguardando...');
+} else {
+    console.log('📄 DOM já carregado - inicializando PlanValidator imediatamente');
+    setTimeout(() => PlanValidator.autoInitialize(), 50);
+}
+
+// 🌐 EXPOR GLOBALMENTE PARA ACESSO EM OUTRAS PÁGINAS
+window.PlanValidator = PlanValidator;
+console.log('🌐 PlanValidator exposto globalmente:', !!window.PlanValidator);

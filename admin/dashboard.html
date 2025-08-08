@@ -966,7 +966,12 @@
                         </div>
                     </td>
                     <td>
-                        <span class="plan-badge plan-${user.plan}">${user.plan === 'basic' ? 'Básico' : 'Empresarial'}</span>
+                        <span class="plan-badge plan-${user.plan}">
+                            ${user.plan === 'starter' ? 'Starter' : 
+                              user.plan === 'professional' ? 'Professional' : 
+                              user.plan === 'enterprise' ? 'Enterprise' : 
+                              user.plan === 'basic' ? 'Básico' : 'Empresarial'}
+                        </span>
                     </td>
                     <td class="text-center">${user.extinguisher_count}</td>
                     <td>${formatDate(user.created_at)}</td>

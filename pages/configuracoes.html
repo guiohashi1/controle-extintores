@@ -236,19 +236,55 @@
             setActiveNavItem('configuracoes');
             
             // Carregar dados do usuário
-            carregarDadosUsuario();
-            carregarInformacoesSistema();
+            await carregarDadosUsuario();
+            carregarInformacoesSystem();
             carregarPreferencias();
         });
 
-        function carregarDadosUsuario() {
+        async function carregarDadosUsuario() {
             const user = getCurrentUser();
-            if (user) {
-                document.getElementById('userName').value = user.name || '';
-                document.getElementById('userEmail').value = user.email || '';
-                document.getElementById('userPlano').value = user.plano || 'Basic';
-                document.getElementById('ultimoLogin').textContent = new Date().toLocaleString('pt-BR');
+            if (!user) return;
+            
+            try {
+                // Tentar carregar dados atualizados do Supabase
+                const response = await fetch(`https://japgbufsqbjfkbkrncgg.supabase.co/rest/v1/users?id=eq.${user.id}&select=*`, {
+                    headers: {
+                        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcGdidWZzcWJqZmtia3JuY2dnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0OTg3NTksImV4cCI6MjA3MDA3NDc1OX0.AIc0koiJoLrRoFEhvV8qfskpL5ffA-l35cvGNGTLlOs',
+                        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcGdidWZzcWJqZmtia3JuY2dnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0OTg3NTksImV4cCI6MjA3MDA3NDc1OX0.AIc0koiJoLrRoFEhvV8qfskpL5ffA-l35cvGNGTLlOs'
+                    }
+                });
+                
+                if (response.ok) {
+                    const userData = await response.json();
+                    if (userData && userData.length > 0) {
+                        const userFromDB = userData[0];
+                        
+                        // Atualizar sessionStorage com dados do banco
+                        const updatedUser = { ...user, ...userFromDB };
+                        sessionStorage.setItem('currentUser', JSON.stringify(updatedUser));
+                        
+                        // Preencher formulário com dados do banco
+                        document.getElementById('userName').value = userFromDB.name || user.email?.split('@')[0] || '';
+                        document.getElementById('userEmail').value = userFromDB.email || user.email || '';
+                        document.getElementById('userPlano').value = userFromDB.plan || 'Starter';
+                        
+                        console.log('✅ Dados do usuário carregados do Supabase');
+                        return;
+                    }
+                }
+                
+                // Fallback: usar dados do sessionStorage
+                console.warn('⚠️ Usando dados locais (não encontrado no Supabase)');
+                
+            } catch (error) {
+                console.warn('⚠️ Erro ao carregar do Supabase, usando dados locais:', error);
             }
+            
+            // Fallback: dados locais
+            document.getElementById('userName').value = user.name || user.email?.split('@')[0] || '';
+            document.getElementById('userEmail').value = user.email || '';
+            document.getElementById('userPlano').value = user.plano || user.plan || 'Starter';
+            document.getElementById('ultimoLogin').textContent = new Date().toLocaleString('pt-BR');
         }
 
         async function carregarInformacoesSystem() {
@@ -262,6 +298,8 @@
                 document.getElementById('espacoUsado').textContent = `${tamanhoKB} KB`;
             } catch (error) {
                 console.error('Erro ao carregar informações:', error);
+                document.getElementById('totalExtintoresInfo').textContent = 'Erro';
+                document.getElementById('espacoUsado').textContent = 'Erro';
             }
         }
 
@@ -334,12 +372,45 @@
                 const confirmacao = confirm(`Isto irá importar ${dados.extintores.length} extintor(es). Continuar?`);
                 if (!confirmacao) return;
                 
-                // Salvar cada extintor
+                const user = getCurrentUser();
+                if (!user) {
+                    showNotification('Usuário não encontrado', 'error');
+                    return;
+                }
+                
+                // Salvar cada extintor usando a API Supabase
                 let sucessos = 0;
                 for (const extintor of dados.extintores) {
-                    delete extintor.id; // Remove ID para criar novo
-                    if (await salvarExtintor(extintor)) {
-                        sucessos++;
+                    try {
+                        // Preparar dados do extintor
+                        const novoExtintor = {
+                            numero: extintor.numero,
+                            local: extintor.local,
+                            tipo: extintor.tipo,
+                            peso: extintor.peso,
+                            validade: extintor.validade,
+                            hidro: extintor.hidro,
+                            observacoes: extintor.observacoes || null,
+                            user_id: user.id
+                        };
+                        
+                        const response = await fetch('https://japgbufsqbjfkbkrncgg.supabase.co/rest/v1/extintores', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcGdidWZzcWJqZmtia3JuY2dnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0OTg3NTksImV4cCI6MjA3MDA3NDc1OX0.AIc0koiJoLrRoFEhvV8qfskpL5ffA-l35cvGNGTLlOs',
+                                'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcGdidWZzcWJqZmtia3JuY2dnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0OTg3NTksImV4cCI6MjA3MDA3NDc1OX0.AIc0koiJoLrRoFEhvV8qfskpL5ffA-l35cvGNGTLlOs',
+                                'Prefer': 'return=minimal'
+                            },
+                            body: JSON.stringify(novoExtintor)
+                        });
+                        
+                        if (response.ok) {
+                            sucessos++;
+                        }
+                        
+                    } catch (extintorError) {
+                        console.error('Erro ao importar extintor:', extintorError);
                     }
                 }
                 
@@ -377,21 +448,35 @@
             const confirmacao = confirm('ATENÇÃO: Isto irá apagar TODOS os extintores cadastrados. Esta ação não pode ser desfeita. Continuar?');
             if (!confirmacao) return;
             
-            const confirmacao2 = confirm('Tem CERTEZA ABSOLUTA? Digite "CONFIRMAR" se quiser continuar:');
-            if (!confirmacao2) return;
+            const confirmacaoTexto = prompt('Digite "CONFIRMAR" para prosseguir:');
+            if (confirmacaoTexto !== 'CONFIRMAR') {
+                showNotification('Operação cancelada', 'warning');
+                return;
+            }
             
             try {
-                const extintores = await carregarExtintores();
-                let sucessos = 0;
-                
-                for (const extintor of extintores) {
-                    if (await deletarExtintor(extintor.id)) {
-                        sucessos++;
-                    }
+                const user = getCurrentUser();
+                if (!user) {
+                    showNotification('Usuário não encontrado', 'error');
+                    return;
                 }
                 
-                showNotification(`${sucessos} extintor(es) apagado(s)`);
-                await carregarInformacoesSystem();
+                // Buscar e deletar todos os extintores do usuário
+                const response = await fetch(`https://japgbufsqbjfkbkrncgg.supabase.co/rest/v1/extintores?user_id=eq.${user.id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcGdidWZzcWJqZmtia3JuY2dnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0OTg3NTksImV4cCI6MjA3MDA3NDc1OX0.AIc0koiJoLrRoFEhvV8qfskpL5ffA-l35cvGNGTLlOs',
+                        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcGdidWZzcWJqZmtia3JuY2dnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0OTg3NTksImV4cCI6MjA3MDA3NDc1OX0.AIc0koiJoLrRoFEhvV8qfskpL5ffA-l35cvGNGTLlOs',
+                        'Prefer': 'return=minimal'
+                    }
+                });
+                
+                if (response.ok) {
+                    showNotification('Todos os extintores foram apagados com sucesso!');
+                    await carregarInformacoesSystem();
+                } else {
+                    throw new Error('Erro ao apagar extintores');
+                }
                 
             } catch (error) {
                 console.error('Erro ao apagar dados:', error);
@@ -415,20 +500,80 @@
         }
 
         // Event listeners
-        document.getElementById('perfilForm').addEventListener('submit', (e) => {
+        document.getElementById('perfilForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            showNotification('Perfil atualizado!');
+            
+            try {
+                const user = getCurrentUser();
+                const novoNome = document.getElementById('userName').value.trim();
+                
+                if (!novoNome) {
+                    showNotification('Nome é obrigatório', 'error');
+                    return;
+                }
+                
+                // Mostrar loading
+                const submitBtn = e.target.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<span>Salvando...</span>';
+                submitBtn.disabled = true;
+                
+                // Atualizar no Supabase
+                const response = await fetch(`https://japgbufsqbjfkbkrncgg.supabase.co/rest/v1/users?id=eq.${user.id}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcGdidWZzcWJqZmtia3JuY2dnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0OTg3NTksImV4cCI6MjA3MDA3NDc1OX0.AIc0koiJoLrRoFEhvV8qfskpL5ffA-l35cvGNGTLlOs',
+                        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcGdidWZzcWJqZmtia3JuY2dnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0OTg3NTksImV4cCI6MjA3MDA3NDc1OX0.AIc0koiJoLrRoFEhvV8qfskpL5ffA-l35cvGNGTLlOs',
+                        'Prefer': 'return=minimal'
+                    },
+                    body: JSON.stringify({
+                        name: novoNome,
+                        updated_at: new Date().toISOString()
+                    })
+                });
+                
+                if (response.ok) {
+                    // Atualizar no sessionStorage local também
+                    user.name = novoNome;
+                    sessionStorage.setItem('currentUser', JSON.stringify(user));
+                    
+                    showNotification('Perfil atualizado com sucesso no Supabase!');
+                } else {
+                    // Se falhar no Supabase, tentar salvar pelo menos localmente
+                    console.warn('Erro ao salvar no Supabase, salvando localmente:', response.status);
+                    user.name = novoNome;
+                    sessionStorage.setItem('currentUser', JSON.stringify(user));
+                    
+                    showNotification('Perfil atualizado localmente (erro no servidor)', 'warning');
+                }
+                
+            } catch (error) {
+                console.error('Erro ao salvar perfil:', error);
+                
+                // Fallback: salvar pelo menos localmente
+                try {
+                    const user = getCurrentUser();
+                    const novoNome = document.getElementById('userName').value.trim();
+                    user.name = novoNome;
+                    sessionStorage.setItem('currentUser', JSON.stringify(user));
+                    
+                    showNotification('Perfil salvo localmente (sem conexão com servidor)', 'warning');
+                } catch (localError) {
+                    showNotification('Erro ao salvar perfil', 'error');
+                }
+            } finally {
+                // Restaurar botão
+                const submitBtn = e.target.querySelector('button[type="submit"]');
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
         });
 
         // Salvar preferências quando alteradas
         document.getElementById('alertasEmail').addEventListener('change', salvarPreferencias);
         document.getElementById('alertasDias').addEventListener('change', salvarPreferencias);
         document.getElementById('autoBackup').addEventListener('change', salvarPreferencias);
-
-        // Chamar função de carregamento
-        async function carregarInformacoesSystem() {
-            await carregarInformacoesSystem();
-        }
     </script>
 
     <style>
@@ -597,6 +742,50 @@
             transform: translateY(-2px);
         }
 
+        /* Estilo para modais de confirmação */
+        .emergency-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+
+        .emergency-modal-content {
+            background: var(--bg-primary);
+            padding: 2rem;
+            border-radius: var(--radius-lg);
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            border: 2px solid var(--danger-color);
+        }
+
+        .emergency-modal-content h3 {
+            color: var(--danger-color);
+            margin-bottom: 1rem;
+        }
+
+        .emergency-btn {
+            margin-top: 1.5rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--danger-color);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .emergency-btn:hover {
+            background: var(--primary-dark);
+        }
+
         @media (max-width: 640px) {
             .configuracao-item,
             .action-item {
@@ -617,6 +806,6 @@
         }
     </style>
     
-    <script src="../js/pwa-manager.js"></script>
+    <!-- <script src="../js/pwa-manager.js"></script> -->
 </body>
 </html>
