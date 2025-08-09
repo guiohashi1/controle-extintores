@@ -11,6 +11,8 @@
     <!-- jsPDF para geração de PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <!-- Chart.js para gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <script src="../js/supabase-config.js"></script>
     <script src="../js/common.js"></script>
@@ -18,6 +20,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/common.css">
     <link rel="stylesheet" href="../css/navigation.css">
+    <link rel="stylesheet" href="../css/mobile-enhancements.css">
+    <link rel="stylesheet" href="../css/mobile-fixes.css">
     <link rel="stylesheet" href="../css/pwa.css">
 </head>
 <body>
@@ -31,35 +35,138 @@
             <p>Vencimentos e análises</p>
         </div>
         
+        <!-- Dashboard Resumo -->
+        <div class="dashboard-grid">
+            <div class="card dashboard-card">
+                <div class="card-header">
+                    <h3>🎯 Resumo Geral</h3>
+                </div>
+                <div class="dashboard-stats">
+                    <div class="stat-item">
+                        <span class="stat-number" id="totalExtintores">-</span>
+                        <span class="stat-label">Total</span>
+                    </div>
+                    <div class="stat-item valid">
+                        <span class="stat-number" id="validosCount">-</span>
+                        <span class="stat-label">Válidos</span>
+                    </div>
+                    <div class="stat-item warning">
+                        <span class="stat-number" id="alertasCount">-</span>
+                        <span class="stat-label">Alertas</span>
+                    </div>
+                    <div class="stat-item expired">
+                        <span class="stat-number" id="vencidosCount">-</span>
+                        <span class="stat-label">Vencidos</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card dashboard-card">
+                <div class="card-header">
+                    <h3>📊 Status dos Extintores</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="chartStatus"></canvas>
+                </div>
+            </div>
+            
+            <div class="card dashboard-card">
+                <div class="card-header">
+                    <h3>🏷️ Distribuição por Tipo</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas id="chartTipos"></canvas>
+                </div>
+            </div>
+        </div>
+        
         <!-- Relatório de Vencimentos -->
         <div class="card">
             <div class="card-header">
-                <h3>Relatório de Vencimentos</h3>
+                <h3>📅 Relatório de Vencimentos</h3>
                 <div class="card-actions">
+                    <button onclick="exportarRelatorio('excel')" class="btn btn-secondary">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14,2 14,8 20,8"></polyline>
+                        </svg>
+                        Excel
+                    </button>
                     <button onclick="gerarPDF()" class="btn btn-primary">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                             <polyline points="14,2 14,8 20,8"></polyline>
                             <line x1="16" y1="13" x2="8" y2="13"></line>
                             <line x1="16" y1="17" x2="8" y2="17"></line>
-                            <polyline points="10,9 9,9 8,9"></polyline>
                         </svg>
-                        Gerar PDF
+                        PDF
                     </button>
                 </div>
             </div>
             
-            <!-- Filtros de Período -->
-            <div class="filtros-periodo">
-                <div class="filtro-group">
-                    <label for="filtroPeríodo">Período:</label>
-                    <select id="filtroPeríodo" onchange="filtrarPorPeriodo()">
-                        <option value="30">Próximos 30 dias</option>
-                        <option value="60">Próximos 60 dias</option>
-                        <option value="90">Próximos 90 dias</option>
-                        <option value="vencidos">Já vencidos</option>
-                        <option value="todos">Todos</option>
-                    </select>
+            <!-- Filtros Avançados -->
+            <div class="filtros-avancados">
+                <div class="filtros-linha">
+                    <div class="filtro-group">
+                        <label for="filtroPeríodo">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg>
+                            Período:
+                        </label>
+                        <select id="filtroPeríodo" onchange="filtrarPorPeriodo()">
+                            <option value="30">Próximos 30 dias</option>
+                            <option value="60">Próximos 60 dias</option>
+                            <option value="90">Próximos 90 dias</option>
+                            <option value="vencidos">Já vencidos</option>
+                            <option value="personalizado">Período personalizado</option>
+                            <option value="todos">Todos</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filtro-group">
+                        <label for="filtroTipoRelatorio">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                                <line x1="7" y1="7" x2="7.01" y2="7"></line>
+                            </svg>
+                            Tipo:
+                        </label>
+                        <select id="filtroTipoRelatorio" onchange="filtrarPorPeriodo()">
+                            <option value="">Todos os tipos</option>
+                            <option value="Água">Água</option>
+                            <option value="CO2">CO2</option>
+                            <option value="Espuma">Espuma</option>
+                            <option value="Pó Químico">Pó Químico</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filtro-group">
+                        <label for="filtroLocalRelatorio">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                <circle cx="12" cy="10" r="3"></circle>
+                            </svg>
+                            Local:
+                        </label>
+                        <select id="filtroLocalRelatorio" onchange="filtrarPorPeriodo()">
+                            <option value="">Todos os locais</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="filtros-linha periodo-personalizado" id="periodoPersonalizado" style="display: none;">
+                    <div class="filtro-group">
+                        <label for="dataInicio">Data Início:</label>
+                        <input type="date" id="dataInicio" onchange="filtrarPorPeriodo()">
+                    </div>
+                    <div class="filtro-group">
+                        <label for="dataFim">Data Fim:</label>
+                        <input type="date" id="dataFim" onchange="filtrarPorPeriodo()">
+                    </div>
                 </div>
             </div>
             
@@ -69,9 +176,22 @@
         <!-- Estatísticas por Tipo -->
         <div class="card">
             <div class="card-header">
-                <h3>Estatísticas por Tipo</h3>
+                <h3>📊 Estatísticas por Tipo</h3>
+                <div class="card-actions">
+                    <select id="seletorTipo" onchange="mostrarEstatisticasTipo()" class="selector-tipo">
+                        <option value="">Selecione um tipo...</option>
+                    </select>
+                </div>
             </div>
-            <div id="estatisticasTipo" class="stats-grid"></div>
+            <div id="estatisticasTipo" class="stats-display">
+                <div class="tipo-placeholder">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                        <line x1="7" y1="7" x2="7.01" y2="7"></line>
+                    </svg>
+                    <p>Selecione um tipo para ver as estatísticas detalhadas</p>
+                </div>
+            </div>
         </div>
         
         <!-- Estatísticas por Local -->
@@ -115,33 +235,223 @@
         }
 
         async function gerarRelatorios() {
+            gerarDashboard();
+            gerarGraficos();
+            popularFiltrosLocais();
+            popularSeletorTipos();
             gerarRelatorioVencimentos();
-            gerarEstatisticasTipo();
             gerarEstatisticasLocal();
+        }
+
+        function gerarDashboard() {
+            const hoje = new Date();
+            let validos = 0, alertas = 0, vencidos = 0;
+
+            extintores.forEach(ext => {
+                const status = calcularStatusValidade(ext.validade);
+                switch(status) {
+                    case 'valid':
+                        validos++;
+                        break;
+                    case 'warning':
+                        alertas++;
+                        break;
+                    case 'expired':
+                        vencidos++;
+                        break;
+                }
+            });
+
+            document.getElementById('totalExtintores').textContent = extintores.length;
+            document.getElementById('validosCount').textContent = validos;
+            document.getElementById('alertasCount').textContent = alertas;
+            document.getElementById('vencidosCount').textContent = vencidos;
+        }
+
+        function popularFiltrosLocais() {
+            const locaisUnicos = [...new Set(extintores.map(ext => ext.local))].sort();
+            const filtroLocal = document.getElementById('filtroLocalRelatorio');
+            
+            // Limpar opções existentes mantendo "Todos os locais"
+            filtroLocal.innerHTML = '<option value="">Todos os locais</option>';
+            
+            locaisUnicos.forEach(local => {
+                if (local) {
+                    const option = document.createElement('option');
+                    option.value = local;
+                    option.textContent = local;
+                    filtroLocal.appendChild(option);
+                }
+            });
+        }
+
+        function gerarGraficos() {
+            gerarGraficoStatus();
+            gerarGraficoTipos();
+        }
+
+        function gerarGraficoStatus() {
+            const ctx = document.getElementById('chartStatus').getContext('2d');
+            const hoje = new Date();
+            let validos = 0, alertas = 0, vencidos = 0;
+
+            extintores.forEach(ext => {
+                const status = calcularStatusValidade(ext.validade);
+                switch(status) {
+                    case 'valid':
+                        validos++;
+                        break;
+                    case 'warning':
+                        alertas++;
+                        break;
+                    case 'expired':
+                        vencidos++;
+                        break;
+                }
+            });
+
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Válidos', 'Próx. Vencimento', 'Vencidos'],
+                    datasets: [{
+                        data: [validos, alertas, vencidos],
+                        backgroundColor: [
+                            '#10b981', // Verde para válidos
+                            '#f59e0b', // Amarelo para alertas
+                            '#ef4444'  // Vermelho para vencidos
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#1f2937'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20,
+                                color: '#e5e7eb'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function gerarGraficoTipos() {
+            const ctx = document.getElementById('chartTipos').getContext('2d');
+            
+            // Tipos fixos e suas cores
+            const tiposFixos = ['Água', 'CO2', 'Espuma', 'Pó Químico'];
+            const cores = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b'];
+            
+            // Contar extintores por tipo
+            const dadosTipos = tiposFixos.map(tipo => {
+                return extintores.filter(ext => ext.tipo === tipo).length;
+            });
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: tiposFixos,
+                    datasets: [{
+                        label: 'Quantidade',
+                        data: dadosTipos,
+                        backgroundColor: cores,
+                        borderColor: cores.map(color => color + '80'),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#374151'
+                            },
+                            ticks: {
+                                color: '#e5e7eb'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: '#374151'
+                            },
+                            ticks: {
+                                color: '#e5e7eb'
+                            }
+                        }
+                    }
+                }
+            });
         }
 
         function filtrarPorPeriodo() {
             const periodo = document.getElementById('filtroPeríodo').value;
-            gerarRelatorioVencimentos(periodo);
+            const tipoFiltro = document.getElementById('filtroTipoRelatorio').value;
+            const localFiltro = document.getElementById('filtroLocalRelatorio').value;
+            
+            // Mostrar/esconder período personalizado
+            const periodoPersonalizado = document.getElementById('periodoPersonalizado');
+            if (periodo === 'personalizado') {
+                periodoPersonalizado.style.display = 'flex';
+            } else {
+                periodoPersonalizado.style.display = 'none';
+            }
+            
+            gerarRelatorioVencimentos(periodo, tipoFiltro, localFiltro);
         }
 
-        function gerarRelatorioVencimentos(filtro = '30') {
+        function gerarRelatorioVencimentos(filtro = '30', tipoFiltro = '', localFiltro = '') {
             const hoje = new Date();
-            let extintoresFiltrados = [];
+            let extintoresFiltrados = [...extintores];
 
+            // Filtrar por tipo se especificado
+            if (tipoFiltro) {
+                extintoresFiltrados = extintoresFiltrados.filter(ext => ext.tipo === tipoFiltro);
+            }
+
+            // Filtrar por local se especificado
+            if (localFiltro) {
+                extintoresFiltrados = extintoresFiltrados.filter(ext => ext.local === localFiltro);
+            }
+
+            // Filtrar por período
             if (filtro === 'vencidos') {
-                extintoresFiltrados = extintores.filter(ext => {
+                extintoresFiltrados = extintoresFiltrados.filter(ext => {
                     const vencimento = new Date(ext.validade);
                     return vencimento < hoje;
                 });
-            } else if (filtro === 'todos') {
-                extintoresFiltrados = [...extintores];
-            } else {
+            } else if (filtro === 'personalizado') {
+                const dataInicio = document.getElementById('dataInicio').value;
+                const dataFim = document.getElementById('dataFim').value;
+                
+                if (dataInicio && dataFim) {
+                    const inicio = new Date(dataInicio);
+                    const fim = new Date(dataFim);
+                    
+                    extintoresFiltrados = extintoresFiltrados.filter(ext => {
+                        const vencimento = new Date(ext.validade);
+                        return vencimento >= inicio && vencimento <= fim;
+                    });
+                }
+            } else if (filtro !== 'todos') {
                 const diasFuturos = parseInt(filtro);
                 const dataLimite = new Date();
                 dataLimite.setDate(hoje.getDate() + diasFuturos);
                 
-                extintoresFiltrados = extintores.filter(ext => {
+                extintoresFiltrados = extintoresFiltrados.filter(ext => {
                     const vencimento = new Date(ext.validade);
                     return vencimento >= hoje && vencimento <= dataLimite;
                 });
@@ -151,10 +461,10 @@
             extintoresFiltrados.sort((a, b) => new Date(a.validade) - new Date(b.validade));
             
             relatorioAtual = extintoresFiltrados;
-            renderizarRelatorioVencimentos(extintoresFiltrados, filtro);
+            renderizarRelatorioVencimentos(extintoresFiltrados, filtro, tipoFiltro, localFiltro);
         }
 
-        function renderizarRelatorioVencimentos(extintores, filtro) {
+        function renderizarRelatorioVencimentos(extintores, filtro, tipoFiltro = '', localFiltro = '') {
             const container = document.getElementById('relatorioVencimentos');
             
             if (extintores.length === 0) {
@@ -164,17 +474,48 @@
                             <circle cx="12" cy="12" r="10"></circle>
                             <path d="M12 6v6l4 2"></path>
                         </svg>
-                        <p>Nenhum extintor encontrado para o período selecionado</p>
+                        <p>Nenhum extintor encontrado para os filtros selecionados</p>
                     </div>
                 `;
                 return;
             }
 
+            // Criar descrição dos filtros aplicados
+            let filtrosAplicados = [];
+            
+            if (filtro === 'vencidos') {
+                filtrosAplicados.push('vencidos');
+            } else if (filtro === 'personalizado') {
+                const dataInicio = document.getElementById('dataInicio').value;
+                const dataFim = document.getElementById('dataFim').value;
+                if (dataInicio && dataFim) {
+                    filtrosAplicados.push(`período de ${formatDate(dataInicio)} a ${formatDate(dataFim)}`);
+                }
+            } else if (filtro !== 'todos') {
+                filtrosAplicados.push(`próximos ${filtro} dias`);
+            }
+            
+            if (tipoFiltro) {
+                filtrosAplicados.push(`tipo: ${tipoFiltro}`);
+            }
+            
+            if (localFiltro) {
+                filtrosAplicados.push(`local: ${localFiltro}`);
+            }
+
+            let descricaoFiltros = filtrosAplicados.length > 0 ? 
+                ` (${filtrosAplicados.join(', ')})` : '';
+
             let html = `<div class="relatorio-resumo">
-                <p>Encontrados <strong>${extintores.length}</strong> extintor(es) 
-                ${filtro === 'vencidos' ? 'vencidos' : 
-                  filtro === 'todos' ? 'no total' : 
-                  `nos próximos ${filtro} dias`}</p>
+                <div class="resumo-info">
+                    <span class="resumo-count">📋 <strong>${extintores.length}</strong> extintor${extintores.length > 1 ? 'es' : ''} encontrado${extintores.length > 1 ? 's' : ''}</span>
+                    ${descricaoFiltros ? `<span class="resumo-filtros">${descricaoFiltros}</span>` : ''}
+                </div>
+                <div class="resumo-acoes">
+                    <button onclick="exportarRelatorio('csv')" class="btn-mini">CSV</button>
+                    <button onclick="exportarRelatorio('excel')" class="btn-mini">Excel</button>
+                    <button onclick="gerarPDF()" class="btn-mini">PDF</button>
+                </div>
             </div>`;
 
             html += '<div class="relatorio-lista">';
@@ -205,60 +546,126 @@
             container.innerHTML = html;
         }
 
-        function gerarEstatisticasTipo() {
-            const tipoCount = {};
+        function popularSeletorTipos() {
+            const seletorTipo = document.getElementById('seletorTipo');
             
-            extintores.forEach(ext => {
-                if (!tipoCount[ext.tipo]) {
-                    tipoCount[ext.tipo] = { total: 0, validos: 0, vencidos: 0, alertas: 0 };
-                }
-                
-                tipoCount[ext.tipo].total++;
-                
+            // Tipos fixos disponíveis
+            const tiposFixos = ['Água', 'CO2', 'Espuma', 'Pó Químico'];
+            
+            // Limpar opções existentes mantendo "Selecione um tipo..."
+            seletorTipo.innerHTML = '<option value="">Selecione um tipo...</option>';
+            
+            tiposFixos.forEach(tipo => {
+                const option = document.createElement('option');
+                option.value = tipo;
+                option.textContent = tipo;
+                seletorTipo.appendChild(option);
+            });
+        }
+
+        function mostrarEstatisticasTipo() {
+            const tipoSelecionado = document.getElementById('seletorTipo').value;
+            const container = document.getElementById('estatisticasTipo');
+            
+            if (!tipoSelecionado) {
+                container.innerHTML = `
+                    <div class="tipo-placeholder">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                            <line x1="7" y1="7" x2="7.01" y2="7"></line>
+                        </svg>
+                        <p>Selecione um tipo para ver as estatísticas detalhadas</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Filtrar extintores do tipo selecionado
+            const extintoresTipo = extintores.filter(ext => ext.tipo === tipoSelecionado);
+            
+            // Calcular estatísticas
+            let validos = 0, alertas = 0, vencidos = 0;
+            const locais = {};
+            const pesos = {};
+            
+            extintoresTipo.forEach(ext => {
                 const status = calcularStatusValidade(ext.validade);
                 switch(status) {
                     case 'valid':
-                        tipoCount[ext.tipo].validos++;
+                        validos++;
                         break;
                     case 'warning':
-                        tipoCount[ext.tipo].alertas++;
+                        alertas++;
                         break;
                     case 'expired':
-                        tipoCount[ext.tipo].vencidos++;
+                        vencidos++;
                         break;
                 }
+                
+                // Contar por local
+                locais[ext.local] = (locais[ext.local] || 0) + 1;
+                
+                // Contar por peso
+                const pesoKey = `${ext.peso}kg`;
+                pesos[pesoKey] = (pesos[pesoKey] || 0) + 1;
             });
 
-            const container = document.getElementById('estatisticasTipo');
-            let html = '';
-
-            Object.entries(tipoCount).forEach(([tipo, stats]) => {
-                html += `
-                    <div class="tipo-stats">
-                        <h4>${tipo}</h4>
-                        <div class="stats-mini-grid">
-                            <div class="mini-stat">
-                                <span class="mini-number">${stats.total}</span>
-                                <span class="mini-label">Total</span>
+            container.innerHTML = `
+                <div class="tipo-detalhes">
+                    <div class="tipo-header">
+                        <h4>${tipoSelecionado}</h4>
+                        <span class="tipo-total">${extintoresTipo.length} extintor${extintoresTipo.length > 1 ? 'es' : ''}</span>
+                    </div>
+                    
+                    <div class="stats-principais">
+                        <div class="mini-stat valid">
+                            <span class="mini-number">${validos}</span>
+                            <span class="mini-label">Válidos</span>
+                        </div>
+                        <div class="mini-stat warning">
+                            <span class="mini-number">${alertas}</span>
+                            <span class="mini-label">Próx. Venc.</span>
+                        </div>
+                        <div class="mini-stat expired">
+                            <span class="mini-number">${vencidos}</span>
+                            <span class="mini-label">Vencidos</span>
+                        </div>
+                    </div>
+                    
+                    <div class="detalhes-grid">
+                        <div class="detalhe-secao">
+                            <h5>📍 Por Local</h5>
+                            <div class="lista-detalhes">
+                                ${Object.entries(locais)
+                                    .sort(([,a], [,b]) => b - a)
+                                    .slice(0, 5)
+                                    .map(([local, count]) => `
+                                        <div class="item-detalhe">
+                                            <span class="item-nome">${local}</span>
+                                            <span class="item-count">${count}</span>
+                                        </div>
+                                    `).join('')}
+                                ${Object.keys(locais).length > 5 ? 
+                                    `<div class="item-detalhe-mais">+${Object.keys(locais).length - 5} locais</div>` : ''}
                             </div>
-                            <div class="mini-stat valid">
-                                <span class="mini-number">${stats.validos}</span>
-                                <span class="mini-label">Válidos</span>
-                            </div>
-                            <div class="mini-stat warning">
-                                <span class="mini-number">${stats.alertas}</span>
-                                <span class="mini-label">Alertas</span>
-                            </div>
-                            <div class="mini-stat expired">
-                                <span class="mini-number">${stats.vencidos}</span>
-                                <span class="mini-label">Vencidos</span>
+                        </div>
+                        
+                        <div class="detalhe-secao">
+                            <h5>⚖️ Por Peso</h5>
+                            <div class="lista-detalhes">
+                                ${Object.entries(pesos)
+                                    .sort(([,a], [,b]) => b - a)
+                                    .map(([peso, count]) => `
+                                        <div class="item-detalhe">
+                                            <span class="item-nome">${peso}</span>
+                                            <span class="item-count">${count}</span>
+                                        </div>
+                                    `).join('')}
                             </div>
                         </div>
                     </div>
-                `;
-            });
-
-            container.innerHTML = html || '<div class="relatorio-empty"><p>Nenhum dado disponível</p></div>';
+                </div>
+            `;
         }
 
         function gerarEstatisticasLocal() {
@@ -299,6 +706,85 @@
             
             html += '</div>';
             container.innerHTML = html;
+        }
+
+        async function exportarRelatorio(formato) {
+            if (relatorioAtual.length === 0) {
+                showNotification('Nenhum dado para exportar', 'warning');
+                return;
+            }
+
+            const dados = relatorioAtual.map(ext => ({
+                'Número': ext.numero,
+                'Local': ext.local,
+                'Tipo': ext.tipo,
+                'Peso': `${ext.peso}kg`,
+                'Validade': formatDate(ext.validade),
+                'Teste Hidrostático': formatDate(ext.hidro),
+                'Status': (() => {
+                    const dias = calcularDiasRestantes(ext.validade);
+                    return dias < 0 ? 'Vencido' : dias <= 30 ? 'Próximo vencimento' : 'Válido';
+                })(),
+                'Dias Restantes': calcularDiasRestantes(ext.validade),
+                'Observações': ext.observacoes || ''
+            }));
+
+            if (formato === 'csv') {
+                exportarCSV(dados);
+            } else if (formato === 'excel') {
+                exportarExcel(dados);
+            }
+        }
+
+        function exportarCSV(dados) {
+            const headers = Object.keys(dados[0]);
+            const csvContent = [
+                headers.join(';'),
+                ...dados.map(row => headers.map(header => `"${row[header] || ''}"`).join(';'))
+            ].join('\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `relatorio-extintores-${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showNotification('CSV exportado com sucesso!');
+        }
+
+        function exportarExcel(dados) {
+            // Para Excel, vamos usar uma tabela HTML convertida
+            let html = '<table>';
+            html += '<tr>';
+            Object.keys(dados[0]).forEach(header => {
+                html += `<th>${header}</th>`;
+            });
+            html += '</tr>';
+            
+            dados.forEach(row => {
+                html += '<tr>';
+                Object.values(row).forEach(value => {
+                    html += `<td>${value || ''}</td>`;
+                });
+                html += '</tr>';
+            });
+            html += '</table>';
+
+            const blob = new Blob([html], { type: 'application/vnd.ms-excel' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `relatorio-extintores-${new Date().toISOString().split('T')[0]}.xls`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showNotification('Excel exportado com sucesso!');
         }
 
         async function gerarPDF() {
@@ -356,6 +842,291 @@
     </script>
 
     <style>
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .dashboard-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+        }
+
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-item.valid {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: var(--success-color);
+        }
+
+        .stat-item.warning {
+            background: rgba(245, 158, 11, 0.1);
+            border-color: var(--warning-color);
+        }
+
+        .stat-item.expired {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: var(--danger-color);
+        }
+
+        .stat-number {
+            display: block;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+
+        .chart-container {
+            height: 250px;
+            position: relative;
+        }
+
+        .filtros-avancados {
+            margin-bottom: 1.5rem;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+        }
+
+        .filtros-linha {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            align-items: end;
+        }
+
+        .periodo-personalizado {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .filtro-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .filtro-group label {
+            font-weight: 500;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .relatorio-resumo {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-color-dark));
+            color: white;
+            padding: 1.5rem;
+            border-radius: var(--radius-lg);
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .resumo-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .resumo-count {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+
+        .resumo-filtros {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+
+        .resumo-acoes {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-mini {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 0.5rem 0.75rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-mini:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Estatísticas por Tipo */
+        .selector-tipo {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 0.5rem;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            min-width: 200px;
+        }
+
+        .selector-tipo:focus {
+            outline: 2px solid var(--primary-color);
+            outline-offset: 2px;
+        }
+
+        .stats-display {
+            min-height: 200px;
+        }
+
+        .tipo-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem 1rem;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        .tipo-placeholder svg {
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .tipo-detalhes {
+            padding: 1rem;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .tipo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .tipo-header h4 {
+            margin: 0;
+            color: var(--text-primary);
+            font-size: 1.25rem;
+        }
+
+        .tipo-total {
+            background: var(--primary-color);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: var(--radius-full);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .stats-principais {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .detalhes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .detalhe-secao {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+        }
+
+        .detalhe-secao h5 {
+            margin: 0 0 1rem 0;
+            color: var(--text-primary);
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .lista-detalhes {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .item-detalhe {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: var(--radius-sm);
+            transition: background-color 0.2s;
+        }
+
+        .item-detalhe:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .item-nome {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .item-count {
+            background: var(--primary-color);
+            color: white;
+            padding: 0.125rem 0.5rem;
+            border-radius: var(--radius-full);
+            font-size: 0.75rem;
+            font-weight: 600;
+            min-width: 24px;
+            text-align: center;
+        }
+
+        .item-detalhe-mais {
+            padding: 0.5rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            font-style: italic;
+        }
         .card-header {
             display: flex;
             justify-content: space-between;
@@ -461,25 +1232,6 @@
             color: var(--text-primary);
         }
 
-        .tipo-stats {
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-lg);
-            padding: 1.5rem;
-        }
-
-        .tipo-stats h4 {
-            margin: 0 0 1rem 0;
-            color: var(--text-primary);
-            text-align: center;
-        }
-
-        .stats-mini-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 0.75rem;
-        }
-
         .mini-stat {
             text-align: center;
             padding: 0.75rem;
@@ -560,14 +1312,36 @@
         }
 
         @media (max-width: 640px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .dashboard-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .filtros-linha {
+                grid-template-columns: 1fr;
+            }
+
+            .relatorio-resumo {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .resumo-acoes {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .chart-container {
+                height: 200px;
+            }
+
             .card-header {
                 flex-direction: column;
                 gap: 1rem;
                 align-items: stretch;
-            }
-
-            .stats-mini-grid {
-                grid-template-columns: 1fr;
             }
 
             .local-info {
@@ -575,6 +1349,72 @@
                 align-items: flex-start;
                 gap: 0.25rem;
             }
+
+            .stats-principais {
+                grid-template-columns: 1fr;
+            }
+
+            .detalhes-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .selector-tipo {
+                width: 100%;
+                min-width: unset;
+            }
+
+            .tipo-header {
+                flex-direction: column;
+                gap: 0.5rem;
+                text-align: center;
+            }
+        }
+
+        /* Animações */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .dashboard-card {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .relatorio-item {
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        /* Loading states */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .stat-number.loading::after {
+            content: '';
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--text-primary);
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 0.5rem;
         }
     </style>
     

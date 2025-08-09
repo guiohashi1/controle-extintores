@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Validação de Planos</title>
+    
+    <script src="../js/supabase-config.js"></script>
+    <script src="../js/common.js"></script>
+    <script src="../js/plan-validator.js"></script>
+    <script src="../js/exporter.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/common.css">
+    <link rel="stylesheet" href="../css/plan-styles.css">
+    <style>
+        .test-section {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .test-section h2 {
+            margin-bottom: 16px;
+            color: #2c3e50;
+        }
+        .feature-demo {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .current-user-info {
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+        }
+        .plan-switch {
+            margin-bottom: 24px;
+        }
+        .plan-switch button {
+            margin-right: 8px;
+            margin-bottom: 8px;
+            padding: 8px 16px;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+        }
+        .plan-switch button.active {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="screen-header">
+            <h1>🧪 Teste de Validação de Planos</h1>
+            <p>Demonstração das funcionalidades baseadas em planos</p>
+        </div>
+        
+        <!-- Informações do Usuário Atual -->
+        <div class="current-user-info">
+            <h3>Usuário Atual: <span id="current-user-email">Não logado</span></h3>
+            <p>Plano: <span id="current-plan" class="current-plan">N/A</span></p>
+            <p>Status: <span id="plan-status">N/A</span></p>
+        </div>
+        
+        <!-- Troca de Planos para Teste -->
+        <div class="test-section">
+            <h2>🔄 Trocar Plano (Apenas para Teste)</h2>
+            <div class="plan-switch">
+                <button onclick="switchPlan('starter')">Starter</button>
+                <button onclick="switchPlan('professional')">Professional</button>
+                <button onclick="switchPlan('enterprise')">Enterprise</button>
+            </div>
+        </div>
+        
+        <!-- Teste de Upload de Fotos -->
+        <div class="test-section">
+            <h2>📸 Upload de Fotos</h2>
+            <p><strong>Disponível em:</strong> Professional+</p>
+            <div class="feature-demo">
+                <div data-feature="photos" class="photo-upload-container">
+                    <input type="file" id="test-photo-upload" accept="image/*" style="display: none;">
+                    <button class="btn-photo-upload" onclick="handlePhotoClick()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                            <polyline points="21,15 16,10 5,21"></polyline>
+                        </svg>
+                        Testar Upload de Foto
+                    </button>
+                    <div id="photo-upload-progress" style="display: none; margin-top: 10px;">
+                        <div style="background: #f0f0f0; border-radius: 10px; overflow: hidden;">
+                            <div id="progress-bar" style="height: 20px; background: linear-gradient(90deg, #4CAF50, #45a049); width: 0%; transition: width 0.3s;"></div>
+                        </div>
+                        <small id="progress-text">Fazendo upload...</small>
+                    </div>
+                    <div id="photo-preview" class="photo-preview" style="display: none;">
+                        <img id="preview-img" alt="Preview da foto">
+                        <button type="button" class="btn-remove-photo" onclick="removeTestPhoto()">×</button>
+                    </div>
+                    <div id="photo-result" style="margin-top: 10px; display: none;">
+                        <small id="photo-url"></small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Teste de Exportações -->
+        <div class="test-section">
+            <h2>📊 Exportações</h2>
+            <p><strong>PDF:</strong> Todos os planos | <strong>Excel/CSV:</strong> Professional+ | <strong>JSON:</strong> Enterprise</p>
+            <div class="feature-demo export-buttons">
+                <button class="export-btn" data-export="pdf" onclick="testExportReal('pdf')">
+                    📄 Exportar PDF
+                </button>
+                <button class="export-btn" data-export="excel" onclick="testExportReal('excel')">
+                    📈 Exportar Excel
+                </button>
+                <button class="export-btn" data-export="csv" onclick="testExportReal('csv')">
+                    📋 Exportar CSV
+                </button>
+                <button class="export-btn" data-export="json" onclick="testExportReal('json')">
+                    🔧 Exportar JSON
+                </button>
+            </div>
+            <div id="export-result" style="margin-top: 10px; display: none; padding: 10px; background: #d4edda; border-radius: 5px;">
+                <small id="export-message"></small>
+            </div>
+            
+            <!-- Teste com diferentes planos -->
+            <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 6px; border: 1px solid #e9ecef;">
+                <h4 style="margin-top: 0; color: #495057;">🎯 Teste com Planos Específicos</h4>
+                <p style="font-size: 14px; margin: 8px 0; color: #6c757d;">Clique para testar exportação Excel com diferentes planos:</p>
+                
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
+                    <button class="btn-small" onclick="simulateUser('starter'); setTimeout(() => testExportReal('excel'), 100)" 
+                            style="background: #dc3545; color: white; padding: 6px 12px; border: none; border-radius: 4px; font-size: 13px; cursor: pointer;">
+                        Starter (❌ Bloqueado)
+                    </button>
+                    <button class="btn-small" onclick="simulateUser('professional'); setTimeout(() => testExportReal('excel'), 100)" 
+                            style="background: #28a745; color: white; padding: 6px 12px; border: none; border-radius: 4px; font-size: 13px; cursor: pointer;">
+                        Professional (✅ Permitido)
+                    </button>
+                    <button class="btn-small" onclick="simulateUser('enterprise'); setTimeout(() => testExportReal('excel'), 100)" 
+                            style="background: #007bff; color: white; padding: 6px 12px; border: none; border-radius: 4px; font-size: 13px; cursor: pointer;">
+                        Enterprise (✅ Permitido)
+                    </button>
+                </div>
+                
+                <p style="font-size: 12px; margin: 10px 0 0 0; color: #6c757d;">💡 Dica: Observe como a validação de plano funciona em tempo real!</p>
+            </div>
+        </div>
+        
+        <!-- Teste de Backup -->
+        <div class="test-section">
+            <h2>💾 Backup Automático</h2>
+            <p><strong>Disponível em:</strong> Professional+</p>
+            <div class="feature-demo">
+                <button class="btn btn-secondary" data-feature="backup" onclick="testBackup()">
+                    Configurar Backup
+                </button>
+            </div>
+        </div>
+        
+        <!-- Teste de Relatórios -->
+        <div class="test-section">
+            <h2>📈 Relatórios</h2>
+            <p><strong>Básico:</strong> Todos | <strong>Avançado:</strong> Professional+ | <strong>Premium:</strong> Enterprise</p>
+            <div class="feature-demo">
+                <button class="btn btn-info" onclick="testReports('basic')">
+                    Relatório Básico
+                </button>
+                <button class="btn btn-info" data-feature="reports" data-level="advanced" onclick="testReports('advanced')">
+                    Relatório Avançado
+                </button>
+                <button class="btn btn-info" data-feature="reports" data-level="premium" onclick="testReports('premium')">
+                    Relatório Premium
+                </button>
+            </div>
+        </div>
+        
+        <!-- Teste de API -->
+        <div class="test-section">
+            <h2>🔌 Acesso à API</h2>
+            <p><strong>Disponível em:</strong> Professional+</p>
+            <div class="feature-demo">
+                <button class="btn btn-warning" data-feature="api" onclick="testAPI()">
+                    Testar API
+                </button>
+            </div>
+        </div>
+        
+        <!-- Teste de Limite de Extintores -->
+        <div class="test-section">
+            <h2>🧯 Teste de Limite de Extintores</h2>
+            <div class="feature-demo">
+                <button class="btn btn-primary" onclick="testExtintorLimit()">
+                    Testar Limite de Extintores
+                </button>
+                <button class="btn btn-secondary" onclick="showCurrentLimits()">
+                    Ver Limites Atuais
+                </button>
+            </div>
+            <div id="limit-info" style="margin-top: 12px; padding: 12px; background: #f8f9fa; border-radius: 6px; display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            updateUserInfo();
+            
+            // Simular usuário demo para teste
+            if (!getCurrentUser()) {
+                simulateUser('starter');
+            }
+            
+            // Configurar upload de foto
+            setupPhotoUpload();
+            
+            // Criar dados de exemplo para testes
+            createSampleData();
+        });
+
+        // Criar dados de exemplo
+        function createSampleData() {
+            const sampleExtintores = [
+                {
+                    id: 1,
+                    numero: 'EXT-001',
+                    local: 'Recepção Principal',
+                    tipo: 'Pó Químico',
+                    peso: 6,
+                    validade: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 90 dias
+                    hidro: new Date(Date.now() - 180 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 180 dias atrás
+                    observacoes: 'Extintor em bom estado'
+                },
+                {
+                    id: 2,
+                    numero: 'EXT-002',
+                    local: 'Corredor Setor A',
+                    tipo: 'CO2',
+                    peso: 4,
+                    validade: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 15 dias
+                    hidro: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 1 ano atrás
+                    observacoes: 'Próximo ao vencimento - atenção'
+                },
+                {
+                    id: 3,
+                    numero: 'EXT-003',
+                    local: 'Cozinha',
+                    tipo: 'Água',
+                    peso: 10,
+                    validade: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 5 dias atrás
+                    hidro: new Date(Date.now() - 200 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 200 dias atrás
+                    observacoes: 'VENCIDO - substituir urgente'
+                }
+            ];
+            
+            // Salvar no localStorage para testes
+            localStorage.setItem('extintores', JSON.stringify(sampleExtintores));
+        }
+
+        // Configurar upload de foto
+        function setupPhotoUpload() {
+            const photoInput = document.getElementById('test-photo-upload');
+            if (photoInput) {
+                photoInput.addEventListener('change', handlePhotoUpload);
+            }
+        }
+
+        // Lidar com clique no botão de foto
+        function handlePhotoClick() {
+            // Verificar se pode usar fotos
+            if (window.PlanValidator && !PlanValidator.canUsePhotos()) {
+                return; // Modal já será mostrado pelo PlanValidator
+            }
+            
+            document.getElementById('test-photo-upload').click();
+        }
+
+        // Processar upload de foto
+        async function handlePhotoUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            // Verificar se pode usar fotos
+            if (window.PlanValidator && !PlanValidator.canUsePhotos()) {
+                event.target.value = '';
+                return;
+            }
+            
+            // Validar arquivo
+            if (!file.type.startsWith('image/')) {
+                alert('Por favor, selecione apenas arquivos de imagem.');
+                event.target.value = '';
+                return;
+            }
+            
+            // Verificar tamanho baseado no plano
+            const user = getCurrentUser();
+            const maxSize = user?.plan === 'enterprise' ? 10 * 1024 * 1024 : 5 * 1024 * 1024; // 10MB para Enterprise, 5MB para Professional
+            
+            if (file.size > maxSize) {
+                const maxSizeMB = maxSize / (1024 * 1024);
+                alert(`A imagem deve ter no máximo ${maxSizeMB}MB para seu plano.`);
+                event.target.value = '';
+                return;
+            }
+            
+            // Mostrar progresso
+            showUploadProgress(true);
+            
+            try {
+                // Simular upload (você pode integrar com Supabase aqui)
+                await simulatePhotoUpload(file);
+                
+                // Mostrar preview
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const previewContainer = document.getElementById('photo-preview');
+                    const previewImg = document.getElementById('preview-img');
+                    
+                    previewImg.src = e.target.result;
+                    previewContainer.style.display = 'block';
+                    
+                    // Mostrar URL simulada
+                    const resultDiv = document.getElementById('photo-result');
+                    const urlSpan = document.getElementById('photo-url');
+                    urlSpan.textContent = `✅ Upload realizado com sucesso! URL: https://storage.supabase.co/extintor_${Date.now()}.jpg`;
+                    resultDiv.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+                
+            } catch (error) {
+                console.error('Erro no upload:', error);
+                alert('Erro ao fazer upload da foto. Tente novamente.');
+            } finally {
+                showUploadProgress(false);
+            }
+        }
+
+        // Simular upload para demonstração
+        async function simulatePhotoUpload(file) {
+            return new Promise((resolve, reject) => {
+                // Para demonstração, vamos fazer um upload real simulado
+                let progress = 0;
+                const interval = setInterval(() => {
+                    progress += Math.random() * 20 + 10;
+                    if (progress >= 100) {
+                        progress = 100;
+                        clearInterval(interval);
+                        
+                        // Simular um pequeno delay final
+                        setTimeout(() => {
+                            resolve({
+                                url: `https://storage.supabase.co/extintor_demo_${Date.now()}.jpg`,
+                                success: true
+                            });
+                        }, 500);
+                    }
+                    updateProgressBar(progress);
+                }, 300);
+            });
+        }
+
+        // Mostrar/esconder progresso
+        function showUploadProgress(show) {
+            const progressDiv = document.getElementById('photo-upload-progress');
+            progressDiv.style.display = show ? 'block' : 'none';
+            
+            if (show) {
+                updateProgressBar(0);
+                document.getElementById('progress-text').textContent = 'Fazendo upload...';
+            }
+        }
+
+        // Atualizar barra de progresso
+        function updateProgressBar(percent) {
+            const progressBar = document.getElementById('progress-bar');
+            const progressText = document.getElementById('progress-text');
+            
+            progressBar.style.width = percent + '%';
+            progressText.textContent = `Fazendo upload... ${Math.round(percent)}%`;
+            
+            if (percent >= 100) {
+                progressText.textContent = '✅ Upload concluído!';
+            }
+        }
+
+        // Remover foto de teste
+        function removeTestPhoto() {
+            document.getElementById('test-photo-upload').value = '';
+            document.getElementById('photo-preview').style.display = 'none';
+            document.getElementById('photo-result').style.display = 'none';
+            document.getElementById('preview-img').src = '';
+        }
+        
+        // Atualizar informações do usuário na interface
+        function updateUserInfo() {
+            const user = getCurrentUser();
+            document.getElementById('current-user-email').textContent = user?.email || 'Não logado';
+            document.getElementById('current-plan').textContent = user?.plan || 'N/A';
+            document.getElementById('current-plan').className = `current-plan plan-${user?.plan || 'none'}`;
+            document.getElementById('plan-status').textContent = user?.plan_status || 'N/A';
+            
+            // Atualizar botões ativos
+            document.querySelectorAll('.plan-switch button').forEach(btn => btn.classList.remove('active'));
+            if (user?.plan) {
+                document.querySelector(`[onclick="switchPlan('${user.plan}')"]`)?.classList.add('active');
+            }
+            
+            // Revalidar UI
+            if (window.PlanValidator) {
+                setTimeout(() => PlanValidator.validateUIElements(), 100);
+            }
+        }
+        
+        // Trocar plano para teste
+        function switchPlan(planType) {
+            simulateUser(planType);
+        }
+        
+        // Simular usuário para teste
+        function simulateUser(plan) {
+            const user = {
+                id: 'test-' + plan,
+                email: `${plan}@test-plans.com`,
+                plan: plan,
+                plan_status: 'active',
+                plan_expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 dias
+            };
+            
+            sessionStorage.setItem('currentUser', JSON.stringify(user));
+            
+            // Reinicializar PlanValidator
+            if (window.PlanValidator) {
+                PlanValidator.initialize(user);
+            }
+            
+            updateUserInfo();
+        }
+        
+        // Testar exportação real
+        async function testExportReal(format) {
+            const exportResult = document.getElementById('export-result');
+            const exportMessage = document.getElementById('export-message');
+            
+            try {
+                // Buscar dados dos extintores (simulados ou reais)
+                let extintores = JSON.parse(localStorage.getItem('extintores') || '[]');
+                
+                if (extintores.length === 0) {
+                    exportMessage.textContent = '⚠️ Nenhum extintor encontrado. Usando dados de exemplo...';
+                    exportResult.style.background = '#fff3cd';
+                    exportResult.style.color = '#856404';
+                    exportResult.style.display = 'block';
+                    
+                    createSampleData();
+                    extintores = JSON.parse(localStorage.getItem('extintores') || '[]');
+                }
+                
+                // Criar instância do exportador com dados reais
+                const exporter = new ExtintorExporter(extintores);
+                
+                let success = false;
+                
+                switch(format) {
+                    case 'pdf':
+                        success = await exporter.exportToPDF();
+                        break;
+                    case 'excel':
+                        success = await exporter.exportToExcel();
+                        break;
+                    case 'csv':
+                        success = await exporter.exportToCSV();
+                        break;
+                    case 'json':
+                        success = await exporter.exportToJSON();
+                        break;
+                }
+                
+                if (success) {
+                    const currentUser = getCurrentUser();
+                    const userPlan = currentUser?.plan || 'starter';
+                    exportMessage.textContent = `✅ Exportação ${format.toUpperCase()} realizada com sucesso! (${extintores.length} extintor${extintores.length > 1 ? 'es' : ''} - Plano: ${userPlan})`;
+                    exportResult.style.background = '#d4edda';
+                    exportResult.style.color = '#155724';
+                    exportResult.style.display = 'block';
+                    
+                    setTimeout(() => {
+                        exportResult.style.display = 'none';
+                    }, 5000);
+                } else {
+                    exportMessage.textContent = `❌ Exportação ${format.toUpperCase()} não permitida. Verifique seu plano.`;
+                    exportResult.style.background = '#f8d7da';
+                    exportResult.style.color = '#721c24';
+                    exportResult.style.display = 'block';
+                }
+                
+            } catch (error) {
+                console.error('Erro na exportação:', error);
+                exportMessage.textContent = `❌ Erro na exportação ${format.toUpperCase()}: ${error.message}`;
+                exportResult.style.background = '#f8d7da';
+                exportResult.style.color = '#721c24';
+                exportResult.style.display = 'block';
+            }
+        }
+
+        // Testar exportação (versão antiga - manter para compatibilidade)
+        function testExport(format) {
+            return testExportReal(format);
+        }
+        
+        // Testar backup
+        function testBackup() {
+            if (window.PlanValidator && !PlanValidator.canUseBackup()) {
+                return;
+            }
+            alert('Backup automático autorizado!');
+        }
+        
+        // Testar relatórios
+        function testReports(level) {
+            if (level === 'basic') {
+                alert('Relatório básico sempre disponível!');
+                return;
+            }
+            
+            if (window.PlanValidator && !PlanValidator.canUseAdvancedReports()) {
+                return;
+            }
+            alert(`Relatório ${level} autorizado!`);
+        }
+        
+        // Testar API
+        function testAPI() {
+            if (window.PlanValidator && !PlanValidator.canUseAPI()) {
+                return;
+            }
+            alert('Acesso à API autorizado!');
+        }
+        
+        // Testar limite de extintores
+        async function testExtintorLimit() {
+            if (!window.PlanValidator) {
+                alert('PlanValidator não carregado');
+                return;
+            }
+            
+            const canCreate = await PlanValidator.canCreateExtintor();
+            if (canCreate) {
+                alert('✅ Pode criar extintor!');
+            } else {
+                alert('❌ Limite de extintores atingido!');
+            }
+        }
+        
+        // Mostrar limites atuais
+        function showCurrentLimits() {
+            if (!window.PlanValidator) return;
+            
+            const plan = PlanValidator.currentPlan;
+            const planData = PlanValidator.PLANS[plan];
+            
+            if (planData) {
+                const info = document.getElementById('limit-info');
+                info.innerHTML = `
+                    <h4>Limites do Plano ${planData.name}</h4>
+                    <ul>
+                        <li><strong>Extintores:</strong> ${planData.limits.extintores === -1 ? 'Ilimitados' : planData.limits.extintores}</li>
+                        <li><strong>Usuários:</strong> ${planData.limits.users === -1 ? 'Ilimitados' : planData.limits.users}</li>
+                        <li><strong>Fotos:</strong> ${planData.limits.photos ? '✅' : '❌'}</li>
+                        <li><strong>Backup:</strong> ${planData.limits.backup ? '✅' : '❌'}</li>
+                        <li><strong>API:</strong> ${planData.limits.api || '❌'}</li>
+                        <li><strong>Exportações:</strong> ${planData.limits.exports.join(', ')}</li>
+                        <li><strong>Relatórios:</strong> ${planData.limits.reports}</li>
+                    </ul>
+                `;
+                info.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>

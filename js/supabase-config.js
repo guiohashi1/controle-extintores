@@ -175,11 +175,24 @@ class SupabaseManager {
         id: user.id,
         name: user.name,
         email: user.email,
-        plan: user.plan || 'starter',
+        subscription: user.subscription || 'starter',
         plan_status: user.plan_status || 'active',
         plan_expires_at: user.plan_expires_at,
         created_at: user.created_at
       }));
+      
+      // Atualizar display do usuário
+      if (typeof setCurrentUser === 'function') {
+        setCurrentUser({
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          subscription: user.subscription || 'starter',
+          plan_status: user.plan_status || 'active',
+          plan_expires_at: user.plan_expires_at,
+          created_at: user.created_at
+        });
+      }
       
       console.log('✅ Login bem-sucedido');
 
@@ -642,6 +655,11 @@ function navigateToAdmin() {
     return;
   }
   
+  // Fechar o menu dropdown primeiro
+  if (typeof closeUserMenu === 'function') {
+    closeUserMenu();
+  }
+  
   // Navegar para o painel admin
   window.location.href = '/admin/';
 }
@@ -680,7 +698,7 @@ async function uploadExtintorPhoto(file, extintorId) {
     const user = getCurrentUser();
     if (!user) throw new Error('Usuário não encontrado');
     
-    const maxSize = user.plan === 'enterprise' ? 10 * 1024 * 1024 : 5 * 1024 * 1024;
+    const maxSize = user.subscription === 'enterprise' ? 10 * 1024 * 1024 : 5 * 1024 * 1024;
     if (file.size > maxSize) {
       const maxSizeMB = maxSize / (1024 * 1024);
       throw new Error(`Arquivo muito grande. Limite: ${maxSizeMB}MB`);

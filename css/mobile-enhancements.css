@@ -1,0 +1,360 @@
+/* =============================================================================
+   MELHORIAS ESPECÍFICAS PARA MOBILE
+   Arquivo dedicado para otimizações mobile que complementam o common.css
+   ============================================================================= */
+
+/* ===== TOUCH INTERACTIONS ===== */
+@media (hover: none) and (pointer: coarse) {
+    /* Melhor feedback para dispositivos touch */
+    .btn:active,
+    .export-btn:active,
+    .nav-item:active {
+        transform: scale(0.96);
+        transition: transform 0.1s ease;
+    }
+
+    .extintor-card:active {
+        transform: translateY(1px);
+        transition: transform 0.1s ease;
+    }
+
+    /* Remove outline padrão e adiciona feedback visual */
+    .form-control:focus,
+    .form-select:focus,
+    textarea:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.25);
+        border-color: var(--primary-color);
+    }
+}
+
+/* ===== SCROLL BEHAVIOR ===== */
+@media (max-width: 768px) {
+    /* Smooth scroll para listas longas */
+    .main-content {
+        scroll-behavior: smooth;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Melhores scrollbars em mobile */
+    *::-webkit-scrollbar {
+        width: 4px;
+        height: 4px;
+    }
+
+    *::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    *::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 2px;
+    }
+
+    *::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.3);
+    }
+}
+
+/* ===== MODAL STACK MANAGEMENT ===== */
+@media (max-width: 768px) {
+    /* Garante que modais não fiquem atrás do teclado virtual */
+    .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        margin: 0;
+        border-radius: 0;
+        max-width: none;
+        max-height: none;
+        overflow-y: auto;
+    }
+
+    .modal-content {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        border-radius: 0;
+    }
+
+    .modal-body {
+        flex: 1;
+        padding: 1rem;
+        overflow-y: auto;
+    }
+
+    .modal-header {
+        position: sticky;
+        top: 0;
+        background: var(--bg-secondary);
+        border-bottom: 1px solid var(--border-color);
+        z-index: 10;
+    }
+
+    .modal-footer {
+        position: sticky;
+        bottom: 0;
+        background: var(--bg-secondary);
+        border-top: 1px solid var(--border-color);
+        padding: 1rem;
+    }
+}
+
+/* ===== KEYBOARD AVOIDING ===== */
+@media (max-width: 768px) {
+    /* Para iOS - evita que o teclado cubra campos */
+    .form-group:focus-within {
+        transform: translateZ(0); /* Força layer de composição */
+    }
+
+    /* Scroll automático para campo em foco */
+    .form-control:focus,
+    .form-select:focus,
+    textarea:focus {
+        scroll-margin-top: 100px;
+        scroll-margin-bottom: 100px;
+    }
+}
+
+/* ===== LANDSCAPE MODE OPTIMIZATIONS ===== */
+@media (max-height: 500px) and (orientation: landscape) and (max-width: 896px) {
+    /* Modo paisagem em celulares */
+    .main-content {
+        padding: 0.5rem;
+        margin-top: 50px;
+        margin-bottom: 60px;
+    }
+
+    .screen-header {
+        margin-bottom: 1rem;
+        text-align: left;
+    }
+
+    .screen-header h1 {
+        font-size: 1.25rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .screen-header p {
+        font-size: 0.8125rem;
+    }
+
+    .card {
+        padding: 0.875rem;
+        margin-bottom: 0.75rem;
+    }
+
+    /* Dashboard mais compacto */
+    .dashboard-stats {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.5rem;
+    }
+
+    .stat-item {
+        padding: 0.5rem;
+    }
+
+    .stat-number {
+        font-size: 1.25rem;
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+    }
+
+    /* Filtros em linha */
+    .filtros-container,
+    .filtros-linha {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.75rem;
+    }
+
+    /* Charts mais baixos */
+    .chart-container {
+        height: 180px;
+        padding: 0.5rem;
+    }
+}
+
+/* ===== EXTRA SMALL DEVICES ===== */
+@media (max-width: 360px) {
+    /* Dispositivos muito pequenos */
+    .main-content {
+        padding: 0.5rem 0.25rem;
+    }
+
+    .btn {
+        font-size: 0.8125rem;
+        padding: 0.625rem 0.875rem;
+    }
+
+    .card {
+        padding: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .extintor-card {
+        padding: 0.75rem;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .extintor-header h3 {
+        font-size: 1rem;
+        line-height: 1.3;
+    }
+
+    /* Export buttons em stack */
+    .export-buttons {
+        grid-template-columns: 1fr;
+    }
+
+    .export-btn {
+        padding: 0.625rem;
+        font-size: 0.8125rem;
+    }
+
+    /* Form elements menores */
+    .form-control,
+    .form-select {
+        padding: 0.625rem;
+        font-size: 15px; /* Ainda previne zoom */
+    }
+
+    .form-group label {
+        font-size: 0.8125rem;
+    }
+
+    /* Dashboard stats mais compactos */
+    .dashboard-stats {
+        gap: 0.375rem;
+        padding: 0.5rem 0;
+    }
+
+    .stat-item {
+        padding: 0.5rem 0.375rem;
+        min-height: 60px;
+    }
+
+    .stat-number {
+        font-size: 1.25rem;
+    }
+
+    .stat-label {
+        font-size: 0.6875rem;
+    }
+}
+
+/* ===== HIGH CONTRAST MODE ===== */
+@media (prefers-contrast: high) {
+    .btn {
+        border-width: 2px;
+        font-weight: 600;
+    }
+
+    .extintor-card {
+        border-width: 2px;
+    }
+
+    .status-badge {
+        border: 1px solid currentColor;
+        font-weight: 600;
+    }
+
+    .nav-item.active {
+        background: var(--primary-color);
+        color: white;
+    }
+}
+
+/* ===== REDUCED DATA MODE ===== */
+@media (prefers-reduced-data: reduce) {
+    /* Remove gradients e sombras para economizar dados */
+    .export-card {
+        background: var(--bg-tertiary);
+    }
+
+    .btn {
+        box-shadow: none;
+    }
+
+    .card {
+        box-shadow: none;
+        border: 1px solid var(--border-color);
+    }
+}
+
+/* ===== PRINT STYLES FOR MOBILE ===== */
+@media print {
+    .main-nav,
+    .bottom-nav,
+    .nav-fab,
+    .export-card,
+    .form-actions {
+        display: none !important;
+    }
+
+    .main-content {
+        margin: 0 !important;
+        padding: 1rem !important;
+    }
+
+    .extintor-card {
+        break-inside: avoid;
+        margin-bottom: 1rem;
+    }
+
+    .chart-container {
+        height: 300px;
+    }
+}
+
+/* ===== DARK MODE ENHANCEMENTS ===== */
+@media (prefers-color-scheme: dark) {
+    /* Já usamos dark mode por padrão, mas podemos ajustar para mobile */
+    @media (max-width: 768px) {
+        .modal {
+            background: rgba(0, 0, 0, 0.95);
+        }
+
+        .photo-upload-zone {
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .form-control:focus,
+        .form-select:focus,
+        textarea:focus {
+            box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.4);
+        }
+    }
+}
+
+/* ===== ANIMATION PERFORMANCE ===== */
+@media (max-width: 768px) {
+    /* Otimiza animações para mobile */
+    * {
+        will-change: auto;
+    }
+
+    .btn,
+    .nav-item,
+    .extintor-card {
+        will-change: transform;
+    }
+
+    /* Remove animações complexas em dispositivos lentos */
+    @media (prefers-reduced-motion: reduce) {
+        .btn:active,
+        .nav-item:active,
+        .extintor-card:active {
+            transform: none;
+        }
+
+        .photo-upload-zone:active {
+            transform: none;
+        }
+    }
+}

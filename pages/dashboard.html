@@ -1,5 +1,10 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
+<!DOCTYPE html    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/common.css">
+    <link rel="stylesheet" href="../css/navigation.css">
+    <link rel="stylesheet" href="../css/mobile-enhancements.css">
+    <link rel="stylesheet" href="../css/mobile-fixes.css">
+    <link rel="stylesheet" href="../css/mobile-dashboard.css">
+    <link rel="stylesheet" href="../css/pwa.css">html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -38,59 +43,83 @@
         </div>
         
         <div class="card">
-            <!-- Dashboard de Estatísticas -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon">📊</div>
-                    <div class="stat-content">
-                        <span class="stat-number" id="totalExtintores">0</span>
-                        <span class="stat-label">Total</span>
+            <!-- Dashboard de Estatísticas Principais -->
+            <div class="dashboard-stats">
+                <h3>📊 Resumo Geral</h3>
+                <div class="stats-grid">
+                    <div class="stat-card total">
+                        <div class="stat-icon">�</div>
+                        <div class="stat-content">
+                            <span class="stat-number" id="totalExtintores">0</span>
+                            <span class="stat-label">Total</span>
+                        </div>
                     </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">✅</div>
-                    <div class="stat-content">
-                        <span class="stat-number" id="validosExtintores">0</span>
-                        <span class="stat-label">Válidos</span>
+                    <div class="stat-card valid">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-content">
+                            <span class="stat-number" id="validosExtintores">0</span>
+                            <span class="stat-label">Válidos</span>
+                        </div>
                     </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">⚠️</div>
-                    <div class="stat-content">
-                        <span class="stat-number" id="alertaExtintores">0</span>
-                        <span class="stat-label">Próx. Venc.</span>
+                    <div class="stat-card warning">
+                        <div class="stat-icon">⚠️</div>
+                        <div class="stat-content">
+                            <span class="stat-number" id="alertaExtintores">0</span>
+                            <span class="stat-label">Próx. Venc.</span>
+                        </div>
                     </div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">❌</div>
-                    <div class="stat-content">
-                        <span class="stat-number" id="vencidosExtintores">0</span>
-                        <span class="stat-label">Vencidos</span>
+                    <div class="stat-card expired">
+                        <div class="stat-icon">❌</div>
+                        <div class="stat-content">
+                            <span class="stat-number" id="vencidosExtintores">0</span>
+                            <span class="stat-label">Vencidos</span>
+                        </div>
                     </div>
                 </div>
             </div>
-            
-            <!-- Alertas de Vencimento -->
-            <div id="alertasVencimento" class="alertas-container" style="display: none;">
-                <div class="alert-header">
+        </div>
+        
+        <!-- Alertas de Vencimento (Card Separado) -->
+        <div class="card" id="alertasCard" style="display: none;">
+            <div class="alertas-header">
+                <div class="alert-title">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
                         <line x1="12" y1="9" x2="12" y2="13"></line>
                         <line x1="12" y1="17" x2="12.01" y2="17"></line>
                     </svg>
-                    <h4>Alertas de Vencimento</h4>
+                    <h3>🚨 Alertas de Vencimento</h3>
                 </div>
-                <div id="listaAlertas" class="lista-alertas"></div>
+                <div class="alert-summary" id="alertSummary"></div>
             </div>
-            
-            <div style="text-align: center; margin-top: 2rem;">
-                <a href="form.html" class="btn btn-primary">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                    </svg>
-                    Novo Extintor
-                </a>
+            <div id="listaAlertas" class="lista-alertas"></div>
+        </div>
+        
+        <!-- Botão de Nova Ação -->
+        <div class="card">
+            <div class="action-section">
+                <h3>🆕 Ações Rápidas</h3>
+                <div class="action-buttons">
+                    <button onclick="validarECriarExtintor()" class="btn btn-primary action-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        <div>
+                            <strong>Novo Extintor</strong>
+                            <small>Cadastrar novo extintor</small>
+                        </div>
+                    </button>
+                    <a href="extintores.html" class="btn btn-secondary action-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 3h18v18H3zM9 3v18M15 3v18M3 9h18M3 15h18"></path>
+                        </svg>
+                        <div>
+                            <strong>Ver Lista</strong>
+                            <small>Visualizar todos os extintores</small>
+                        </div>
+                    </a>
+                </div>
             </div>
         </div>
     </main>
@@ -195,14 +224,16 @@
                 const alertas = extintores.filter(e => calcularStatusValidade(e.validade) === 'warning').length;
                 const vencidos = extintores.filter(e => calcularStatusValidade(e.validade) === 'expired').length;
                 
+                // Atualizar números das estatísticas
                 document.getElementById('totalExtintores').textContent = total;
                 document.getElementById('validosExtintores').textContent = validos;
                 document.getElementById('alertaExtintores').textContent = alertas;
                 document.getElementById('vencidosExtintores').textContent = vencidos;
                 
                 // Mostrar alertas se houver
-                const alertasContainer = document.getElementById('alertasVencimento');
+                const alertasCard = document.getElementById('alertasCard');
                 const listaAlertas = document.getElementById('listaAlertas');
+                const alertSummary = document.getElementById('alertSummary');
                 
                 if (alertas > 0 || vencidos > 0) {
                     const extintoresAlerta = extintores.filter(e => {
@@ -210,28 +241,38 @@
                         return status === 'warning' || status === 'expired';
                     });
                     
+                    // Resumo dos alertas
+                    let resumoTexto = [];
+                    if (vencidos > 0) resumoTexto.push(`${vencidos} vencidos`);
+                    if (alertas > 0) resumoTexto.push(`${alertas} próximos ao vencimento`);
+                    alertSummary.textContent = resumoTexto.join(' • ');
+                    
+                    // Lista detalhada
                     listaAlertas.innerHTML = '';
                     extintoresAlerta.forEach(ext => {
                         const dias = calcularDiasRestantes(ext.validade);
                         const isVencido = dias < 0;
                         
                         const item = document.createElement('div');
-                        item.className = `alerta-item ${isVencido ? 'vencido' : ''}`;
+                        item.className = `alerta-item ${isVencido ? 'vencido' : 'proximo'}`;
                         item.innerHTML = `
                             <div class="alerta-info">
-                                <span class="alerta-extintor">${ext.numero}</span>
-                                <span class="alerta-local">${ext.local}</span>
+                                <div class="alerta-extintor">${ext.numero}</div>
+                                <div class="alerta-local">${ext.local}</div>
                             </div>
-                            <span class="alerta-dias ${isVencido ? 'vencido' : 'proximo'}">
-                                ${isVencido ? `${Math.abs(dias)} dias vencido` : `${dias} dias restantes`}
-                            </span>
+                            <div class="alerta-status">
+                                <span class="alerta-dias ${isVencido ? 'vencido' : 'proximo'}">
+                                    ${isVencido ? `${Math.abs(dias)} dias vencido` : `${dias} dias restantes`}
+                                </span>
+                                ${isVencido ? '<span class="status-badge vencido">VENCIDO</span>' : '<span class="status-badge proximo">ATENÇÃO</span>'}
+                            </div>
                         `;
                         listaAlertas.appendChild(item);
                     });
                     
-                    alertasContainer.style.display = 'block';
+                    alertasCard.style.display = 'block';
                 } else {
-                    alertasContainer.style.display = 'none';
+                    alertasCard.style.display = 'none';
                 }
             } catch (error) {
                 console.error('Erro ao carregar dashboard:', error);
@@ -239,6 +280,305 @@
             }
         }
     </script>
+    
+    <style>
+        /* Dashboard Styles */
+        .dashboard-stats h3 {
+            margin: 0 0 1.5rem 0;
+            color: var(--text-primary);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .stat-card {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.5rem;
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .stat-card.total {
+            border-color: #3b82f6;
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+            color: white;
+        }
+        
+        .stat-card.valid {
+            border-color: #10b981;
+            background: linear-gradient(135deg, #10b981 0%, #047857 100%);
+            color: white;
+        }
+        
+        .stat-card.warning {
+            border-color: #f59e0b;
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+        }
+        
+        .stat-card.expired {
+            border-color: #ef4444;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+        }
+        
+        .stat-icon {
+            font-size: 2rem;
+            opacity: 0.9;
+        }
+        
+        .stat-content {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 0.25rem;
+        }
+        
+        .stat-label {
+            font-size: 0.875rem;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+        
+        /* Alertas Card */
+        .alertas-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+        
+        .alert-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .alert-title h3 {
+            margin: 0;
+            color: var(--danger-color);
+            font-weight: 600;
+        }
+        
+        .alert-title svg {
+            color: var(--warning-color);
+        }
+        
+        .alert-summary {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .lista-alertas {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
+        .alerta-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .alerta-item:hover {
+            background: var(--card-bg);
+            border-color: var(--warning-color);
+        }
+        
+        .alerta-item.vencido {
+            border-color: var(--danger-color);
+            background: rgba(239, 68, 68, 0.05);
+        }
+        
+        .alerta-item.proximo {
+            border-color: var(--warning-color);
+            background: rgba(245, 158, 11, 0.05);
+        }
+        
+        .alerta-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+        
+        .alerta-extintor {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+        
+        .alerta-local {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+        
+        .alerta-status {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.5rem;
+        }
+        
+        .alerta-dias {
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+        
+        .alerta-dias.vencido {
+            color: var(--danger-color);
+        }
+        
+        .alerta-dias.proximo {
+            color: var(--warning-color);
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-badge.vencido {
+            background: var(--danger-color);
+            color: white;
+        }
+        
+        .status-badge.proximo {
+            background: var(--warning-color);
+            color: white;
+        }
+        
+        /* Action Section */
+        .action-section h3 {
+            margin: 0 0 1.5rem 0;
+            color: var(--text-primary);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+        
+        .action-btn {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.5rem;
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+        
+        .action-btn svg {
+            flex-shrink: 0;
+        }
+        
+        .action-btn div {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.25rem;
+        }
+        
+        .action-btn strong {
+            font-weight: 600;
+        }
+        
+        .action-btn small {
+            opacity: 0.8;
+            font-size: 0.875rem;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* Mobile Responsive */
+        @media (max-width: 640px) {
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .stat-card {
+                flex-direction: column;
+                text-align: center;
+                padding: 1rem;
+            }
+            
+            .stat-icon {
+                font-size: 1.5rem;
+                margin-bottom: 0.5rem;
+            }
+            
+            .stat-number {
+                font-size: 1.5rem;
+            }
+            
+            .alertas-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+            
+            .alerta-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.75rem;
+            }
+            
+            .alerta-status {
+                align-items: flex-start;
+                flex-direction: row;
+                justify-content: space-between;
+                width: 100%;
+            }
+            
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
     
     <!-- <script src="../js/pwa-manager.js"></script> -->
 </body>

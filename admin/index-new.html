@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Controle de Extintores</title>
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+        }
+        
+        .loading-container {
+            background: white;
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 400px;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #e2e8f0;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            color: #4a5568;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .loading-subtitle {
+            color: #718096;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-container">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Verificando autenticação...</div>
+        <div class="loading-subtitle">Aguarde um momento</div>
+    </div>
+
+    <script src="../js/supabase-config.js"></script>
+    <script>
+        // Verificação de autenticação e redirecionamento
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🔍 Verificando autenticação admin...');
+            
+            setTimeout(() => {
+                checkAuthAndRedirect();
+            }, 500);
+        });
+
+        function checkAuthAndRedirect() {
+            try {
+                // Verificar se há usuário logado
+                let user = null;
+                
+                const sessionData = sessionStorage.getItem('currentUser');
+                if (sessionData) {
+                    user = JSON.parse(sessionData);
+                    console.log('✅ Usuário encontrado no sessionStorage:', user.email);
+                }
+                
+                if (!user && typeof supabase !== 'undefined' && supabase.currentUser) {
+                    user = supabase.currentUser;
+                    console.log('✅ Usuário encontrado no supabase:', user.email);
+                }
+                
+                if (!user) {
+                    console.log('❌ Nenhum usuário logado, redirecionando para login');
+                    window.location.href = 'login.html';
+                    return;
+                }
+                
+                // Verificar se é admin
+                const isUserAdmin = user.admin === true || user.tipo === 'admin';
+                const adminEmails = ['admin@teste.com', 'admin@extintores.com'];
+                const isInAdminList = adminEmails.includes(user.email);
+                const isDev = window.location.hostname.includes('localhost') || 
+                             window.location.hostname.includes('127.0.0.1') ||
+                             window.location.hostname.includes('netlify');
+                
+                const isAdmin = isUserAdmin || isInAdminList || (isDev && user.email);
+                
+                if (!isAdmin) {
+                    console.log('❌ Usuário não é admin:', user);
+                    alert('❌ Acesso negado. Apenas administradores podem acessar este painel.');
+                    window.location.href = '../index.html';
+                    return;
+                }
+                
+                console.log('✅ Admin verificado, redirecionando para dashboard');
+                window.location.href = 'dashboard.html';
+                
+            } catch (error) {
+                console.error('❌ Erro na verificação:', error);
+                window.location.href = 'login.html';
+            }
+        }
+    </script>
+</body>
+</html>

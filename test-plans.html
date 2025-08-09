@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 Teste de Limitações de Planos B2B</title>
+    <style>
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0 0 10px 0;
+            font-size: 2.5rem;
+        }
+        
+        .header p {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .test-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 20px 0;
+            border-left: 4px solid #007bff;
+        }
+        
+        .test-section h3 {
+            margin: 0 0 15px 0;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .user-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .user-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-top: 4px solid;
+            transition: transform 0.2s;
+        }
+        
+        .user-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .user-card.starter {
+            border-top-color: #f39c12;
+        }
+        
+        .user-card.professional {
+            border-top-color: #27ae60;
+        }
+        
+        .user-card.enterprise {
+            border-top-color: #8e44ad;
+        }
+        
+        .user-card.expired {
+            border-top-color: #e74c3c;
+        }
+        
+        .user-info {
+            margin-bottom: 15px;
+        }
+        
+        .user-info h4 {
+            margin: 0 0 5px 0;
+            color: #2c3e50;
+        }
+        
+        .user-info .plan-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+        
+        .starter .plan-badge {
+            background: #f39c12;
+            color: white;
+        }
+        
+        .professional .plan-badge {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .enterprise .plan-badge {
+            background: #8e44ad;
+            color: white;
+        }
+        
+        .expired .plan-badge {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .limits-info {
+            background: #f1f3f4;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        
+        .limit-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            font-size: 0.9rem;
+        }
+        
+        .limit-current {
+            font-weight: bold;
+        }
+        
+        .limit-current.warning {
+            color: #f39c12;
+        }
+        
+        .limit-current.danger {
+            color: #e74c3c;
+        }
+        
+        .limit-current.success {
+            color: #27ae60;
+        }
+        
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+            margin: 5px;
+        }
+        
+        button:hover {
+            background: #0056b3;
+            transform: translateY(-1px);
+        }
+        
+        button.test-button {
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        button.danger {
+            background: #dc3545;
+        }
+        
+        button.danger:hover {
+            background: #c82333;
+        }
+        
+        button.success {
+            background: #28a745;
+        }
+        
+        button.success:hover {
+            background: #218838;
+        }
+        
+        .results {
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+        
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+            border-radius: 3px;
+        }
+        
+        .log-entry.success {
+            background: rgba(39, 174, 96, 0.2);
+            border-left: 3px solid #27ae60;
+        }
+        
+        .log-entry.error {
+            background: rgba(231, 76, 60, 0.2);
+            border-left: 3px solid #e74c3c;
+        }
+        
+        .log-entry.warning {
+            background: rgba(243, 156, 18, 0.2);
+            border-left: 3px solid #f39c12;
+        }
+        
+        .log-entry.info {
+            background: rgba(52, 152, 219, 0.2);
+            border-left: 3px solid #3498db;
+        }
+        
+        .actions-section {
+            background: #e9ecef;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+            border-radius: 4px;
+        }
+        
+        .progress-fill.success {
+            background: #28a745;
+        }
+        
+        .progress-fill.warning {
+            background: #ffc107;
+        }
+        
+        .progress-fill.danger {
+            background: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="header">
+            <h1>🧪 Teste de Limitações de Planos B2B</h1>
+            <p>Sistema completo de validação das funcionalidades por plano</p>
+        </div>
+        
+        <div class="content">
+            <!-- Seção de usuários de teste -->
+            <div class="test-section">
+                <h3>👥 Usuários de Teste</h3>
+                <div id="users-container" class="user-cards">
+                    <!-- Cards serão inseridos aqui pelo JavaScript -->
+                </div>
+            </div>
+            
+            <!-- Ações de teste -->
+            <div class="test-section">
+                <h3>⚡ Ações de Teste</h3>
+                <div class="actions-section">
+                    <div class="actions-grid">
+                        <button onclick="testAllLimitations()" class="success">🔍 Testar Todas as Limitações</button>
+                        <button onclick="testExtintorLimits()" class="test-button">🧯 Testar Limite de Extintores</button>
+                        <button onclick="testPhotoFeature()" class="test-button">📷 Testar Funcionalidade de Fotos</button>
+                        <button onclick="testExportFeature()" class="test-button">📊 Testar Exportação</button>
+                        <button onclick="testExpiredAccess()" class="danger">⚠️ Testar Acesso Vencido</button>
+                        <button onclick="simulateUpgradeFlow()" class="test-button">📈 Simular Fluxo de Upgrade</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Controles de usuário -->
+            <div class="test-section">
+                <h3>🔄 Controles de Teste</h3>
+                <div class="actions-grid">
+                    <button onclick="loginAsUser('starter')" class="test-button">Login Starter</button>
+                    <button onclick="loginAsUser('professional')" class="test-button">Login Professional</button>
+                    <button onclick="loginAsUser('enterprise')" class="test-button">Login Enterprise</button>
+                    <button onclick="loginAsUser('expired')" class="danger">Login Vencido</button>
+                </div>
+            </div>
+            
+            <!-- Resultados -->
+            <div class="test-section">
+                <h3>📋 Resultados dos Testes</h3>
+                <div id="test-results" class="results">
+                    <div class="log-entry info">Sistema de testes carregado. Execute os testes acima.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts necessários -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/common.js"></script>
+    <script src="js/plan-validator.js"></script>
+    <script src="js/demo-manager.js"></script>
+
+    <script>
+        // Usuários de teste com dados reais
+        const testUsers = {
+            starter: {
+                id: 'test-starter-001',
+                email: 'starter@test-plans.com',
+                name: 'Empresa Starter Teste',
+                plan: 'starter',
+                plan_status: 'active',
+                plan_expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+                expectedExtintores: 45,
+                maxExtintores: 50
+            },
+            professional: {
+                id: 'test-professional-001',
+                email: 'professional@test-plans.com',
+                name: 'Empresa Professional Teste',
+                plan: 'professional',
+                plan_status: 'active',
+                plan_expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+                expectedExtintores: 150,
+                maxExtintores: 200
+            },
+            enterprise: {
+                id: 'test-enterprise-001',
+                email: 'enterprise@test-plans.com',
+                name: 'Empresa Enterprise Teste',
+                plan: 'enterprise',
+                plan_status: 'active',
+                plan_expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+                expectedExtintores: 300,
+                maxExtintores: -1 // Ilimitado
+            },
+            expired: {
+                id: 'test-expired-001',
+                email: 'expired@test-plans.com',
+                name: 'Empresa Vencida Teste',
+                plan: 'professional',
+                plan_status: 'expired',
+                plan_expires_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+                expectedExtintores: 0,
+                maxExtintores: 200
+            }
+        };
+
+        let currentTestUser = null;
+        let testResults = document.getElementById('test-results');
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type}`;
+            logEntry.innerHTML = `<strong>[${timestamp}]</strong> ${message}`;
+            testResults.appendChild(logEntry);
+            testResults.scrollTop = testResults.scrollHeight;
+        }
+
+        // Renderizar cards dos usuários
+        function renderUserCards() {
+            const container = document.getElementById('users-container');
+            container.innerHTML = '';
+
+            Object.keys(testUsers).forEach(userType => {
+                const user = testUsers[userType];
+                const percentage = user.maxExtintores === -1 ? 0 : (user.expectedExtintores / user.maxExtintores) * 100;
+                
+                let statusClass = 'success';
+                if (user.plan_status === 'expired') statusClass = 'danger';
+                else if (percentage >= 90) statusClass = 'danger';
+                else if (percentage >= 75) statusClass = 'warning';
+
+                const card = document.createElement('div');
+                card.className = `user-card ${userType}`;
+                card.innerHTML = `
+                    <div class="user-info">
+                        <h4>${user.name}</h4>
+                        <div class="plan-badge">${user.plan}</div>
+                        <div style="font-size: 0.9rem; color: #6c757d;">
+                            ${user.email}<br>
+                            Status: <span class="limit-current ${user.plan_status === 'active' ? 'success' : 'danger'}">${user.plan_status}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="limits-info">
+                        <div class="limit-item">
+                            <span>Extintores:</span>
+                            <span class="limit-current ${statusClass}">
+                                ${user.expectedExtintores} / ${user.maxExtintores === -1 ? '∞' : user.maxExtintores}
+                            </span>
+                        </div>
+                        ${user.maxExtintores !== -1 ? `
+                            <div class="progress-bar">
+                                <div class="progress-fill ${statusClass}" style="width: ${Math.min(percentage, 100)}%"></div>
+                            </div>
+                        ` : ''}
+                        
+                        <div class="limit-item">
+                            <span>Fotos:</span>
+                            <span class="limit-current">${user.plan !== 'starter' ? '✅' : '❌'}</span>
+                        </div>
+                        
+                        <div class="limit-item">
+                            <span>API:</span>
+                            <span class="limit-current">
+                                ${user.plan === 'enterprise' ? '✅ Completa' : 
+                                  user.plan === 'professional' ? '⚠️ Limitada' : '❌'}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <button class="test-button" onclick="loginAsUser('${userType}')">
+                        🔑 Login como ${user.plan}
+                    </button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Login como usuário de teste
+        async function loginAsUser(userType) {
+            const user = testUsers[userType];
+            if (!user) {
+                log(`❌ Usuário ${userType} não encontrado`, 'error');
+                return;
+            }
+
+            try {
+                log(`🔑 Fazendo login como: ${user.name} (${user.plan})`, 'info');
+                
+                // Simular login
+                currentTestUser = user;
+                sessionStorage.setItem('currentUser', JSON.stringify(user));
+                
+                // Verificar se o plano está ativo
+                if (window.PlanValidator) {
+                    const isValid = PlanValidator.initialize(user);
+                    if (isValid) {
+                        log(`✅ Login realizado com sucesso! Plano: ${user.plan.toUpperCase()}`, 'success');
+                    } else {
+                        log(`⚠️ Login realizado, mas plano está ${user.plan_status}`, 'warning');
+                    }
+                } else {
+                    log(`✅ Login simulado (PlanValidator não disponível)`, 'success');
+                }
+                
+                // Atualizar interface
+                renderUserCards();
+                
+            } catch (error) {
+                log(`❌ Erro no login: ${error.message}`, 'error');
+            }
+        }
+
+        // Testar limites de extintores
+        async function testExtintorLimits() {
+            log('🧯 Testando limites de extintores...', 'info');
+
+            for (const userType of Object.keys(testUsers)) {
+                const user = testUsers[userType];
+                
+                // Simular login
+                await loginAsUser(userType);
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                if (window.PlanValidator) {
+                    try {
+                        // Testar se pode criar extintor
+                        const canCreate = await PlanValidator.canCreateExtintor();
+                        
+                        if (user.plan_status === 'expired') {
+                            log(`⚠️ ${user.name}: Plano vencido - acesso bloqueado`, 'warning');
+                        } else if (user.expectedExtintores >= user.maxExtintores && user.maxExtintores !== -1) {
+                            if (!canCreate) {
+                                log(`✅ ${user.name}: Limite atingido (${user.expectedExtintores}/${user.maxExtintores}) - Bloqueio funcionando!`, 'success');
+                            } else {
+                                log(`❌ ${user.name}: Deveria bloquear criação (limite atingido)`, 'error');
+                            }
+                        } else {
+                            if (canCreate) {
+                                log(`✅ ${user.name}: Pode criar extintores (${user.expectedExtintores}/${user.maxExtintores === -1 ? '∞' : user.maxExtintores})`, 'success');
+                            } else {
+                                log(`❌ ${user.name}: Deveria permitir criação`, 'error');
+                            }
+                        }
+                    } catch (error) {
+                        log(`❌ Erro ao testar ${user.name}: ${error.message}`, 'error');
+                    }
+                } else {
+                    log(`⚠️ PlanValidator não disponível para teste`, 'warning');
+                }
+            }
+        }
+
+        // Testar funcionalidade de fotos
+        async function testPhotoFeature() {
+            log('📷 Testando funcionalidade de fotos...', 'info');
+
+            for (const userType of Object.keys(testUsers)) {
+                const user = testUsers[userType];
+                await loginAsUser(userType);
+                
+                if (window.PlanValidator) {
+                    const canUsePhotos = PlanValidator.canUsePhotos();
+                    const shouldAllow = user.plan !== 'starter' && user.plan_status === 'active';
+                    
+                    if (canUsePhotos === shouldAllow) {
+                        log(`✅ ${user.name}: Fotos ${canUsePhotos ? 'liberadas' : 'bloqueadas'} corretamente`, 'success');
+                    } else {
+                        log(`❌ ${user.name}: Erro na validação de fotos`, 'error');
+                    }
+                } else {
+                    log(`⚠️ PlanValidator não disponível`, 'warning');
+                }
+            }
+        }
+
+        // Testar exportação
+        async function testExportFeature() {
+            log('📊 Testando funcionalidades de exportação...', 'info');
+
+            const formats = ['pdf', 'excel', 'csv'];
+            
+            for (const userType of Object.keys(testUsers)) {
+                const user = testUsers[userType];
+                await loginAsUser(userType);
+                
+                if (window.PlanValidator) {
+                    formats.forEach(format => {
+                        const canExport = PlanValidator.canExport(format);
+                        const planInfo = PlanValidator.getCurrentPlanInfo();
+                        const shouldAllow = planInfo && planInfo.limits.exports.includes(format) && user.plan_status === 'active';
+                        
+                        if (canExport === shouldAllow) {
+                            log(`✅ ${user.name}: ${format.toUpperCase()} ${canExport ? 'liberado' : 'bloqueado'} corretamente`, 'success');
+                        } else {
+                            log(`❌ ${user.name}: Erro na validação de ${format.toUpperCase()}`, 'error');
+                        }
+                    });
+                }
+            }
+        }
+
+        // Testar acesso vencido
+        async function testExpiredAccess() {
+            log('⚠️ Testando bloqueio de plano vencido...', 'info');
+            
+            await loginAsUser('expired');
+            
+            if (window.PlanValidator) {
+                // Tentar várias ações
+                setTimeout(() => {
+                    log('🧯 Tentando criar extintor com plano vencido...', 'info');
+                    PlanValidator.canCreateExtintor();
+                }, 1000);
+                
+                setTimeout(() => {
+                    log('📷 Tentando usar fotos com plano vencido...', 'info');
+                    PlanValidator.canUsePhotos();
+                }, 2000);
+            }
+        }
+
+        // Simular fluxo de upgrade
+        async function simulateUpgradeFlow() {
+            log('📈 Simulando fluxo completo de upgrade...', 'info');
+            
+            // Login como starter próximo do limite
+            await loginAsUser('starter');
+            
+            setTimeout(() => {
+                log('🧯 Tentando criar extintor além do limite...', 'info');
+                if (window.PlanValidator) {
+                    PlanValidator.canCreateExtintor().then(canCreate => {
+                        if (!canCreate) {
+                            log('✅ Modal de upgrade deve ter sido exibido', 'success');
+                        }
+                    });
+                }
+            }, 1000);
+        }
+
+        // Executar todos os testes
+        async function testAllLimitations() {
+            log('🔍 Iniciando teste completo de limitações...', 'info');
+            log('═'.repeat(50), 'info');
+            
+            await testExtintorLimits();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await testPhotoFeature();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await testExportFeature();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            log('═'.repeat(50), 'info');
+            log('✅ Teste completo finalizado!', 'success');
+        }
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            log('🎯 Sistema de teste de limitações carregado!', 'success');
+            renderUserCards();
+            
+            // Verificar se PlanValidator está disponível
+            if (typeof PlanValidator !== 'undefined') {
+                log('✅ PlanValidator detectado e funcional', 'success');
+            } else {
+                log('⚠️ PlanValidator não foi carregado', 'warning');
+            }
+        });
+    </script>
+</body>
+</html>

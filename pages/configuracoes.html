@@ -28,7 +28,7 @@
         </div>
         
         <!-- Perfil do Usuário -->
-        <div class="card">
+        <div class="card" id="perfil">
             <div class="card-header">
                 <h3>Perfil do Usuário</h3>
             </div>
@@ -239,6 +239,24 @@
             await carregarDadosUsuario();
             carregarInformacoesSystem();
             carregarPreferencias();
+            
+            // Verificar se deve scrollar para o perfil
+            if (window.location.hash === '#perfil') {
+                setTimeout(() => {
+                    const perfilSection = document.getElementById('perfil');
+                    if (perfilSection) {
+                        perfilSection.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'start' 
+                        });
+                        // Adicionar destaque visual temporário
+                        perfilSection.style.boxShadow = '0 0 20px rgba(239, 68, 68, 0.3)';
+                        setTimeout(() => {
+                            perfilSection.style.boxShadow = '';
+                        }, 2000);
+                    }
+                }, 500);
+            }
         });
 
         async function carregarDadosUsuario() {
@@ -283,7 +301,7 @@
             // Fallback: dados locais
             document.getElementById('userName').value = user.name || user.email?.split('@')[0] || '';
             document.getElementById('userEmail').value = user.email || '';
-            document.getElementById('userPlano').value = user.plano || user.plan || 'Starter';
+            document.getElementById('userPlano').value = user.subscription || 'Starter';
             document.getElementById('ultimoLogin').textContent = new Date().toLocaleString('pt-BR');
         }
 

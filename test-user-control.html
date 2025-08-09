@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste - Controle de Usuários</title>
+    
+    <!-- Scripts necessários -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/common.js"></script>
+    <script src="js/plan-validator.js"></script>
+    <script src="js/test-user-control-auto.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/plan-styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>🧪 Teste - Controle de Usuários</h1>
+            <p>Esta página permite testar o sistema de controle de usuários simultâneos por plano.</p>
+            
+            <div class="test-section">
+                <h3>📊 Status Atual</h3>
+                <div id="status-info">
+                    <p><strong>Usuário:</strong> <span id="current-user">-</span></p>
+                    <p><strong>Plano:</strong> <span id="current-plan">-</span></p>
+                    <p><strong>Limite de Usuários:</strong> <span id="user-limit">-</span></p>
+                    <p><strong>Usuários Ativos:</strong> <span id="active-users">-</span></p>
+                </div>
+            </div>
+            
+            <div class="test-section">
+                <h3>🧪 Testes Disponíveis</h3>
+                <div class="test-buttons">
+                    <button onclick="testUserLimit()" class="btn btn-primary">
+                        Testar Limite de Usuários
+                    </button>
+                    <button onclick="showActiveSessions()" class="btn btn-secondary">
+                        Ver Sessões Ativas
+                    </button>
+                    <button onclick="simulateNewUser()" class="btn btn-warning">
+                        Simular Novo Usuário
+                    </button>
+                    <button onclick="clearAllSessions()" class="btn btn-danger">
+                        Limpar Todas as Sessões
+                    </button>
+                    <button onclick="window.testesControleUsuarios.executarTodosOsTestes()" class="btn" style="background: #28a745; color: white;">
+                        🧪 Executar Teste Automático
+                    </button>
+                </div>
+            </div>
+            
+            <div class="test-section">
+                <h3>📝 Log de Testes</h3>
+                <div id="test-log" style="background: #f8f9fa; padding: 1rem; border-radius: 8px; font-family: monospace; max-height: 300px; overflow-y: auto;">
+                    <div>Aguardando testes...</div>
+                </div>
+            </div>
+            
+            <div class="test-section">
+                <h3>💡 Como Testar</h3>
+                <ol>
+                    <li><strong>Abra outra aba/janela</strong> com a mesma página</li>
+                    <li><strong>Faça login</strong> com o mesmo usuário (starter@test-plans.com)</li>
+                    <li><strong>Plano Starter:</strong> permite apenas 2 usuários simultâneos</li>
+                    <li><strong>Na 3ª aba:</strong> deve aparecer modal de limite atingido</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Inicialização da página
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!checkAuth()) return;
+            
+            await updateStatusInfo();
+            startStatusMonitoring();
+        });
+
+        // Atualizar informações de status
+        async function updateStatusInfo() {
+            const user = getCurrentUser();
+            const planInfo = PlanValidator.getCurrentPlanInfo();
+            const activeUsers = await PlanValidator.getActiveUserCount();
+            
+            document.getElementById('current-user').textContent = user?.email || 'Não identificado';
+            document.getElementById('current-plan').textContent = planInfo?.name || 'Não identificado';
+            document.getElementById('user-limit').textContent = planInfo?.limits?.users === -1 ? 'Ilimitado' : planInfo?.limits?.users || 'Não definido';
+            document.getElementById('active-users').textContent = activeUsers;
+        }
+
+        // Monitorar status em tempo real
+        function startStatusMonitoring() {
+            setInterval(updateStatusInfo, 5000); // Atualizar a cada 5 segundos
+        }
+
+        // Testar limite de usuários
+        async function testUserLimit() {
+            logTest('🧪 Iniciando teste de limite de usuários...');
+            
+            const canAdd = await PlanValidator.canAddUser();
+            logTest(`✅ Resultado: ${canAdd ? 'Pode adicionar usuário' : 'Limite atingido'}`);
+            
+            await updateStatusInfo();
+        }
+
+        // Mostrar sessões ativas
+        function showActiveSessions() {
+            try {
+                const globalSessions = JSON.parse(localStorage.getItem('globalSessions') || '{}');
+                logTest('📊 Sessões ativas encontradas:');
+                
+                let count = 0;
+                const now = new Date();
+                
+                for (const [sessionId, sessionData] of Object.entries(globalSessions)) {
+                    const lastActivity = new Date(sessionData.lastActivity);
+                    const diffMinutes = Math.round((now - lastActivity) / (1000 * 60));
+                    
+                    if (diffMinutes <= 30) {
+                        count++;
+                        logTest(`  ${count}. ${sessionData.email} - Ativo há ${diffMinutes}min`);
+                    }
+                }
+                
+                if (count === 0) {
+                    logTest('  Nenhuma sessão ativa encontrada');
+                }
+                
+            } catch (error) {
+                logTest(`❌ Erro ao listar sessões: ${error.message}`);
+            }
+        }
+
+        // Simular novo usuário (para teste)
+        function simulateNewUser() {
+            try {
+                const sessionData = {
+                    userId: 'simulated_' + Date.now(),
+                    email: 'usuario.simulado@test.com',
+                    plan: 'starter',
+                    loginTime: new Date().toISOString(),
+                    lastActivity: new Date().toISOString(),
+                    sessionId: 'sim_' + Date.now()
+                };
+                
+                const globalSessions = JSON.parse(localStorage.getItem('globalSessions') || '{}');
+                globalSessions[sessionData.sessionId] = sessionData;
+                localStorage.setItem('globalSessions', JSON.stringify(globalSessions));
+                
+                logTest(`👥 Usuário simulado criado: ${sessionData.email}`);
+                updateStatusInfo();
+                
+            } catch (error) {
+                logTest(`❌ Erro ao simular usuário: ${error.message}`);
+            }
+        }
+
+        // Limpar todas as sessões
+        function clearAllSessions() {
+            try {
+                localStorage.removeItem('globalSessions');
+                sessionStorage.removeItem('userSession');
+                
+                logTest('🧹 Todas as sessões foram limpas');
+                updateStatusInfo();
+                
+            } catch (error) {
+                logTest(`❌ Erro ao limpar sessões: ${error.message}`);
+            }
+        }
+
+        // Log de testes
+        function logTest(message) {
+            const logElement = document.getElementById('test-log');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `<span style="color: #666;">[${timestamp}]</span> ${message}`;
+            
+            logElement.appendChild(logEntry);
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+    </script>
+
+    <style>
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .test-section {
+            margin: 2rem 0;
+            padding: 1rem;
+            border-left: 4px solid var(--primary-color);
+            background: var(--bg-secondary);
+        }
+
+        .test-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin: 1rem 0;
+        }
+
+        .test-buttons .btn {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        #status-info p {
+            margin: 0.5rem 0;
+            font-size: 1rem;
+        }
+
+        #status-info span {
+            font-family: monospace;
+            background: var(--bg-tertiary);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+        }
+
+        ol {
+            line-height: 1.6;
+        }
+
+        ol li {
+            margin: 0.5rem 0;
+        }
+    </style>
+</body>
+</html>

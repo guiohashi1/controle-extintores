@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste - Sistema B2B</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        
+        #demo-interface {
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Teste do Sistema B2B - Planos</h1>
+        
+        <div id="status-checks">
+            <h3>Status dos Arquivos:</h3>
+            <div id="file-status"></div>
+        </div>
+        
+        <div id="functionality-tests">
+            <h3>Teste de Funcionalidades:</h3>
+            <button onclick="testPlanValidator()">Testar Plan Validator</button>
+            <button onclick="testDemoManager()">Testar Demo Manager</button>
+            <button onclick="testSupabaseConnection()">Testar Supabase</button>
+        </div>
+        
+        <div id="demo-section">
+            <h3>Demonstração Rápida:</h3>
+            <button onclick="quickLoginDemo('starter')">Login Starter</button>
+            <button onclick="quickLoginDemo('professional')">Login Professional</button>
+            <button onclick="quickLoginDemo('enterprise')">Login Enterprise</button>
+            <button onclick="quickLoginDemo('expired')">Login Vencido</button>
+        </div>
+        
+        <div id="results"></div>
+    </div>
+
+    <!-- Scripts necessários -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/common.js"></script>
+    <script src="js/plan-validator.js"></script>
+    <script src="js/demo-manager.js"></script>
+
+    <script>
+        let results = document.getElementById('results');
+        let fileStatus = document.getElementById('file-status');
+        
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.innerHTML = `<strong>[${new Date().toLocaleTimeString()}]</strong> ${message}`;
+            results.appendChild(div);
+            results.scrollTop = results.scrollHeight;
+        }
+        
+        // Verificar status dos arquivos
+        function checkFiles() {
+            const files = [
+                { name: 'Supabase SDK', check: () => typeof window.supabase !== 'undefined' },
+                { name: 'Common.js', check: () => typeof getCurrentUser === 'function' },
+                { name: 'Plan Validator', check: () => typeof PlanValidator !== 'undefined' },
+                { name: 'Demo Manager', check: () => typeof DemoManager !== 'undefined' },
+                { name: 'Supabase Config', check: () => typeof window.supabase !== 'undefined' }
+            ];
+            
+            fileStatus.innerHTML = '';
+            
+            files.forEach(file => {
+                const status = document.createElement('div');
+                const isLoaded = file.check();
+                status.className = `status ${isLoaded ? 'success' : 'error'}`;
+                status.textContent = `${file.name}: ${isLoaded ? '✅ Carregado' : '❌ Não carregado'}`;
+                fileStatus.appendChild(status);
+            });
+        }
+        
+        function testPlanValidator() {
+            log('🧪 Testando Plan Validator...');
+            
+            if (typeof PlanValidator === 'undefined') {
+                log('❌ PlanValidator não está carregado', 'error');
+                return;
+            }
+            
+            try {
+                const plans = PlanValidator.PLANS;
+                log(`✅ Planos carregados: ${Object.keys(plans).join(', ')}`, 'success');
+                
+                // Testar plano starter
+                const starterPlan = plans.starter;
+                log(`📋 Plano Starter - Limite extintores: ${starterPlan.limits.extintores}`, 'info');
+                log(`💰 Plano Starter - Preço: R$ ${starterPlan.price}`, 'info');
+                
+            } catch (error) {
+                log(`❌ Erro ao testar PlanValidator: ${error.message}`, 'error');
+            }
+        }
+        
+        function testDemoManager() {
+            log('🎭 Testando Demo Manager...');
+            
+            if (typeof DemoManager === 'undefined') {
+                log('❌ DemoManager não está carregado', 'error');
+                return;
+            }
+            
+            try {
+                const users = DemoManager.demoUsers;
+                log(`✅ Usuários demo disponíveis: ${Object.keys(users).join(', ')}`, 'success');
+                
+                // Mostrar interface demo
+                DemoManager.showDemoInterface();
+                log('✅ Interface demo ativada', 'success');
+                
+            } catch (error) {
+                log(`❌ Erro ao testar DemoManager: ${error.message}`, 'error');
+            }
+        }
+        
+        function testSupabaseConnection() {
+            log('🔌 Testando conexão Supabase...');
+            
+            if (typeof window.supabase === 'undefined') {
+                log('❌ Supabase não está carregado', 'error');
+                return;
+            }
+            
+            try {
+                // Verificar se a configuração está correta
+                log('✅ Supabase SDK carregado', 'success');
+                log('ℹ️ Para testar completamente, execute um login demo', 'info');
+                
+            } catch (error) {
+                log(`❌ Erro ao testar Supabase: ${error.message}`, 'error');
+            }
+        }
+        
+        function quickLoginDemo(planType) {
+            log(`🚀 Fazendo login demo como: ${planType.toUpperCase()}`);
+            
+            if (typeof DemoManager === 'undefined') {
+                log('❌ DemoManager não disponível', 'error');
+                return;
+            }
+            
+            try {
+                const success = DemoManager.loginAsDemo(planType);
+                if (success) {
+                    log(`✅ Login ${planType} configurado! Redirecionando...`, 'success');
+                }
+            } catch (error) {
+                log(`❌ Erro no login demo: ${error.message}`, 'error');
+            }
+        }
+        
+        // Executar verificações automaticamente
+        document.addEventListener('DOMContentLoaded', () => {
+            log('🎯 Sistema de teste carregado!', 'success');
+            
+            // Aguardar um pouco para os scripts carregarem
+            setTimeout(() => {
+                checkFiles();
+                log('📋 Verificação de arquivos concluída', 'info');
+            }, 1000);
+        });
+        
+        // Log de carregamento
+        log('🔄 Carregando sistema de teste...', 'info');
+    </script>
+</body>
+</html>

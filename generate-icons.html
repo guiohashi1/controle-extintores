@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Ícones PWA</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .icon-preview {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .generated-icons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .icon-item {
+            text-align: center;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 5px;
+        }
+        .icon-item canvas {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+        }
+        button:hover {
+            background: #dc2626;
+        }
+        .download-all {
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔥 Gerador de Ícones PWA - Controle de Extintores</h1>
+        
+        <div class="icon-preview">
+            <canvas id="sourceCanvas" width="512" height="512" style="max-width: 200px; height: auto;"></canvas>
+            <br>
+            <button onclick="generateAllIcons()">Gerar Todos os Ícones</button>
+            <button onclick="downloadAllIcons()">Baixar Todos</button>
+        </div>
+        
+        <div class="generated-icons" id="iconsContainer"></div>
+        
+        <div class="download-all">
+            <p><strong>Instruções:</strong></p>
+            <ol>
+                <li>Clique em "Gerar Todos os Ícones"</li>
+                <li>Clique em "Baixar Todos" ou clique individualmente em cada ícone</li>
+                <li>Salve todos os arquivos na pasta <code>/icons/</code></li>
+                <li>Faça o commit e deploy!</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        const iconSizes = [16, 32, 48, 72, 96, 128, 144, 152, 192, 256, 384, 512];
+        
+        // Desenhar o ícone base
+        function drawBaseIcon(canvas, size) {
+            const ctx = canvas.getContext('2d');
+            canvas.width = size;
+            canvas.height = size;
+            
+            // Limpar canvas
+            ctx.clearRect(0, 0, size, size);
+            
+            // Fundo bege claro
+            ctx.fillStyle = '#f5f2e8';
+            ctx.fillRect(0, 0, size, size);
+            
+            // Escudo externo (preto)
+            const centerX = size / 2;
+            const centerY = size / 2;
+            const shieldWidth = size * 0.8;
+            const shieldHeight = size * 0.85;
+            
+            ctx.fillStyle = '#2d3748';
+            ctx.beginPath();
+            
+            // Forma do escudo
+            const startY = centerY - shieldHeight/2 + size * 0.05;
+            ctx.moveTo(centerX, startY);
+            
+            // Curvas do topo
+            ctx.quadraticCurveTo(centerX - shieldWidth/2, startY, centerX - shieldWidth/2, startY + shieldHeight * 0.3);
+            ctx.quadraticCurveTo(centerX - shieldWidth/2, startY + shieldHeight * 0.7, centerX, startY + shieldHeight);
+            ctx.quadraticCurveTo(centerX + shieldWidth/2, startY + shieldHeight * 0.7, centerX + shieldWidth/2, startY + shieldHeight * 0.3);
+            ctx.quadraticCurveTo(centerX + shieldWidth/2, startY, centerX, startY);
+            
+            ctx.fill();
+            
+            // Escudo interno (branco)
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            
+            const innerScale = 0.85;
+            const innerWidth = shieldWidth * innerScale;
+            const innerHeight = shieldHeight * innerScale;
+            const innerStartY = centerY - innerHeight/2 + size * 0.05;
+            
+            ctx.moveTo(centerX, innerStartY);
+            ctx.quadraticCurveTo(centerX - innerWidth/2, innerStartY, centerX - innerWidth/2, innerStartY + innerHeight * 0.3);
+            ctx.quadraticCurveTo(centerX - innerWidth/2, innerStartY + innerHeight * 0.7, centerX, innerStartY + innerHeight);
+            ctx.quadraticCurveTo(centerX + innerWidth/2, innerStartY + innerHeight * 0.7, centerX + innerWidth/2, innerStartY + innerHeight * 0.3);
+            ctx.quadraticCurveTo(centerX + innerWidth/2, innerStartY, centerX, innerStartY);
+            
+            ctx.fill();
+            
+            // Extintor (vermelho)
+            const extWidth = size * 0.25;
+            const extHeight = size * 0.5;
+            const extX = centerX - extWidth/2;
+            const extY = centerY - extHeight/2 + size * 0.02;
+            
+            ctx.fillStyle = '#ef4444';
+            ctx.fillRect(extX, extY, extWidth, extHeight);
+            
+            // Topo do extintor (preto)
+            ctx.fillStyle = '#2d3748';
+            ctx.fillRect(extX + extWidth * 0.2, extY - size * 0.03, extWidth * 0.6, size * 0.05);
+            
+            // Mangueira
+            ctx.strokeStyle = '#2d3748';
+            ctx.lineWidth = size * 0.015;
+            ctx.beginPath();
+            ctx.moveTo(extX + extWidth, extY + size * 0.02);
+            ctx.quadraticCurveTo(extX + extWidth + size * 0.08, extY + size * 0.02, extX + extWidth + size * 0.12, extY + size * 0.08);
+            ctx.stroke();
+            
+            // Chama (branca)
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            
+            const flameX = centerX;
+            const flameY = centerY + size * 0.05;
+            const flameSize = size * 0.12;
+            
+            // Forma da chama
+            ctx.moveTo(flameX, flameY - flameSize);
+            ctx.quadraticCurveTo(flameX - flameSize * 0.6, flameY - flameSize * 0.3, flameX - flameSize * 0.3, flameY);
+            ctx.quadraticCurveTo(flameX - flameSize * 0.1, flameY + flameSize * 0.2, flameX, flameY + flameSize * 0.3);
+            ctx.quadraticCurveTo(flameX + flameSize * 0.1, flameY + flameSize * 0.2, flameX + flameSize * 0.3, flameY);
+            ctx.quadraticCurveTo(flameX + flameSize * 0.6, flameY - flameSize * 0.3, flameX, flameY - flameSize);
+            
+            ctx.fill();
+        }
+        
+        function generateAllIcons() {
+            const container = document.getElementById('iconsContainer');
+            container.innerHTML = '';
+            
+            iconSizes.forEach(size => {
+                const iconDiv = document.createElement('div');
+                iconDiv.className = 'icon-item';
+                
+                const canvas = document.createElement('canvas');
+                canvas.width = size;
+                canvas.height = size;
+                canvas.style.width = size < 64 ? '64px' : Math.min(size, 128) + 'px';
+                canvas.style.height = 'auto';
+                canvas.style.cursor = 'pointer';
+                
+                drawBaseIcon(canvas, size);
+                
+                const label = document.createElement('div');
+                label.textContent = `${size}x${size}`;
+                label.style.fontSize = '12px';
+                label.style.marginTop = '5px';
+                
+                canvas.onclick = () => downloadIcon(canvas, size);
+                
+                iconDiv.appendChild(canvas);
+                iconDiv.appendChild(label);
+                container.appendChild(iconDiv);
+            });
+        }
+        
+        function downloadIcon(canvas, size) {
+            const link = document.createElement('a');
+            link.download = `icon-${size}x${size}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+        
+        function downloadAllIcons() {
+            const canvases = document.querySelectorAll('.icon-item canvas');
+            canvases.forEach((canvas, index) => {
+                setTimeout(() => {
+                    const size = iconSizes[index];
+                    downloadIcon(canvas, size);
+                }, index * 200); // delay para não sobrecarregar
+            });
+        }
+        
+        // Gerar ícone de exemplo ao carregar
+        window.onload = () => {
+            const sourceCanvas = document.getElementById('sourceCanvas');
+            drawBaseIcon(sourceCanvas, 512);
+        };
+    </script>
+</body>
+</html>

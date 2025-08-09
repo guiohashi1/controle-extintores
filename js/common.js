@@ -92,8 +92,18 @@ function navigateTo(page) {
     return;
   }
   
+  // Fechar o menu dropdown primeiro
+  closeUserMenu();
   // Atualizar URL sem recarregar a página
   window.location.href = `${page}.html`;
+}
+
+// Função específica para navegar ao perfil (seção específica de configurações)
+function navigateToPerfil() {
+  // Fechar o menu dropdown primeiro
+  closeUserMenu();
+  // Navega para configurações e rola até a seção do perfil
+  window.location.href = `configuracoes.html#perfil`;
 }
 
 // Função para detectar página atual
@@ -114,16 +124,13 @@ function setCurrentUser(user) {
     // Atualizar indicador de plano se existir
     updatePlanIndicator(user);
     
-    // Atualizar interface se elementos existirem
-    const userNameElement = document.getElementById('user-name');
+    // Tentar atualizar UI imediatamente
+    updateUserDisplay(user);
+    
+    // Se elementos não existem, tentar novamente após delay
     const userPlanElement = document.getElementById('user-plan');
-    
-    if (userNameElement) {
-      userNameElement.textContent = user.name || user.email;
-    }
-    
-    if (userPlanElement) {
-      userPlanElement.textContent = user.plano || 'Basic';
+    if (!userPlanElement) {
+      setTimeout(() => updateUserDisplay(user), 500);
     }
   } else {
     // Limpar sessionStorage
@@ -131,11 +138,35 @@ function setCurrentUser(user) {
   }
 }
 
+function updateUserDisplay(user) {
+  // Atualizar interface se elementos existirem
+  const userNameElement = document.getElementById('user-name');
+  const userPlanElement = document.getElementById('user-plan');
+  
+  if (userNameElement) {
+    userNameElement.textContent = user.name || user.email;
+  }
+  
+  if (userPlanElement) {
+    // Mapear planos para nomes amigáveis
+    const planNames = {
+      'starter': 'Starter',
+      'professional': 'Professional',
+      'enterprise': 'Enterprise',
+      'basic': 'Starter'  // 🔧 MAPEAMENTO para compatibilidade com dados antigos
+    };
+    
+    const currentPlan = user.subscription || 'starter';
+    const displayName = planNames[currentPlan] || currentPlan;
+    userPlanElement.textContent = displayName;
+  }
+}
+
 function updatePlanIndicator(user) {
   const planIndicator = document.querySelector('.plan-indicator');
   if (!planIndicator) return;
   
-  const plan = user.plan || 'starter';
+  const plan = user.subscription || 'starter';
   const planNames = {
     starter: 'Starter',
     professional: 'Professional', 
@@ -150,7 +181,7 @@ function createPlanIndicator() {
   const user = getCurrentUser();
   if (!user) return '';
   
-  const plan = user.plan || 'starter';
+  const plan = user.subscription || 'starter';
   const planNames = {
     starter: 'Starter',
     professional: 'Professional',
@@ -175,6 +206,10 @@ function requireAuth() {
     window.location.href = 'index.html';
     return false;
   }
+  
+  // Atualizar display do usuário na UI
+  setCurrentUser(user);
+  
   return true;
 }
 
@@ -183,6 +218,13 @@ function toggleUserMenu() {
   const dropdown = document.querySelector('.user-dropdown');
   if (dropdown) {
     dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+  }
+}
+
+function closeUserMenu() {
+  const dropdown = document.querySelector('.user-dropdown');
+  if (dropdown) {
+    dropdown.style.display = 'none';
   }
 }
 
@@ -236,6 +278,9 @@ function getStatusBadge(status, dias) {
 // ===== LOGOUT =====
 function handleLogout() {
   if (confirm('Tem certeza que deseja sair?')) {
+    // Fechar o menu dropdown primeiro
+    closeUserMenu();
+    
     // Limpar dados do usuário
     setCurrentUser(null);
     
@@ -383,6 +428,10 @@ function checkAuth() {
     window.location.href = '../index.html';
     return false;
   }
+  
+  // Atualizar display do usuário na UI
+  setCurrentUser(user);
+  
   return true;
 }
 
@@ -408,32 +457,121 @@ function initAuth() {
 /**
  * Função global para validar limites antes de criar extintor
  * Chamada pelo botão FAB (+) na navegação inferior
- * Cache bust: V2.0-FINAL-ATUALIZADO
+ * V3.0 - MODAL SIMPLES SEM PLANVALIDATOR
  */
 async function validarECriarExtintor() {
-    console.log('🔥 VALIDAÇÃO V2.0 - FAB (+) clicado - Validando limites...');
-    
-    // Verificar se PlanValidator está disponível
-    if (!window.PlanValidator) {
-        console.log('⚠️ PlanValidator não disponível, redirecionando diretamente');
-        window.location.href = 'form.html';
-        return;
-    }
+    console.log('🔥 VALIDAÇÃO V3.0 - FAB (+) clicado - Usando modal simples...');
     
     try {
-        // Validar limite do plano
-        const canCreate = await PlanValidator.canCreateExtintor();
-        
-        if (canCreate) {
-            console.log('✅ Validação passou - redirecionando para formulário');
+        // 🔧 CORREÇÃO: Buscar usuário diretamente do sessionStorage
+        const userDataString = sessionStorage.getItem('currentUser');
+        if (!userDataString) {
+            console.error('❌ FAB: Nenhum usuário no sessionStorage');
             window.location.href = 'form.html';
-        } else {
-            console.log('🚫 Limite atingido - modal deve ter aparecido');
-            // Modal já foi exibido pela função canCreateExtintor
+            return;
         }
+        
+        const currentUser = JSON.parse(userDataString);
+        if (!currentUser || !currentUser.id) {
+            console.error('❌ FAB: id não encontrado');
+            window.location.href = 'form.html';
+            return;
+        }
+        
+        console.log('👤 FAB: Validando para usuário:', currentUser.id);
+        
+        // Buscar contagem diretamente do usuário correto
+        const response = await fetch(`https://japgbufsqbjfkbkrncgg.supabase.co/rest/v1/extintores?user_id=eq.${currentUser.id}&select=*`, {
+            headers: {
+                'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcGdidWZzcWJqZmtia3JuY2dnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0OTg3NTksImV4cCI6MjA3MDA3NDc1OX0.AIc0koiJoLrRoFEhvV8qfskpL5ffA-l35cvGNGTLlOs',
+                'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcGdidWZzcWJqZmtia3JuY2dnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0OTg3NTksImV4cCI6MjA3MDA3NDc1OX0.AIc0koiJoLrRoFEhvV8qfskpL5ffA-l35cvGNGTLlOs'
+            }
+        });
+        
+        const extintores = await response.json();
+        const count = Array.isArray(extintores) ? extintores.length : 0;
+        
+        console.log('📊 FAB: Contagem atual:', count);
+        console.log('🔢 FAB: Limite Starter:', 50);
+        
+        if (count >= 50) {
+            console.log('🚫 FAB: LIMITE ATINGIDO - Mostrando modal simples...');
+            
+            // Modal SIMPLES para FAB button
+            const modal = document.createElement('div');
+            modal.className = 'emergency-modal-overlay';
+            modal.innerHTML = `
+                <div class="emergency-modal-content">
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <div style="font-size: 48px; margin-bottom: 10px;">🚫</div>
+                        <h3 style="margin: 0; color: #dc3545;">Limite Atingido</h3>
+                        <p style="margin: 8px 0; color: #666; font-size: 14px;">${count}/50 extintores cadastrados</p>
+                    </div>
+                    
+                    <p style="text-align: center; margin: 15px 0; font-size: 15px; color: #333;">
+                        Para cadastrar mais extintores, faça upgrade para o <strong>Plano Professional</strong>
+                    </p>
+                    
+                    <div class="modal-actions" style="display: flex; gap: 10px; margin-top: 20px;">
+                        <button 
+                            type="button"
+                            onclick="console.log('🔥 FAB: Ver Extintores'); this.closest('.emergency-modal-overlay').remove(); window.location.href='extintores.html';"
+                            style="
+                                flex: 1;
+                                padding: 14px 20px;
+                                border: 2px solid #007bff;
+                                background: white;
+                                color: #007bff;
+                                border-radius: 8px;
+                                font-size: 16px;
+                                font-weight: 600;
+                                cursor: pointer;
+                                touch-action: manipulation;
+                                min-height: 50px;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                            "
+                        >
+                            📋 Ver Lista
+                        </button>
+                        <button 
+                            type="button"
+                            onclick="console.log('� FAB: Fazer Upgrade'); window.open('mailto:contato@empresa.com?subject=Upgrade para Professional&body=Gostaria de fazer upgrade para cadastrar mais extintores.', '_blank'); this.closest('.emergency-modal-overlay').remove();"
+                            style="
+                                flex: 1;
+                                padding: 14px 20px;
+                                border: none;
+                                background: #dc3545;
+                                color: white;
+                                border-radius: 8px;
+                                font-size: 16px;
+                                font-weight: 600;
+                                cursor: pointer;
+                                touch-action: manipulation;
+                                min-height: 50px;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                            "
+                        >
+                            🚀 Upgrade
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+            console.log('✅ FAB: Modal SIMPLES criado');
+            return;
+        }
+        
+        console.log('✅ FAB: Pode criar extintor - redirecionando');
+        window.location.href = 'form.html';
+        
     } catch (error) {
-        console.error('❌ Erro na validação:', error);
-        // Em caso de erro, permitir acesso
+        console.error('❌ Erro na validação do FAB:', error);
+        // Em caso de erro, permitir acesso para não travar o sistema
         window.location.href = 'form.html';
     }
 }
