@@ -5,11 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel Administrativo - Controle de Extintores</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/dropdowns.css">
+    <link rel="stylesheet" href="css/admin.css">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+        }
+
+        :root {
+            --admin-primary: #3b82f6;
+            --admin-secondary: #6b7280;
+            --admin-success: #10b981;
+            --admin-warning: #f59e0b;
+            --admin-danger: #ef4444;
+            --admin-text: #1f2937;
+            --admin-bg: #f7fafc;
         }
 
         body {
@@ -276,21 +288,25 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: var(--admin-primary);
             color: white;
             border: none;
             padding: 0.75rem 1.5rem;
             border-radius: 8px;
             cursor: pointer;
             font-size: 0.9rem;
+            font-weight: 600;
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            transition: transform 0.3s;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
         }
 
         .btn-primary:hover {
+            background: #2563eb;
             transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
         }
 
         .table-container {
@@ -504,6 +520,195 @@
                 height: 28px;
             }
         }
+
+        /* Estilos específicos para modais administrativos */
+        .modal-form .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .modal-form label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--admin-text);
+        }
+
+        .modal-form input,
+        .modal-form select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .modal-form input:focus,
+        .modal-form select:focus {
+            outline: none;
+            border-color: var(--admin-primary);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 1.5rem;
+        }
+
+        /* Estilos dos botões já definidos acima */
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .btn-danger {
+            background: var(--admin-danger);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .modal-large {
+            width: 90%;
+            max-width: 800px;
+        }
+
+        .extintor-details {
+            margin: 1rem 0;
+        }
+
+        .detail-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .detail-section h4 {
+            color: var(--admin-primary);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 0.5rem;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .detail-item {
+            padding: 0.5rem;
+            background: #f9fafb;
+            border-radius: 4px;
+        }
+
+        .detail-item strong {
+            color: var(--admin-text);
+            margin-right: 0.5rem;
+        }
+
+        .status-item .status-expired {
+            color: var(--admin-danger);
+            font-weight: 600;
+        }
+
+        .status-item .status-warning {
+            color: var(--admin-warning);
+            font-weight: 600;
+        }
+
+        .status-item .status-valid {
+            color: var(--admin-success);
+            font-weight: 600;
+        }
+
+        .plan-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .plan-starter {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .plan-professional {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .plan-enterprise {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .observacoes-content {
+            background: #f9fafb;
+            padding: 1rem;
+            border-radius: 4px;
+            border-left: 4px solid var(--admin-primary);
+            white-space: pre-wrap;
+        }
+
+        .export-options {
+            text-align: center;
+            margin: 1rem 0;
+        }
+
+        .export-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .btn-export {
+            background: #f3f4f6;
+            border: 2px solid #e5e7eb;
+            padding: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--admin-text);
+            transition: all 0.2s;
+        }
+
+        .btn-export:hover {
+            background: var(--admin-primary);
+            color: white;
+            border-color: var(--admin-primary);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6b7280;
+            line-height: 1;
+        }
+
+        .close-btn:hover {
+            color: var(--admin-danger);
+        }
     </style>
 </head>
 <body>
@@ -638,7 +843,7 @@
             </div>
             
             <div class="filter-box">
-                <select id="user-filter" onchange="filterUsers()">
+                <select id="user-filter" onchange="filterUsers()" class="form-select">
                     <option value="all">Todos os usuários</option>
                     <option value="active">Usuários ativos</option>
                     <option value="inactive">Usuários inativos</option>
@@ -676,9 +881,10 @@
         </div>
     </div>
 
-    <script src="../js/supabase-config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="admin-supabase.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bcryptjs@2.4.3/dist/bcrypt.min.js"></script>
+    <script src="../js/supabase-config.js"></script>
+    <script src="js/admin-core.js"></script>
     <script>
         class AdminDashboard {
             constructor() {
@@ -743,14 +949,14 @@
                 try {
                     console.log('📊 Carregando dados do dashboard...');
                     
-                    // Carregar estatísticas reais do Supabase
-                    const stats = await window.adminSupabase.getSystemStats();
+                    // Carregar estatísticas reais do AdminCore
+                    const stats = await window.adminCore.getSystemStats();
                     
                     // Atualizar interface com dados reais
-                    document.getElementById('total-users').textContent = stats.totalUsers.toLocaleString('pt-BR');
-                    document.getElementById('total-extinguishers').textContent = stats.totalExtinguishers.toLocaleString('pt-BR');
-                    document.getElementById('expired-extinguishers').textContent = stats.expiredExtinguishers.toLocaleString('pt-BR');
-                    document.getElementById('active-users').textContent = stats.activeUsers.toLocaleString('pt-BR');
+                    document.getElementById('total-users').textContent = stats.totalUsuarios.toLocaleString('pt-BR');
+                    document.getElementById('total-extinguishers').textContent = stats.totalExtintores.toLocaleString('pt-BR');
+                    document.getElementById('expired-extinguishers').textContent = stats.extintoresVencidos.toLocaleString('pt-BR');
+                    document.getElementById('active-users').textContent = stats.usuariosAtivos.toLocaleString('pt-BR');
                     
                 } catch (error) {
                     console.error('❌ Erro ao carregar dados:', error);
@@ -910,8 +1116,8 @@
                     </tr>
                 `;
                 
-                // Carregar usuários reais do Supabase
-                const users = await window.adminSupabase.getAllUsers();
+                // Carregar usuários reais do AdminCore
+                const users = await window.adminCore.getUsers();
                 
                 if (users.length === 0) {
                     tbody.innerHTML = `
@@ -925,8 +1131,13 @@
                     return;
                 }
                 
-                // Exibir usuários
-                displayUsers(users);
+                // Exibir usuários usando AdminCore
+                if (window.adminCore) {
+                    window.adminCore.renderUsuarios(users);
+                } else {
+                    console.error('AdminCore não disponível');
+                    displayUsers(users); // fallback
+                }
                 
                 // Mostrar notificação de sucesso
                 showNotification(`✅ ${users.length} usuários carregados com sucesso!`, 'success');
@@ -1004,7 +1215,14 @@
         }
 
         function formatDate(dateString) {
-            return new Date(dateString).toLocaleDateString('pt-BR');
+            if (!dateString || dateString === null || dateString === 'null') {
+                return 'Nunca';
+            }
+            try {
+                return new Date(dateString).toLocaleDateString('pt-BR');
+            } catch (error) {
+                return 'Data inválida';
+            }
         }
 
         function searchUsers() {
@@ -1044,10 +1262,8 @@
                 
                 showNotification('Carregando detalhes do usuário...', 'info');
                 
-                const userDetails = await window.adminSupabase.getUserDetails(userId);
-                
-                // Criar modal com detalhes do usuário
-                showUserDetailsModal(userDetails);
+                // Usar a função viewUserDetails do AdminCore que já está implementada
+                await window.adminCore.viewUserDetails(userId);
                 
             } catch (error) {
                 console.error('❌ Erro ao carregar detalhes:', error);
@@ -1078,17 +1294,17 @@
                             </div>
                             <div class="detail-item">
                                 <label>Plano:</label>
-                                <span class="plan-badge plan-${window.adminSupabase.mapSubscriptionToPlan(user.subscription)}">
+                                <span class="plan-badge plan-${window.mapSubscriptionToPlan(user.subscription)}">
                                     ${user.subscription}
                                 </span>
                             </div>
                             <div class="detail-item">
                                 <label>Cadastrado em:</label>
-                                <span>${window.adminSupabase.formatDate(user.created_at)}</span>
+                                <span>${window.formatDate(user.created_at)}</span>
                             </div>
                             <div class="detail-item">
                                 <label>Última atualização:</label>
-                                <span>${window.adminSupabase.formatDate(user.updated_at)}</span>
+                                <span>${window.formatDate(user.updated_at)}</span>
                             </div>
                             <div class="detail-item">
                                 <label>Total de Extintores:</label>
@@ -1106,8 +1322,8 @@
                                                 <strong>#${ext.numero}</strong> - ${ext.tipo}
                                                 <span class="ext-location">${ext.local}</span>
                                             </div>
-                                            <div class="ext-status ${window.adminSupabase.getExtinguisherStatus(ext)}">
-                                                ${window.adminSupabase.isExtinguisherExpired(ext.data_vencimento) ? 'Vencido' : 'Válido'}
+                                            <div class="ext-status ${window.getExtinguisherStatus(ext)}">
+                                                ${window.isExtinguisherExpired(ext.data_vencimento) ? 'Vencido' : 'Válido'}
                                             </div>
                                         </div>
                                     `).join('')}
@@ -1284,7 +1500,7 @@
             try {
                 showNotification('Excluindo usuário...', 'info');
                 
-                await window.adminSupabase.deleteUser(userId);
+                await window.adminCore.deleteUser(userId);
                 
                 showNotification('✅ Usuário excluído com sucesso!', 'success');
                 

@@ -1,0 +1,290 @@
+/* =============================================================================
+   DROPDOWNS PADRONIZADOS - CONTROLE DE EXTINTORES
+   Estilos consistentes para todos os tipos de dropdown do sistema
+   ============================================================================= */
+
+/* ===== DROPDOWN DE NAVEGAÇÃO (USER MENU) ===== */
+.user-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  min-width: 220px;
+  padding: 0.5rem 0;
+  margin-top: 0.5rem;
+  display: none;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  animation: dropdownFadeIn 0.2s ease-out;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-weight: 500;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+}
+
+.dropdown-item:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.dropdown-item svg {
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.dropdown-item:hover svg {
+  opacity: 1;
+}
+
+.dropdown-item.logout {
+  color: var(--danger-color);
+  border-top: 1px solid var(--border-color);
+  margin-top: 0.5rem;
+}
+
+.dropdown-item.logout:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger-color);
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: var(--border-color);
+  margin: 0.5rem 0;
+}
+
+/* ===== SELECT BOXES PADRONIZADOS ===== */
+.form-select,
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 100%;
+  padding: 0.75rem 2.5rem 0.75rem 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-weight: 400;
+  line-height: 1.5;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+  
+  /* Seta personalizada */
+  background-image: url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23cbd5e1' stroke-width='2'><polyline points='6,9 12,15 18,9'></polyline></svg>");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 16px;
+}
+
+.form-select:focus,
+select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+  background-image: url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ef4444' stroke-width='2'><polyline points='6,9 12,15 18,9'></polyline></svg>");
+}
+
+.form-select:hover,
+select:hover {
+  border-color: var(--text-secondary);
+  background-image: url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f8fafc' stroke-width='2'><polyline points='6,9 12,15 18,9'></polyline></svg>");
+}
+
+/* Opções do select */
+.form-select option,
+select option {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  padding: 0.5rem;
+}
+
+/* ===== SELECT ESPECÍFICOS POR CONTEXTO ===== */
+
+/* Filtros */
+.filtros-container select {
+  min-width: 150px;
+  max-width: 200px;
+}
+
+/* Relatórios */
+.relatorios-filtros select {
+  min-width: 180px;
+}
+
+/* Configurações */
+.configuracao-item select {
+  min-width: 120px;
+  max-width: 180px;
+}
+
+/* Admin */
+.admin-filters select {
+  min-width: 140px;
+  max-width: 200px;
+}
+
+/* ===== ESTADOS DE VALIDAÇÃO ===== */
+.form-select.is-valid,
+select.is-valid {
+  border-color: var(--success-color);
+  background-image: url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2310b981' stroke-width='2'><polyline points='6,9 12,15 18,9'></polyline></svg>");
+}
+
+.form-select.is-invalid,
+select.is-invalid {
+  border-color: var(--danger-color);
+  background-image: url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ef4444' stroke-width='2'><polyline points='6,9 12,15 18,9'></polyline></svg>");
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+
+/* Mobile */
+@media (max-width: 768px) {
+  .user-dropdown {
+    right: -1rem;
+    min-width: 200px;
+    max-width: 280px;
+  }
+  
+  .form-select,
+  select {
+    padding: 0.875rem 2.5rem 0.875rem 0.875rem;
+    font-size: 16px; /* Previne zoom no iOS */
+  }
+  
+  .filtros-container select,
+  .relatorios-filtros select,
+  .configuracao-item select,
+  .admin-filters select {
+    min-width: 100%;
+    max-width: 100%;
+  }
+}
+
+/* Mobile pequeno */
+@media (max-width: 480px) {
+  .user-dropdown {
+    right: -0.5rem;
+    min-width: 180px;
+    max-width: 240px;
+  }
+  
+  .dropdown-item {
+    padding: 0.625rem 0.875rem;
+    font-size: 0.875rem;
+  }
+  
+  .form-select,
+  select {
+    padding: 0.75rem 2rem 0.75rem 0.75rem;
+    background-size: 14px;
+    background-position: right 0.5rem center;
+  }
+}
+
+/* ===== TEMAS E ACESSIBILIDADE ===== */
+
+/* Modo escuro aprimorado */
+@media (prefers-color-scheme: dark) {
+  .user-dropdown {
+    background: rgba(30, 41, 59, 0.95);
+    border-color: rgba(71, 85, 105, 0.8);
+  }
+  
+  .form-select,
+  select {
+    background-color: rgba(51, 65, 85, 0.8);
+    border-color: rgba(71, 85, 105, 0.6);
+  }
+}
+
+/* Alto contraste */
+@media (prefers-contrast: high) {
+  .form-select,
+  select {
+    border-width: 2px;
+  }
+  
+  .form-select:focus,
+  select:focus {
+    box-shadow: 0 0 0 3px var(--primary-color);
+  }
+}
+
+/* Redução de movimento */
+@media (prefers-reduced-motion: reduce) {
+  .user-dropdown,
+  .form-select,
+  select,
+  .dropdown-item {
+    transition: none;
+    animation: none;
+  }
+}
+
+/* ===== TOUCH DEVICES ===== */
+@media (hover: none) and (pointer: coarse) {
+  .dropdown-item {
+    min-height: 44px; /* Área de toque mínima */
+    padding: 0.875rem 1rem;
+  }
+  
+  .form-select,
+  select {
+    min-height: 48px; /* Área de toque mínima */
+    padding: 0.875rem 2.5rem 0.875rem 0.875rem;
+  }
+  
+  .dropdown-item:active {
+    background: var(--bg-primary);
+    transform: scale(0.98);
+  }
+}
+
+/* ===== OTIMIZAÇÕES PARA IPHONE ===== */
+@media (max-width: 430px) and (-webkit-min-device-pixel-ratio: 2) {
+  .form-select,
+  select {
+    min-height: 44px;
+    font-size: 16px;
+    -webkit-appearance: none;
+    appearance: none;
+    -webkit-border-radius: var(--radius-md);
+    border-radius: var(--radius-md);
+  }
+  
+  .dropdown-item {
+    min-height: 44px;
+    -webkit-tap-highlight-color: transparent;
+  }
+}

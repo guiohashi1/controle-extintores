@@ -170,6 +170,18 @@ class SupabaseManager {
       this.authToken = this.generateSessionToken(user);
       this.currentUser = user;
       
+      // Atualizar last_login no banco de dados
+      try {
+        await this.request(`users?id=eq.${user.id}`, 'PATCH', {
+          last_login: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        });
+        console.log('📅 Last login atualizado');
+      } catch (loginUpdateError) {
+        console.warn('⚠️ Erro ao atualizar last_login:', loginUpdateError);
+        // Não falhar o login por causa disso
+      }
+      
       // Salvar no sessionStorage com dados de plano
       sessionStorage.setItem('currentUser', JSON.stringify({
         id: user.id,
@@ -178,7 +190,8 @@ class SupabaseManager {
         subscription: user.subscription || 'starter',
         plan_status: user.plan_status || 'active',
         plan_expires_at: user.plan_expires_at,
-        created_at: user.created_at
+        created_at: user.created_at,
+        last_login: new Date().toISOString()
       }));
       
       // Atualizar display do usuário
@@ -190,7 +203,8 @@ class SupabaseManager {
           subscription: user.subscription || 'starter',
           plan_status: user.plan_status || 'active',
           plan_expires_at: user.plan_expires_at,
-          created_at: user.created_at
+          created_at: user.created_at,
+          last_login: new Date().toISOString()
         });
       }
       

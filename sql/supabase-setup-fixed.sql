@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS users (
   plan_expires_at TIMESTAMP WITH TIME ZONE DEFAULT (timezone('utc'::text, now()) + INTERVAL '30 days'),
   plan_status VARCHAR(20) DEFAULT 'active' CHECK (plan_status IN ('active', 'expired', 'cancelled')),
   subscription VARCHAR(50) DEFAULT 'basic' CHECK (subscription IN ('basic', 'professional', 'enterprise')),
+  last_login TIMESTAMP WITH TIME ZONE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
@@ -57,7 +58,16 @@ CREATE TABLE IF NOT EXISTS inspecoes (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 3. Trigger para updated_at
+-- 3. Adicionar coluna last_login se não existir (para atualizações)
+DO $$ 
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                   WHERE table_name='users' AND column_name='last_login') THEN
+        ALTER TABLE users ADD COLUMN last_login TIMESTAMP WITH TIME ZONE;
+    END IF;
+END $$;
+
+-- 4. Trigger para updated_at
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN

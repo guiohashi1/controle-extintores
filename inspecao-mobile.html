@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔥 Inspeção de Extintor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        .mobile-container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .header .extintor-info {
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .extintor-details {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .extintor-details h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            font-size: 0.9rem;
+        }
+
+        .detail-label {
+            color: #7f8c8d;
+        }
+
+        .detail-value {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .checklist {
+            margin: 20px 0;
+        }
+
+        .checklist h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .check-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            margin: 8px 0;
+            background: #f8f9fa;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .check-item.checked {
+            background: #d1fae5;
+            border-left: 4px solid #10b981;
+        }
+
+        .check-item.failed {
+            background: #fee2e2;
+            border-left: 4px solid #ef4444;
+        }
+
+        .check-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            cursor: pointer;
+        }
+
+        .check-item label {
+            flex: 1;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: #374151;
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-badge.ok {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-badge.warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-badge.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .photo-section {
+            margin: 20px 0;
+        }
+
+        .photo-section h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .photo-upload {
+            border: 2px dashed #d1d5db;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .photo-upload:hover {
+            border-color: #667eea;
+            background: #f8fafc;
+        }
+
+        .photo-upload.has-photo {
+            border: 2px solid #10b981;
+            background: #f0fdf4;
+        }
+
+        .photo-preview {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .observations {
+            margin: 20px 0;
+        }
+
+        .observations h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .observations textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            resize: vertical;
+        }
+
+        .observations textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .action-buttons {
+            margin: 30px 0 10px 0;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+            border: 2px solid #d1d5db;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+
+        .summary {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 15px;
+            margin: 20px 0;
+            border-left: 4px solid #667eea;
+        }
+
+        .summary h4 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .summary-stats {
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+        }
+
+        .summary-stat {
+            flex: 1;
+        }
+
+        .summary-stat .number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .summary-stat .number.green { color: #10b981; }
+        .summary-stat .number.red { color: #ef4444; }
+        .summary-stat .number.blue { color: #3b82f6; }
+
+        .summary-stat .label {
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-container {
+                margin: 0;
+                border-radius: 0;
+                min-height: 100vh;
+            }
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6b7280;
+        }
+
+        .success-message {
+            background: #d1fae5;
+            color: #065f46;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 20px 0;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-container">
+        <div class="header">
+            <h1>🔥 Inspeção de Extintor</h1>
+            <div class="extintor-info" id="headerInfo">Carregando...</div>
+        </div>
+
+        <div class="content">
+            <!-- Loading State -->
+            <div id="loadingState" class="loading">
+                <div style="font-size: 2rem; margin-bottom: 10px;">⏳</div>
+                <p>Carregando dados do extintor...</p>
+            </div>
+
+            <!-- Inspection Form -->
+            <div id="inspectionForm" style="display: none;">
+                <!-- Extintor Details -->
+                <div class="extintor-details">
+                    <h3>📋 Dados do Equipamento</h3>
+                    <div class="detail-row">
+                        <span class="detail-label">Número:</span>
+                        <span class="detail-value" id="extintorNumero">-</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Localização:</span>
+                        <span class="detail-value" id="extintorLocal">-</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Tipo:</span>
+                        <span class="detail-value" id="extintorTipo">-</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Peso:</span>
+                        <span class="detail-value" id="extintorPeso">-</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Última Inspeção:</span>
+                        <span class="detail-value" id="ultimaInspecao">Nunca</span>
+                    </div>
+                </div>
+
+                <!-- Check-list NBR 12962 -->
+                <div class="checklist">
+                    <h3>✅ Check-list de Inspeção (NBR 12962)</h3>
+                    
+                    <div class="check-item">
+                        <input type="checkbox" id="check1" onchange="updateCheckItem(this)">
+                        <label for="check1">Acesso ao extintor desobstruído</label>
+                        <span class="status-badge ok" style="display: none;">OK</span>
+                    </div>
+
+                    <div class="check-item">
+                        <input type="checkbox" id="check2" onchange="updateCheckItem(this)">
+                        <label for="check2">Sinalização visível e legível</label>
+                        <span class="status-badge ok" style="display: none;">OK</span>
+                    </div>
+
+                    <div class="check-item">
+                        <input type="checkbox" id="check3" onchange="updateCheckItem(this)">
+                        <label for="check3">Lacre ou selo de garantia intacto</label>
+                        <span class="status-badge ok" style="display: none;">OK</span>
+                    </div>
+
+                    <div class="check-item">
+                        <input type="checkbox" id="check4" onchange="updateCheckItem(this)">
+                        <label for="check4">Manômetro na faixa verde (pressurizado)</label>
+                        <span class="status-badge ok" style="display: none;">OK</span>
+                    </div>
+
+                    <div class="check-item">
+                        <input type="checkbox" id="check5" onchange="updateCheckItem(this)">
+                        <label for="check5">Mangueira sem danos aparentes</label>
+                        <span class="status-badge ok" style="display: none;">OK</span>
+                    </div>
+
+                    <div class="check-item">
+                        <input type="checkbox" id="check6" onchange="updateCheckItem(this)">
+                        <label for="check6">Gatilho de acionamento funcionando</label>
+                        <span class="status-badge ok" style="display: none;">OK</span>
+                    </div>
+
+                    <div class="check-item">
+                        <input type="checkbox" id="check7" onchange="updateCheckItem(this)">
+                        <label for="check7">Suporte/gancho fixo e resistente</label>
+                        <span class="status-badge ok" style="display: none;">OK</span>
+                    </div>
+
+                    <div class="check-item">
+                        <input type="checkbox" id="check8" onchange="updateCheckItem(this)">
+                        <label for="check8">Extintor limpo e sem corrosão</label>
+                        <span class="status-badge ok" style="display: none;">OK</span>
+                    </div>
+                </div>
+
+                <!-- Summary -->
+                <div class="summary">
+                    <h4>📊 Resumo da Inspeção</h4>
+                    <div class="summary-stats">
+                        <div class="summary-stat">
+                            <div class="number green" id="okCount">0</div>
+                            <div class="label">Aprovados</div>
+                        </div>
+                        <div class="summary-stat">
+                            <div class="number red" id="failCount">0</div>
+                            <div class="label">Reprovados</div>
+                        </div>
+                        <div class="summary-stat">
+                            <div class="number blue" id="pendingCount">8</div>
+                            <div class="label">Pendentes</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Photo Section -->
+                <div class="photo-section">
+                    <h3>📸 Foto da Inspeção</h3>
+                    <div class="photo-upload" onclick="document.getElementById('photoInput').click()">
+                        <div id="photoPlaceholder">
+                            <div style="font-size: 2rem; margin-bottom: 10px;">📷</div>
+                            <p>Toque para adicionar foto</p>
+                            <small style="color: #6b7280;">Recomendado para evidência</small>
+                        </div>
+                        <img id="photoPreview" class="photo-preview" style="display: none;">
+                    </div>
+                    <input type="file" id="photoInput" accept="image/*" capture="environment" style="display: none;" onchange="handlePhotoUpload(this)">
+                </div>
+
+                <!-- Observations -->
+                <div class="observations">
+                    <h3>📝 Observações</h3>
+                    <textarea id="observacoes" placeholder="Descreva qualquer problema encontrado ou observação relevante..."></textarea>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" onclick="cancelInspection()">
+                        ❌ Cancelar
+                    </button>
+                    <button class="btn btn-primary" onclick="saveInspection()">
+                        💾 Salvar Inspeção
+                    </button>
+                </div>
+
+                <!-- Success Message -->
+                <div id="successMessage" class="success-message">
+                    <div style="font-size: 1.5rem; margin-bottom: 10px;">✅</div>
+                    <p><strong>Inspeção salva com sucesso!</strong></p>
+                    <small>Os dados foram registrados no sistema.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let extintorData = null;
+        let inspectionData = {
+            checks: {},
+            photo: null,
+            observations: '',
+            timestamp: null
+        };
+
+        // Simular carregamento dos dados do extintor
+        document.addEventListener('DOMContentLoaded', function() {
+            // Extrair ID do extintor da URL (simulado)
+            const urlParams = new URLSearchParams(window.location.search);
+            const extintorId = urlParams.get('id') || 'EXT-001';
+            const token = urlParams.get('token');
+
+            // Simular validação e carregamento
+            setTimeout(() => {
+                loadExtintorData(extintorId);
+            }, 1500);
+        });
+
+        function loadExtintorData(extintorId) {
+            // Dados simulados (em produção, vem da API)
+            extintorData = {
+                id: extintorId,
+                numero: extintorId,
+                localizacao: 'Recepção Principal',
+                tipo: 'Pó Químico Seco',
+                peso: '6 kg',
+                validade: '2025-12-15',
+                ultimaInspecao: '2024-07-10'
+            };
+
+            // Atualizar interface
+            updateExtintorInfo();
+            showInspectionForm();
+        }
+
+        function updateExtintorInfo() {
+            document.getElementById('headerInfo').textContent = `${extintorData.numero} - ${extintorData.localizacao}`;
+            document.getElementById('extintorNumero').textContent = extintorData.numero;
+            document.getElementById('extintorLocal').textContent = extintorData.localizacao;
+            document.getElementById('extintorTipo').textContent = extintorData.tipo;
+            document.getElementById('extintorPeso').textContent = extintorData.peso;
+            
+            if (extintorData.ultimaInspecao) {
+                const lastDate = new Date(extintorData.ultimaInspecao);
+                document.getElementById('ultimaInspecao').textContent = lastDate.toLocaleDateString('pt-BR');
+            }
+        }
+
+        function showInspectionForm() {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('inspectionForm').style.display = 'block';
+        }
+
+        function updateCheckItem(checkbox) {
+            const checkItem = checkbox.closest('.check-item');
+            const badge = checkItem.querySelector('.status-badge');
+            
+            if (checkbox.checked) {
+                checkItem.classList.add('checked');
+                checkItem.classList.remove('failed');
+                badge.style.display = 'inline-block';
+                badge.textContent = 'OK';
+                badge.className = 'status-badge ok';
+                inspectionData.checks[checkbox.id] = true;
+            } else {
+                checkItem.classList.remove('checked');
+                checkItem.classList.add('failed');
+                badge.style.display = 'inline-block';
+                badge.textContent = 'FALHOU';
+                badge.className = 'status-badge error';
+                inspectionData.checks[checkbox.id] = false;
+            }
+
+            updateSummary();
+        }
+
+        function updateSummary() {
+            let okCount = 0;
+            let failCount = 0;
+            let pendingCount = 0;
+
+            const totalChecks = 8;
+
+            Object.values(inspectionData.checks).forEach(status => {
+                if (status === true) okCount++;
+                else if (status === false) failCount++;
+            });
+
+            pendingCount = totalChecks - okCount - failCount;
+
+            document.getElementById('okCount').textContent = okCount;
+            document.getElementById('failCount').textContent = failCount;
+            document.getElementById('pendingCount').textContent = pendingCount;
+        }
+
+        function handlePhotoUpload(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const photoPreview = document.getElementById('photoPreview');
+                    const photoPlaceholder = document.getElementById('photoPlaceholder');
+                    const photoUpload = document.querySelector('.photo-upload');
+                    
+                    photoPreview.src = e.target.result;
+                    photoPreview.style.display = 'block';
+                    photoPlaceholder.style.display = 'none';
+                    photoUpload.classList.add('has-photo');
+                    
+                    inspectionData.photo = e.target.result;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function saveInspection() {
+            // Validar se pelo menos metade dos checks foi feita
+            const checkCount = Object.keys(inspectionData.checks).length;
+            if (checkCount < 4) {
+                alert('⚠️ Complete pelo menos metade da inspeção antes de salvar.');
+                return;
+            }
+
+            // Capturar observações
+            inspectionData.observations = document.getElementById('observacoes').value;
+            inspectionData.timestamp = new Date().toISOString();
+
+            // Simular salvamento
+            const saveButton = document.querySelector('.btn-primary');
+            saveButton.innerHTML = '⏳ Salvando...';
+            saveButton.disabled = true;
+
+            setTimeout(() => {
+                // Mostrar mensagem de sucesso
+                document.getElementById('successMessage').style.display = 'block';
+                
+                // Scroll para mensagem
+                document.getElementById('successMessage').scrollIntoView({ 
+                    behavior: 'smooth' 
+                });
+
+                // Reset botão
+                saveButton.innerHTML = '✅ Salvo!';
+                
+                // Simular redirecionamento após 3 segundos
+                setTimeout(() => {
+                    window.history.back();
+                }, 3000);
+
+            }, 2000);
+        }
+
+        function cancelInspection() {
+            if (Object.keys(inspectionData.checks).length > 0) {
+                if (confirm('⚠️ Tem certeza? Os dados da inspeção serão perdidos.')) {
+                    window.history.back();
+                }
+            } else {
+                window.history.back();
+            }
+        }
+
+        // PWA-like: impedir zoom duplo toque
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function (event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+    </script>
+</body>
+</html>

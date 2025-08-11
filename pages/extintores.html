@@ -17,11 +17,8 @@
     <link rel="stylesheet" href="../css/common.css">
     <link rel="stylesheet" href="../css/navigation.css">
     <link rel="stylesheet" href="../css/plan-styles.css">
-    <link rel="stylesheet" href="../css/mobile-enhancements.css">
-    <link rel="stylesheet" href="../css/mobile-fixes.css">
-    <link rel="stylesheet" href="../css/extintor-cards.css">
-    <link rel="stylesheet" href="../css/extintores-page.css">
     <link rel="stylesheet" href="../css/pwa.css">
+    <link rel="stylesheet" href="../css/dropdowns.css">
 </head>
 <body>
     <!-- Navigation Bar -->
@@ -35,118 +32,57 @@
         </div>
         
         <!-- Filtros -->
-        <div class="card" style="margin-bottom: 1rem;">
-            <div class="filtros-container">
-                <div class="filtro-group">
-                    <label for="filtroStatus">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline; margin-right: 4px;">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <path d="m9 12 2 2 4-4"></path>
-                        </svg>
-                        Status:
-                    </label>
-                    <select id="filtroStatus" onchange="aplicarFiltros()">
-                        <option value="">Todos</option>
-                        <option value="valid">Válidos</option>
-                        <option value="warning">Próximo ao vencimento</option>
-                        <option value="expired">Vencidos</option>
-                    </select>
-                </div>
-                <div class="filtro-group">
-                    <label for="filtroTipo">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline; margin-right: 4px;">
-                            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
-                            <line x1="7" y1="7" x2="7.01" y2="7"></line>
-                        </svg>
-                        Tipo:
-                    </label>
-                    <select id="filtroTipo" onchange="aplicarFiltros()">
-                        <option value="">Todos</option>
-                        <option value="Água">Água</option>
-                        <option value="CO2">CO2</option>
-                        <option value="Pó Químico">Pó Químico</option>
-                        <option value="Espuma">Espuma</option>
-                    </select>
-                </div>
-                <div class="filtro-group">
-                    <label for="filtroLocal">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline; margin-right: 4px;">
-                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                            <circle cx="12" cy="10" r="3"></circle>
-                        </svg>
-                        Local:
-                    </label>
-                    <select id="filtroLocal" onchange="aplicarFiltros()">
-                        <option value="">Todos os locais</option>
-                    </select>
-                </div>
-            </div>
+ <!-- Substitua o bloco de filtros pelo padrão do sistema, usando a classe form-select para aplicar o CSS de dropdowns.css -->
+<div class="card" style="margin-bottom: 1rem;">
+    <div class="filtros-container">
+        <div class="filtro-group">
+            <label for="filtroStatus">Status:</label>
+            <select id="filtroStatus" class="form-select" onchange="aplicarFiltros()">
+                <option value="">Todos</option>
+                <option value="valid">Válidos</option>
+                <option value="warning">Próximo ao vencimento</option>
+                <option value="expired">Vencidos</option>
+            </select>
         </div>
-        
-        <!-- Seção de Exportação - Movida para o topo -->
-        <div class="card export-card">
-            <div class="card-header">
-                <div class="export-title">
-                    <h3>📊 Exportar Relatórios</h3>
-                    <p class="export-subtitle">Exporte os dados filtrados ou todos os extintores</p>
-                </div>
-                <div class="export-counter" id="exportCounter">
-                    <span class="counter-text">Exportando: <strong id="totalExtintores">-</strong> extintor(es)</span>
-                </div>
-            </div>
-            <div class="export-buttons">
-                <button onclick="exportarPDF()" class="export-btn export-btn-pdf" data-export="pdf">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                        <polyline points="14,2 14,8 20,8"></polyline>
-                        <line x1="16" y1="13" x2="8" y2="13"></line>
-                        <line x1="16" y1="17" x2="8" y2="17"></line>
-                    </svg>
-                    <span class="btn-content">
-                        <span class="btn-title">PDF</span>
-                        <span class="btn-subtitle">Gratuito</span>
-                    </span>
-                </button>
-                <button onclick="exportarExcel()" class="export-btn export-btn-excel" data-export="excel">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                        <polyline points="14,2 14,8 20,8"></polyline>
-                        <rect x="8" y="13" width="8" height="5" rx="1"></rect>
-                    </svg>
-                    <span class="btn-content">
-                        <span class="btn-title">Excel</span>
-                        <span class="btn-subtitle">⭐ PRO+</span>
-                    </span>
-                </button>
-                <button onclick="exportarCSV()" class="export-btn export-btn-csv" data-export="csv">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                        <polyline points="14,2 14,8 20,8"></polyline>
-                        <line x1="8" y1="13" x2="16" y2="13"></line>
-                        <line x1="8" y1="17" x2="16" y2="17"></line>
-                    </svg>
-                    <span class="btn-content">
-                        <span class="btn-title">CSV</span>
-                        <span class="btn-subtitle">⭐ PRO+</span>
-                    </span>
-                </button>
-                <button onclick="exportarJSON()" class="export-btn export-btn-json" data-export="json">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                        <polyline points="14,2 14,8 20,8"></polyline>
-                        <circle cx="10" cy="12" r="2"></circle>
-                        <path d="m10 10-2-2m2 8 2-2m4-4 2-2m-2 8-2-2"></path>
-                    </svg>
-                    <span class="btn-content">
-                        <span class="btn-title">JSON</span>
-                        <span class="btn-subtitle">⭐ PRO+</span>
-                    </span>
-                </button>
-            </div>
+        <div class="filtro-group">
+            <label for="filtroTipo">Tipo:</label>
+            <select id="filtroTipo" class="form-select" onchange="aplicarFiltros()">
+                <option value="">Todos</option>
+                <option value="Água">Água</option>
+                <option value="CO2">CO2</option>
+                <option value="Pó Químico">Pó Químico</option>
+                <option value="Espuma">Espuma</option>
+            </select>
         </div>
+        <div class="filtro-group">
+            <label for="filtroLocal">Local:</label>
+            <select id="filtroLocal" class="form-select" onchange="aplicarFiltros()">
+                <option value="">Todos os locais</option>
+            </select>
+        </div>
+    </div>
+</div>
         
         <div class="card">
             <div id="lista"></div>
+            
+            <div class="export-section">
+                <h3>📊 Exportar Relatórios</h3>
+                <div class="export-buttons">
+                    <button onclick="exportarPDF()" class="export-btn" data-export="pdf">
+                        📄 Exportar PDF
+                    </button>
+                    <button onclick="exportarExcel()" class="export-btn" data-export="excel">
+                        📈 Exportar Excel
+                    </button>
+                    <button onclick="exportarCSV()" class="export-btn" data-export="csv">
+                        📋 Exportar CSV
+                    </button>
+                    <button onclick="exportarJSON()" class="export-btn" data-export="json">
+                        🔧 Exportar JSON
+                    </button>
+                </div>
+            </div>
             
             <div style="text-align: center; margin-top: 2rem;">
                 <button onclick="adicionarNovoExtintor()" class="btn btn-primary">
@@ -181,16 +117,10 @@
             await atualizarLista();
         });
 
-        // Atualizar lista quando a página recebe foco (usuário volta do formulário)
-        window.addEventListener('focus', async () => {
-            await atualizarLista();
-        });
-
         async function atualizarLista() {
             try {
                 extintores = await carregarExtintores();
                 extintoresFiltrados = [...extintores];
-                popularDropdownLocais();
                 renderizarLista();
             } catch (error) {
                 console.error('Erro ao carregar extintores:', error);
@@ -198,34 +128,10 @@
             }
         }
 
-        function popularDropdownLocais() {
-            const filtroLocal = document.getElementById('filtroLocal');
-            const locaisUnicos = [...new Set(extintores.map(extintor => extintor.local))].sort();
-            
-            // Manter o valor selecionado se existir
-            const valorAtual = filtroLocal.value;
-            
-            // Limpar opções existentes, mantendo apenas "Todos os locais"
-            filtroLocal.innerHTML = '<option value="">Todos os locais</option>';
-            
-            // Adicionar opções dos locais únicos
-            locaisUnicos.forEach(local => {
-                if (local) { // Ignorar valores vazios/null
-                    const option = document.createElement('option');
-                    option.value = local;
-                    option.textContent = local;
-                    if (local === valorAtual) {
-                        option.selected = true;
-                    }
-                    filtroLocal.appendChild(option);
-                }
-            });
-        }
-
         function aplicarFiltros() {
             const filtroStatus = document.getElementById('filtroStatus').value;
             const filtroTipo = document.getElementById('filtroTipo').value;
-            const filtroLocal = document.getElementById('filtroLocal').value;
+            const filtroLocal = document.getElementById('filtroLocal').value.toLowerCase();
 
             extintoresFiltrados = extintores.filter(extintor => {
                 // Filtro por status
@@ -237,8 +143,8 @@
                 // Filtro por tipo
                 if (filtroTipo && extintor.tipo !== filtroTipo) return false;
 
-                // Filtro por local (exato match agora, não mais includes)
-                if (filtroLocal && extintor.local !== filtroLocal) return false;
+                // Filtro por local
+                if (filtroLocal && !extintor.local.toLowerCase().includes(filtroLocal)) return false;
 
                 return true;
             });
@@ -248,12 +154,6 @@
 
         function renderizarLista() {
             const lista = document.getElementById('lista');
-            
-            // Atualizar contador de exportação
-            const totalElement = document.getElementById('totalExtintores');
-            if (totalElement) {
-                totalElement.textContent = extintoresFiltrados.length;
-            }
             
             lista.innerHTML = '';
             
@@ -451,7 +351,6 @@
             font-size: 0.875rem;
         }
 
-        /* ESTILOS BASE - MANTÉM LAYOUT DESKTOP ORIGINAL */
         .extintor-card {
             background: var(--bg-tertiary);
             border: 1px solid var(--border-color);
@@ -479,25 +378,6 @@
             margin: 0;
             color: var(--text-primary);
             font-size: 1.25rem;
-        }
-
-        /* MOBILE ONLY - Sobrescreve apenas em telas pequenas */
-        @media (max-width: 768px) {
-            .main-content .card .extintor-card {
-                max-width: 100% !important;
-                width: 100% !important;
-                box-sizing: border-box !important;
-            }
-
-            .main-content .card .extintor-card .extintor-header {
-                flex-direction: column !important;
-                align-items: flex-start !important;
-                gap: 0.75rem !important;
-            }
-
-            .main-content .card .extintor-card .extintor-header h3 {
-                word-break: break-word !important;
-            }
         }
 
         .status-badge {
@@ -639,223 +519,83 @@
             }
         }
 
-        /* Seção de Exportação Melhorada */
-        .export-card {
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-color-dark));
-            color: white;
-            border: none;
-            margin-bottom: 1.5rem;
+        @media (max-width: 640px) {
+            .filtros-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .extintor-actions {
+                flex-direction: column;
+            }
+            
+            .extintor-content {
+                flex-direction: column;
+            }
+
+            .extintor-photo {
+                align-self: center;
+                width: 120px;
+                height: 120px;
+            }
         }
 
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        /* Seção de Exportação */
+        .export-section {
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px;
+            border: 1px solid #dee2e6;
         }
 
-        .export-title h3 {
-            margin: 0 0 0.25rem 0;
-            font-size: 1.25rem;
-            font-weight: 600;
-        }
-
-        .export-subtitle {
-            margin: 0;
-            font-size: 0.875rem;
-            opacity: 0.9;
-        }
-
-        .export-counter {
-            background: rgba(255, 255, 255, 0.15);
-            padding: 0.75rem 1rem;
-            border-radius: var(--radius-lg);
-            backdrop-filter: blur(10px);
-        }
-
-        .counter-text {
-            font-size: 0.875rem;
-            font-weight: 500;
+        .export-section h3 {
+            margin-bottom: 1rem;
+            color: #495057;
+            font-size: 1.1rem;
+            text-align: center;
         }
 
         .export-buttons {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 1rem;
+            gap: 12px;
+            margin-top: 12px;
         }
 
         .export-btn {
+            padding: 12px 16px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            background: white;
+            color: #495057;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            padding: 1rem;
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: var(--radius-lg);
+            justify-content: center;
+            gap: 6px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 0.875rem;
-            backdrop-filter: blur(5px);
         }
 
-        .export-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-            border-color: rgba(255, 255, 255, 0.4);
+        .export-btn:hover:not(.plan-disabled) {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2);
         }
 
-        .export-btn svg {
-            flex-shrink: 0;
-            opacity: 0.9;
-        }
-
-        .btn-content {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 0.125rem;
-        }
-
-        .btn-title {
-            font-weight: 600;
-            font-size: 0.875rem;
-        }
-
-        .btn-subtitle {
-            font-size: 0.75rem;
-            opacity: 0.8;
-            font-weight: 500;
-        }
-
-        /* Cores específicas por tipo de exportação */
-        .export-btn-pdf:hover {
-            background: rgba(239, 68, 68, 0.2);
-            border-color: #ef4444;
-        }
-
-        .export-btn-excel:hover {
-            background: rgba(34, 197, 94, 0.2);
-            border-color: #22c55e;
-        }
-
-        .export-btn-csv:hover {
-            background: rgba(59, 130, 246, 0.2);
-            border-color: #3b82f6;
-        }
-
-        .export-btn-json:hover {
-            background: rgba(168, 85, 247, 0.2);
-            border-color: #a855f7;
-        }
-
-        @media (max-width: 640px) {
-            .filtros-container {
-                grid-template-columns: 1fr !important;
-            }
-            
-            .main-content .card .extintor-card {
-                padding: 1rem !important;
-                margin-bottom: 0.875rem !important;
-            }
-            
-            .main-content .card .extintor-card .extintor-header {
-                flex-direction: column !important;
-                align-items: flex-start !important;
-                gap: 0.75rem !important;
-                text-align: left !important;
-            }
-            
-            .main-content .card .extintor-card .extintor-header h3 {
-                font-size: 1.125rem !important;
-            }
-            
-            .main-content .card .extintor-card .extintor-actions {
-                flex-direction: column !important;
-                gap: 0.5rem !important;
-            }
-            
-            .main-content .card .extintor-card .extintor-actions .btn {
-                width: 100% !important;
-                justify-content: center !important;
-            }
-            
-            .main-content .card .extintor-card .extintor-content {
-                flex-direction: column !important;
-            }
-
-            .main-content .card .extintor-card .extintor-photo {
-                align-self: center !important;
-                width: 120px !important;
-                height: 120px !important;
-            }
-
-            /* Responsividade da seção de exportação */
-            .card-header {
-                flex-direction: column !important;
-                gap: 1rem !important;
-                text-align: center !important;
-            }
-
+        @media (max-width: 768px) {
             .export-buttons {
-                grid-template-columns: repeat(2, 1fr) !important;
-                gap: 0.75rem !important;
-            }
-
-            .export-btn {
-                padding: 0.75rem !important;
-                gap: 0.5rem !important;
-            }
-
-            .btn-title {
-                font-size: 0.8125rem !important;
-            }
-
-            .btn-subtitle {
-                font-size: 0.6875rem !important;
+                grid-template-columns: 1fr 1fr;
             }
         }
 
         @media (max-width: 480px) {
-            .main-content .card .extintor-card {
-                padding: 0.75rem !important;
-            }
-            
-            .main-content .card .extintor-card .extintor-header h3 {
-                font-size: 1rem !important;
-            }
-            
-            .main-content .card .extintor-card .status-badge {
-                font-size: 0.6875rem !important;
-                padding: 0.25rem 0.5rem !important;
-            }
-            
-            .main-content .card .extintor-card .detail-item .label,
-            .main-content .card .extintor-card .detail-item .value {
-                font-size: 0.8125rem !important;
-            }
-            
             .export-buttons {
-                grid-template-columns: 1fr !important;
-                gap: 0.5rem !important;
-            }
-        }
-
-        @media (max-width: 360px) {
-            .main-content .card .extintor-card {
-                padding: 0.625rem !important;
-                margin-bottom: 0.5rem !important;
-            }
-            
-            .main-content .card .extintor-card .extintor-header h3 {
-                font-size: 0.9375rem !important;
-            }
-            
-            .main-content .card .extintor-card .extintor-details .detail-item {
-                padding: 0.375rem 0 !important;
+                grid-template-columns: 1fr;
             }
         }
     </style>

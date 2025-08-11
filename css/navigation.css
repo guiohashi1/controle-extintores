@@ -88,44 +88,7 @@
   text-transform: capitalize;
 }
 
-.user-dropdown {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
-  min-width: 200px;
-  padding: 0.5rem 0;
-  margin-top: 0.5rem;
-  display: none;
-}
-
-.dropdown-item {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 1rem;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  color: var(--text-primary);
-  font-size: 0.9rem;
-}
-
-.dropdown-item:hover {
-  background: var(--bg-tertiary);
-}
-
-.dropdown-item.logout {
-  color: var(--danger-color);
-}
-
-.dropdown-divider {
-  height: 1px;
-  background: var(--border-color);
-  margin: 0.5rem 0;
-}
+/* Estilos de dropdown movidos para dropdowns.css */
 
 .sync-status {
   display: flex;
@@ -338,16 +301,7 @@
     margin-top: 0.125rem;
   }
 
-  /* Dropdown mais compacto */
-  .user-dropdown {
-    min-width: 160px;
-    font-size: 0.875rem;
-  }
-
-  .dropdown-item {
-    padding: 0.625rem 0.875rem;
-    font-size: 0.875rem;
-  }
+  /* Estilos de dropdown movidos para dropdowns.css */
 }
 
 /* iPhone X/11/12/13/14 com notch */

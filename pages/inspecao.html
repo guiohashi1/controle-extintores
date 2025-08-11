@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inspeção Mobile - Extintor</title>
+    <link rel="stylesheet" href="../styles/styles.css">
+    <style>
+        /* ESTILOS MOBILE-FIRST PARA INSPEÇÃO */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f8f9fa;
+            min-height: 100vh;
+        }
+
+        .inspection-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .inspection-header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .extintor-info {
+            background: white;
+            margin: 10px;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-left: 4px solid #667eea;
+        }
+
+        .extintor-info h3 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+            font-size: 1.2rem;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            padding: 5px 0;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #7f8c8d;
+        }
+
+        .info-value {
+            color: #2c3e50;
+            font-weight: 500;
+        }
+
+        .checklist-container {
+            margin: 10px;
+        }
+
+        .checklist-item {
+            background: white;
+            margin: 8px 0;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border-left: 3px solid #bdc3c7;
+            transition: all 0.3s ease;
+        }
+
+        .checklist-item.conforme {
+            border-left-color: #27ae60;
+            background: #f8fff9;
+        }
+
+        .checklist-item.nao-conforme {
+            border-left-color: #e74c3c;
+            background: #fff8f8;
+        }
+
+        .checklist-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .checklist-title {
+            flex: 1;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 0.95rem;
+        }
+
+        .checklist-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .check-btn {
+            padding: 8px 15px;
+            border: 2px solid;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .check-btn.conforme {
+            border-color: #27ae60;
+            color: #27ae60;
+        }
+
+        .check-btn.conforme.active {
+            background: #27ae60;
+            color: white;
+        }
+
+        .check-btn.nao-conforme {
+            border-color: #e74c3c;
+            color: #e74c3c;
+        }
+
+        .check-btn.nao-conforme.active {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .observacoes-section {
+            background: white;
+            margin: 10px;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .observacoes-section h3 {
+            margin: 0 0 15px 0;
+            color: #2c3e50;
+            font-size: 1.1rem;
+        }
+
+        .obs-textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 12px;
+            border: 2px solid #ecf0f1;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            resize: vertical;
+            box-sizing: border-box;
+            transition: border-color 0.3s ease;
+        }
+
+        .obs-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .photo-section {
+            background: white;
+            margin: 10px;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .photo-section h3 {
+            margin: 0 0 15px 0;
+            color: #2c3e50;
+            font-size: 1.1rem;
+        }
+
+        .photo-input-container {
+            position: relative;
+            margin: 10px 0;
+        }
+
+        .photo-input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .photo-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 15px;
+            background: #667eea;
+            color: white;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .photo-button:hover {
+            background: #5a6fd8;
+        }
+
+        .photo-preview {
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .photo-preview img {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .progress-bar {
+            background: white;
+            margin: 10px;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .progress-title {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .progress-percent {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .progress-track {
+            height: 8px;
+            background: #ecf0f1;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        .submit-section {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .submit-btn {
+            width: calc(100% - 20px);
+            max-width: 400px;
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
+        }
+
+        .submit-btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .status-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            z-index: 1000;
+        }
+
+        .status-online {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-offline {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* Responsividade */
+        @media (max-width: 480px) {
+            .inspection-header {
+                padding: 15px 10px;
+            }
+            
+            .extintor-info, .checklist-container, 
+            .observacoes-section, .photo-section, 
+            .progress-bar {
+                margin: 10px 5px;
+                padding: 12px;
+            }
+            
+            .checklist-buttons {
+                gap: 5px;
+            }
+            
+            .check-btn {
+                padding: 6px 12px;
+                font-size: 0.75rem;
+            }
+        }
+
+        /* Loading e Success States */
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            margin: 10px;
+            border-radius: 8px;
+            border: 1px solid #c3e6cb;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            margin: 10px;
+            border-radius: 8px;
+            border: 1px solid #f5c6cb;
+            text-align: center;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <!-- Status de Conexão -->
+    <div id="statusIndicator" class="status-indicator status-online">
+        📶 Online
+    </div>
+
+    <!-- Cabeçalho -->
+    <div class="inspection-header">
+        <h1>🔥 Inspeção de Extintor</h1>
+        <p>Check-list NBR 12962 Simplificado</p>
+    </div>
+
+    <!-- Informações do Extintor -->
+    <div id="extintorInfo" class="extintor-info">
+        <h3>📋 Carregando dados do extintor...</h3>
+    </div>
+
+    <!-- Barra de Progresso -->
+    <div class="progress-bar">
+        <div class="progress-header">
+            <div class="progress-title">📊 Progresso da Inspeção</div>
+            <div class="progress-percent" id="progressPercent">0%</div>
+        </div>
+        <div class="progress-track">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+    </div>
+
+    <!-- Check-list NBR 12962 -->
+    <div class="checklist-container">
+        <div class="checklist-item" data-item="1">
+            <div class="checklist-header">
+                <div class="checklist-title">🔍 1. Acesso ao extintor desobstruído</div>
+                <div class="checklist-buttons">
+                    <button class="check-btn conforme" onclick="marcarItem(1, 'conforme')">✅ Sim</button>
+                    <button class="check-btn nao-conforme" onclick="marcarItem(1, 'nao-conforme')">❌ Não</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="checklist-item" data-item="2">
+            <div class="checklist-header">
+                <div class="checklist-title">🏷️ 2. Plaqueta de identificação legível</div>
+                <div class="checklist-buttons">
+                    <button class="check-btn conforme" onclick="marcarItem(2, 'conforme')">✅ Sim</button>
+                    <button class="check-btn nao-conforme" onclick="marcarItem(2, 'nao-conforme')">❌ Não</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="checklist-item" data-item="3">
+            <div class="checklist-header">
+                <div class="checklist-title">⚖️ 3. Peso do extintor dentro do especificado</div>
+                <div class="checklist-buttons">
+                    <button class="check-btn conforme" onclick="marcarItem(3, 'conforme')">✅ Sim</button>
+                    <button class="check-btn nao-conforme" onclick="marcarItem(3, 'nao-conforme')">❌ Não</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="checklist-item" data-item="4">
+            <div class="checklist-header">
+                <div class="checklist-title">🛡️ 4. Casco sem danos, corrosão ou deformação</div>
+                <div class="checklist-buttons">
+                    <button class="check-btn conforme" onclick="marcarItem(4, 'conforme')">✅ Sim</button>
+                    <button class="check-btn nao-conforme" onclick="marcarItem(4, 'nao-conforme')">❌ Não</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="checklist-item" data-item="5">
+            <div class="checklist-header">
+                <div class="checklist-title">🎯 5. Ponteiro do manômetro na zona verde</div>
+                <div class="checklist-buttons">
+                    <button class="check-btn conforme" onclick="marcarItem(5, 'conforme')">✅ Sim</button>
+                    <button class="check-btn nao-conforme" onclick="marcarItem(5, 'nao-conforme')">❌ Não</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="checklist-item" data-item="6">
+            <div class="checklist-header">
+                <div class="checklist-title">🔧 6. Gatilho, punho e mangueira em bom estado</div>
+                <div class="checklist-buttons">
+                    <button class="check-btn conforme" onclick="marcarItem(6, 'conforme')">✅ Sim</button>
+                    <button class="check-btn nao-conforme" onclick="marcarItem(6, 'nao-conforme')">❌ Não</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="checklist-item" data-item="7">
+            <div class="checklist-header">
+                <div class="checklist-title">🎪 7. Suporte/gancho de fixação seguro</div>
+                <div class="checklist-buttons">
+                    <button class="check-btn conforme" onclick="marcarItem(7, 'conforme')">✅ Sim</button>
+                    <button class="check-btn nao-conforme" onclick="marcarItem(7, 'nao-conforme')">❌ Não</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="checklist-item" data-item="8">
+            <div class="checklist-header">
+                <div class="checklist-title">📏 8. Altura de instalação adequada (1,6m max.)</div>
+                <div class="checklist-buttons">
+                    <button class="check-btn conforme" onclick="marcarItem(8, 'conforme')">✅ Sim</button>
+                    <button class="check-btn nao-conforme" onclick="marcarItem(8, 'nao-conforme')">❌ Não</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Seção de Observações -->
+    <div class="observacoes-section">
+        <h3>📝 Observações da Inspeção</h3>
+        <textarea 
+            id="observacoes" 
+            class="obs-textarea" 
+            placeholder="Descreva aqui qualquer anormalidade encontrada, ações corretivas necessárias ou outras observações relevantes..."
+        ></textarea>
+    </div>
+
+    <!-- Seção de Fotos -->
+    <div class="photo-section">
+        <h3>📸 Evidências Fotográficas</h3>
+        
+        <div class="photo-input-container">
+            <input type="file" id="photoInput" class="photo-input" accept="image/*" capture="camera" onchange="handlePhotoUpload(this)">
+            <div class="photo-button">
+                📷 Tirar Foto do Extintor
+            </div>
+        </div>
+        
+        <div id="photoPreview" class="photo-preview" style="display: none;">
+            <img id="previewImage" src="" alt="Preview da foto">
+        </div>
+    </div>
+
+    <!-- Botão de Finalizar -->
+    <div class="submit-section">
+        <button id="submitBtn" class="submit-btn" onclick="finalizarInspecao()" disabled>
+            🚀 Finalizar Inspeção
+        </button>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../js/supabase-config.js"></script>
+    <script>
+        // ========== ESTADO DA INSPEÇÃO ========== 
+        let inspecaoData = {
+            extintorId: null,
+            token: null,
+            checklist: {},
+            observacoes: '',
+            foto: null,
+            timestamp: new Date().toISOString(),
+            inspector: 'Mobile App'
+        };
+
+        let totalItens = 8;
+        let itensCompletos = 0;
+
+        // ========== INICIALIZAÇÃO ========== 
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeInspection();
+            checkOnlineStatus();
+            setInterval(checkOnlineStatus, 5000);
+        });
+
+        function initializeInspection() {
+            // Extrair parâmetros da URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const pathParts = window.location.pathname.split('/');
+            
+            inspecaoData.extintorId = pathParts[pathParts.length - 1] || urlParams.get('id');
+            inspecaoData.token = urlParams.get('token');
+            
+            if (!inspecaoData.extintorId || !inspecaoData.token) {
+                showError('Token de acesso inválido ou extintor não encontrado.');
+                return;
+            }
+            
+            // Validar token e carregar dados
+            validateTokenAndLoadData();
+        }
+
+        async function validateTokenAndLoadData() {
+            try {
+                // Simular validação de token (em produção, fazer request para API)
+                const tokenData = atob(inspecaoData.token).split(':');
+                const extintorId = tokenData[0];
+                const userId = tokenData[1];
+                const timestamp = parseInt(tokenData[2]);
+                
+                // Verificar se token não expirou (24 horas)
+                const now = Date.now();
+                const tokenAge = now - timestamp;
+                const maxAge = 24 * 60 * 60 * 1000; // 24 horas
+                
+                if (tokenAge > maxAge) {
+                    throw new Error('Token expirado');
+                }
+                
+                if (extintorId !== inspecaoData.extintorId) {
+                    throw new Error('Token inválido para este extintor');
+                }
+                
+                // Carregar dados do extintor (simular busca no banco)
+                await loadExtintorData();
+                
+            } catch (error) {
+                console.error('Erro na validação do token:', error);
+                showError('Token inválido ou expirado. Entre em contato com o administrador.');
+            }
+        }
+
+        async function loadExtintorData() {
+            // Simular carregamento dos dados do extintor
+            const extintor = {
+                id: inspecaoData.extintorId,
+                numero: `EXT-${inspecaoData.extintorId}`,
+                localizacao: 'Carregando...',
+                tipo: 'Pó Químico ABC',
+                peso: '6kg',
+                ultimaInspecao: '15/11/2024'
+            };
+            
+            displayExtintorInfo(extintor);
+        }
+
+        function displayExtintorInfo(extintor) {
+            const infoDiv = document.getElementById('extintorInfo');
+            infoDiv.innerHTML = `
+                <h3>🔥 ${extintor.numero}</h3>
+                <div class="info-row">
+                    <span class="info-label">📍 Localização:</span>
+                    <span class="info-value">${extintor.localizacao}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">🧯 Tipo:</span>
+                    <span class="info-value">${extintor.tipo}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">⚖️ Peso:</span>
+                    <span class="info-value">${extintor.peso}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">📅 Última Inspeção:</span>
+                    <span class="info-value">${extintor.ultimaInspecao}</span>
+                </div>
+            `;
+        }
+
+        // ========== CHECKLIST FUNCTIONS ========== 
+        function marcarItem(itemNumber, status) {
+            const item = document.querySelector(`[data-item="${itemNumber}"]`);
+            const buttons = item.querySelectorAll('.check-btn');
+            
+            // Remover active de todos os botões
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            // Adicionar active no botão clicado
+            const activeButton = item.querySelector(`.${status}`);
+            activeButton.classList.add('active');
+            
+            // Atualizar classe do item
+            item.className = `checklist-item ${status}`;
+            
+            // Salvar no estado
+            const wasEmpty = !inspecaoData.checklist[itemNumber];
+            inspecaoData.checklist[itemNumber] = status;
+            
+            // Atualizar contador se era a primeira vez marcando este item
+            if (wasEmpty) {
+                itensCompletos++;
+                updateProgress();
+            }
+            
+            // Feedback visual
+            showMicroFeedback(itemNumber, status);
+        }
+
+        function showMicroFeedback(itemNumber, status) {
+            const item = document.querySelector(`[data-item="${itemNumber}"]`);
+            const feedback = document.createElement('div');
+            feedback.style.cssText = `
+                position: absolute;
+                top: -5px;
+                right: -5px;
+                background: ${status === 'conforme' ? '#27ae60' : '#e74c3c'};
+                color: white;
+                padding: 4px 8px;
+                border-radius: 12px;
+                font-size: 0.7rem;
+                font-weight: 600;
+                z-index: 10;
+                animation: fadeInOut 2s ease-in-out;
+            `;
+            feedback.textContent = status === 'conforme' ? '✓' : '⚠';
+            
+            item.style.position = 'relative';
+            item.appendChild(feedback);
+            
+            setTimeout(() => {
+                if (feedback.parentNode) {
+                    feedback.remove();
+                }
+            }, 2000);
+        }
+
+        function updateProgress() {
+            const percentage = Math.round((itensCompletos / totalItens) * 100);
+            document.getElementById('progressPercent').textContent = `${percentage}%`;
+            document.getElementById('progressFill').style.width = `${percentage}%`;
+            
+            // Habilitar botão de submit quando 100%
+            const submitBtn = document.getElementById('submitBtn');
+            if (percentage === 100) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '🚀 Finalizar Inspeção (100%)';
+            }
+        }
+
+        // ========== PHOTO FUNCTIONS ========== 
+        function handlePhotoUpload(input) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.getElementById('photoPreview');
+                const image = document.getElementById('previewImage');
+                
+                image.src = e.target.result;
+                preview.style.display = 'block';
+                
+                // Salvar foto no estado
+                inspecaoData.foto = {
+                    data: e.target.result,
+                    filename: `extintor-${inspecaoData.extintorId}-${Date.now()}.jpg`,
+                    size: file.size
+                };
+                
+                showNotification('📸 Foto capturada com sucesso!', 'success');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // ========== FINALIZAÇÃO ========== 
+        async function finalizarInspecao() {
+            if (itensCompletos < totalItens) {
+                showError('Complete todos os itens do checklist antes de finalizar.');
+                return;
+            }
+            
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = '⏳ Salvando inspeção...';
+            
+            try {
+                // Capturar observações
+                inspecaoData.observacoes = document.getElementById('observacoes').value;
+                
+                // Calcular resultado geral
+                const conformes = Object.values(inspecaoData.checklist).filter(status => status === 'conforme').length;
+                const naoConformes = totalItens - conformes;
+                
+                inspecaoData.resultado = {
+                    conformes: conformes,
+                    naoConformes: naoConformes,
+                    percentualConformidade: Math.round((conformes / totalItens) * 100),
+                    status: naoConformes === 0 ? 'APROVADO' : 'REPROVADO'
+                };
+                
+                // Simular salvamento (em produção, enviar para API)
+                await saveInspectionData();
+                
+                // Mostrar sucesso
+                showSuccessScreen();
+                
+            } catch (error) {
+                console.error('Erro ao finalizar inspeção:', error);
+                showError('Erro ao salvar inspeção. Verifique sua conexão e tente novamente.');
+                submitBtn.disabled = false;
+                submitBtn.textContent = '🚀 Finalizar Inspeção';
+            }
+        }
+
+        async function saveInspectionData() {
+            // Simular delay de rede
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            // Em produção, aqui seria o POST para a API
+            console.log('Dados da inspeção:', inspecaoData);
+            
+            // Salvar no localStorage como backup
+            localStorage.setItem(`inspecao_${inspecaoData.extintorId}_${Date.now()}`, JSON.stringify(inspecaoData));
+        }
+
+        function showSuccessScreen() {
+            const body = document.querySelector('body');
+            body.innerHTML = `
+                <div style="min-height: 100vh; background: linear-gradient(135deg, #27ae60, #2ecc71); display: flex; align-items: center; justify-content: center; padding: 20px; text-align: center; color: white;">
+                    <div>
+                        <div style="font-size: 5rem; margin-bottom: 20px;">✅</div>
+                        <h1 style="font-size: 2rem; margin-bottom: 15px;">Inspeção Concluída!</h1>
+                        
+                        <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 15px; margin: 20px 0; backdrop-filter: blur(10px);">
+                            <h3 style="margin-bottom: 15px;">📊 Resultado da Inspeção</h3>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 1.1rem;">
+                                <div>✅ Conformes: <strong>${inspecaoData.resultado.conformes}</strong></div>
+                                <div>❌ Não Conformes: <strong>${inspecaoData.resultado.naoConformes}</strong></div>
+                            </div>
+                            <div style="margin-top: 15px; padding: 10px; background: rgba(255,255,255,0.2); border-radius: 10px;">
+                                <strong>Status: ${inspecaoData.resultado.status}</strong>
+                                <br>
+                                <small>Conformidade: ${inspecaoData.resultado.percentualConformidade}%</small>
+                            </div>
+                        </div>
+                        
+                        <p style="font-size: 1.1rem; margin-bottom: 30px; opacity: 0.9;">
+                            Os dados foram salvos automaticamente no sistema.
+                            <br>
+                            Obrigado por usar nosso sistema de inspeção mobile!
+                        </p>
+                        
+                        <button onclick="window.close()" style="
+                            background: white; 
+                            color: #27ae60; 
+                            border: none; 
+                            padding: 15px 30px; 
+                            border-radius: 25px; 
+                            font-size: 1.1rem; 
+                            font-weight: 600; 
+                            cursor: pointer;
+                            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+                            transition: transform 0.3s ease;
+                        " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                            ✨ Finalizar
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ========== UTILITIES ========== 
+        function checkOnlineStatus() {
+            const indicator = document.getElementById('statusIndicator');
+            if (navigator.onLine) {
+                indicator.className = 'status-indicator status-online';
+                indicator.textContent = '📶 Online';
+            } else {
+                indicator.className = 'status-indicator status-offline';
+                indicator.textContent = '📵 Offline';
+            }
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 70px;
+                right: 20px;
+                background: ${type === 'success' ? '#d4edda' : type === 'error' ? '#f8d7da' : '#d1ecf1'};
+                color: ${type === 'success' ? '#155724' : type === 'error' ? '#721c24' : '#0c5460'};
+                padding: 12px 16px;
+                border-radius: 8px;
+                font-weight: 600;
+                z-index: 1001;
+                max-width: 300px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                animation: slideInRight 0.3s ease-out;
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.textContent = message;
+            
+            const container = document.querySelector('.inspection-header');
+            container.insertAdjacentElement('afterend', errorDiv);
+            
+            setTimeout(() => {
+                errorDiv.remove();
+            }, 5000);
+        }
+
+        // ========== CSS ANIMATIONS ========== 
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeInOut {
+                0% { opacity: 0; transform: scale(0.8); }
+                50% { opacity: 1; transform: scale(1); }
+                100% { opacity: 0; transform: scale(0.8); }
+            }
+            
+            @keyframes slideInRight {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
