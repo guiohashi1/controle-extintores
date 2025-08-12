@@ -33,7 +33,9 @@
     "test": "echo 'Testes não configurados ainda'",
     "deploy": "echo 'Configure seu provedor de hospedagem (Vercel, Netlify, etc.)'"
   },
-  "dependencies": {},
+  "dependencies": {
+    "html5-qrcode": "^2.3.8"
+  },
   "devDependencies": {
     "http-server": "^14.1.1"
   },
@@ -62,9 +64,19 @@
     "subscription_plans": true
   },
   "tech_stack": {
-    "frontend": ["HTML5", "CSS3", "JavaScript ES6+"],
-    "backend": ["Supabase", "PostgreSQL"],
-    "libraries": ["jsPDF", "jsPDF-autoTable"],
+    "frontend": [
+      "HTML5",
+      "CSS3",
+      "JavaScript ES6+"
+    ],
+    "backend": [
+      "Supabase",
+      "PostgreSQL"
+    ],
+    "libraries": [
+      "jsPDF",
+      "jsPDF-autoTable"
+    ],
     "architecture": "SPA (Single Page Application)"
   }
 }

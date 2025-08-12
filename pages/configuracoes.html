@@ -593,6 +593,11 @@
         document.getElementById('alertasEmail').addEventListener('change', salvarPreferencias);
         document.getElementById('alertasDias').addEventListener('change', salvarPreferencias);
         document.getElementById('autoBackup').addEventListener('change', salvarPreferencias);
+
+        // Chamar função de carregamento
+        async function carregarInformacoesSystem() {
+            await carregarInformacoesSystem();
+        }
     </script>
 
     <style>

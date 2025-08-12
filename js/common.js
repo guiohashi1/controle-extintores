@@ -381,16 +381,18 @@ async function salvarExtintor(extintor) {
     }
 
     console.log('💾 Salvando extintor no Supabase:', extintor.numero);
-    
     extintor.user_id = currentUser.id;
-    
+
+    // Remover id se for novo extintor (não edição)
+    if (!extintor.editando && !extintor.id) {
+      delete extintor.id;
+    }
+
     const resultado = await supabase.saveExtintor(extintor);
-    
     if (resultado) {
       console.log('✅ Extintor salvo com sucesso no Supabase');
       return true;
     }
-    
     return false;
   } catch (error) {
     console.error('❌ Erro ao salvar extintor:', error);

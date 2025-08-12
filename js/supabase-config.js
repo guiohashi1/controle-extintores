@@ -383,7 +383,9 @@ class SupabaseManager {
         data_fabricacao: extintor.data_fabricacao || null,
         data_vencimento: extintor.validade, // Mapear validade para data_vencimento
         data_ultima_inspecao: extintor.hidro, // Mapear hidro para data_ultima_inspecao
-        observacoes: extintor.observacoes || null
+        observacoes: extintor.observacoes || null,
+        id: extintor.id || undefined,
+        qr_code: extintor.qr_code || extintor.id || undefined
       };
 
       if (extintor.id) {

@@ -2,12 +2,100 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+    <script>
+    // Inicializa o Supabase client v2 globalmente APÓS o carregamento do SDK
+    document.addEventListener('DOMContentLoaded', function() {
+        if (!window.supabase && window.Supabase) {
+            window.supabase = Supabase.createClient(
+                'https://japgbufsqbjfkbkrncgg.supabase.co',
+                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcGdidWZzcWJqZmtia3JuY2dnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0OTg3NTksImV4cCI6MjA3MDA3NDc1OX0.AIc0koiJoLrRoFEhvV8qfskpL5ffA-l35cvGNGTLlOs'
+            );
+        } else if (!window.supabase && window.supabase) {
+            // fallback para CDN antiga
+            window.supabase = window.supabase.createClient(
+                'https://japgbufsqbjfkbkrncgg.supabase.co',
+                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImphcGdidWZzcWJqZmtia3JuY2dnIiwicm9zZSI6ImFub24iLCJpYXQiOjE3NTQ0OTg3NTksImV4cCI6MjA3MDA3NDc1OX0.AIc0koiJoLrRoFEhvV8qfskpL5ffA-l35cvGNGTLlOs'
+            );
+        }
+    });
+    // Função global para mostrar ou gerar QR Code único do extintor
+    async function mostrarQrCodeModal(qrCodeValue, numero, extintorId) {
+        var modal = document.getElementById('modal-qr-code');
+        var label = document.getElementById('qr-code-label');
+        var container = document.getElementById('qr-code-container');
+        // O valor do QR Code será sempre o ID do extintor
+        let qrCodeFinal = extintorId;
+
+        modal.style.display = 'flex';
+        label.textContent = 'Número: ' + numero;
+        container.innerHTML = '';
+        new QRCode(container, {
+            text: qrCodeFinal,
+            width: 200,
+            height: 200,
+            colorDark : '#000000',
+            colorLight : '#ffffff',
+            correctLevel : QRCode.CorrectLevel.H
+        });
+        // Garante que o botão fechar funcione sempre
+        setTimeout(function() {
+            var btnFechar = document.getElementById('fechar-modal-qr-code');
+            if (btnFechar) {
+                btnFechar.onclick = function() {
+                    modal.style.display = 'none';
+                };
+            }
+        }, 100);
+
+        // Botão de impressão do QR Code
+            var btnPrint = document.getElementById('btn-print-qr-code');
+            if (btnPrint) {
+                btnPrint.onclick = function() {
+                    var qrImg = container.querySelector('img') || container.querySelector('canvas');
+                    if (qrImg) {
+                        var win = window.open('', '_blank');
+                        win.document.write('<html><head><title>Imprimir QR Code</title></head><body style="text-align:center;">');
+                        win.document.write('<h3>QR Code do Extintor ' + numero + '</h3>');
+                        if (qrImg.tagName === 'IMG') {
+                            win.document.write('<img src="' + qrImg.src + '" style="width:140px;height:140px;" />');
+                        } else if (qrImg.tagName === 'CANVAS') {
+                            win.document.write('<img src="' + qrImg.toDataURL() + '" style="width:140px;height:140px;" />');
+                        }
+                        win.document.write('<p>Número: ' + numero + '</p>');
+                        win.document.write('</body></html>');
+                        win.document.close();
+                        win.focus();
+                        setTimeout(function() { win.print(); }, 500);
+                    }
+                };
+            }
+    }
+
+    // Gera UUID v4
+    function gerarUUID() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var btnFecharQrCode = document.getElementById('fechar-modal-qr-code');
+        if (btnFecharQrCode) {
+            btnFecharQrCode.onclick = function() {
+                document.getElementById('modal-qr-code').style.display = 'none';
+            };
+        }
+    });
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#121212">
     <title>Extintores - Controle de Extintores</title>
     
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/html5-qrcode.min.js"></script>
+    <script src="../js/qrcode.min.js"></script>
     <script src="../js/supabase-config.js"></script>
     <script src="../js/common.js"></script>
     <script src="../js/plan-validator.js"></script>
@@ -62,6 +150,50 @@
         </div>
     </div>
 </div>
+<!-- Botão para inspeção por QR Code -->
+<div style="text-align:center; margin-bottom:1rem;">
+    <button id="btn-inspecao-qr" class="btn btn-primary">Inspecionar por QR Code</button>
+    <br>
+    <button onclick="abrirModalImpressaoQRCodes()" class="btn btn-info btn-white-outline" style="margin-top:10px; font-size:1.1rem; padding:1rem 2rem; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08); transition:background 0.2s; border:2px solid #007bff; color:#007bff; background:#fff; width:100%; max-width:340px; display:block; margin-left:auto; margin-right:auto;">Imprimir todos os QR Codes</button>
+</div>
+
+<!-- Modal para leitura de QR Code -->
+<div id="modal-qr-inspecao" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:#fff; padding:24px; border-radius:8px; max-width:400px; margin:auto;">
+        <h4>Escaneie o QR Code do extintor</h4>
+        <div id="qr-reader" style="width:320px;"></div>
+        <button id="fechar-modal-qr" class="btn btn-secondary" style="margin-top:16px;">Fechar</button>
+    </div>
+</div>
+
+<!-- Modal de checklist de inspeção -->
+<div id="modal-checklist-inspecao" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); z-index:10000; align-items:center; justify-content:center;">
+    <div style="background:#fff; padding:24px; border-radius:8px; max-width:400px; margin:auto;">
+        <h4>Inspeção Rápida do Extintor</h4>
+        <form id="form-checklist-inspecao">
+            <div style="margin-bottom:12px;">
+                <label><input type="checkbox" name="sinalizacao" required> Sinalização visível</label>
+            </div>
+            <div style="margin-bottom:12px;">
+                <label><input type="checkbox" name="acesso" required> Acesso desobstruído</label>
+            </div>
+            <div style="margin-bottom:12px;">
+                <label><input type="checkbox" name="lacre" required> Lacre intacto</label>
+            </div>
+            <div style="margin-bottom:12px;">
+                <label><input type="checkbox" name="manometro" required> Manômetro na faixa verde</label>
+            </div>
+            <div style="margin-bottom:12px;">
+                <label><input type="checkbox" name="danos" required> Sem danos aparentes</label>
+            </div>
+            <div style="margin-bottom:12px;">
+                <textarea name="observacoes" placeholder="Observações" style="width:100%;"></textarea>
+            </div>
+            <button type="submit" class="btn btn-success">Salvar Inspeção</button>
+            <button type="button" id="fechar-modal-checklist" class="btn btn-secondary" style="margin-left:8px;">Fechar</button>
+        </form>
+    </div>
+</div>
         
         <div class="card">
             <div id="lista"></div>
@@ -98,6 +230,76 @@
 
     <!-- Bottom Navigation -->
     <div id="bottom-nav-container"></div>
+            <script>
+            // Abrir modal de inspeção por QR code
+            function abrirModalQr(extintorId, numero) {
+                document.getElementById('modal-qr-inspecao').style.display = 'flex';
+                startQrReader(extintorId, numero);
+            }
+
+            document.getElementById('btn-inspecao-qr').onclick = function() {
+                document.getElementById('modal-qr-inspecao').style.display = 'flex';
+                startQrReader();
+            };
+
+            // Fechar modal
+            document.getElementById('fechar-modal-qr').onclick = function() {
+                document.getElementById('modal-qr-inspecao').style.display = 'none';
+                stopQrReader();
+            };
+
+            let qrReader;
+            function startQrReader(extintorId, numero) {
+                if (!qrReader) {
+                    qrReader = new Html5Qrcode("qr-reader");
+                }
+                qrReader.start(
+                    { facingMode: "environment" },
+                    {
+                        fps: 10,
+                        qrbox: 250
+                    },
+                    qrCodeMessage => {
+                        document.getElementById('modal-qr-inspecao').style.display = 'none';
+                        stopQrReader();
+                        // Se não vier extintorId/numero, abre checklist genérico
+                        inspecionarExtintorPorQr(qrCodeMessage, extintorId || '', numero || '');
+                    },
+                    errorMessage => {
+                        // Ignorar erros de leitura
+                    }
+                ).catch(err => {
+                    alert('Erro ao iniciar câmera: ' + err);
+                });
+            }
+
+            function stopQrReader() {
+                if (qrReader) {
+                    qrReader.stop().catch(() => {});
+                }
+            }
+
+            function inspecionarExtintorPorQr(qrCode, extintorId, numero) {
+                // Exibe modal de checklist de inspeção rápida
+                document.getElementById('modal-checklist-inspecao').style.display = 'flex';
+                // Opcional: pode preencher dados do extintor no modal se quiser
+                // document.querySelector('#modal-checklist-inspecao h4').innerText = `Inspeção Rápida do Extintor ${numero}`;
+                // Salvar inspeção
+                const form = document.getElementById('form-checklist-inspecao');
+                form.onsubmit = function(e) {
+                    e.preventDefault();
+                    const dados = Object.fromEntries(new FormData(form));
+                    // Aqui você pode enviar para o backend (Supabase) ou salvar localmente
+                    alert('Inspeção salva!\n' + JSON.stringify(dados, null, 2));
+                    document.getElementById('modal-checklist-inspecao').style.display = 'none';
+                    form.reset();
+                };
+                document.getElementById('fechar-modal-checklist').onclick = function() {
+                    document.getElementById('modal-checklist-inspecao').style.display = 'none';
+                    form.reset();
+                };
+            }
+            </script>
 
     <script>
         let extintores = [];
@@ -107,12 +309,28 @@
         document.addEventListener('DOMContentLoaded', async () => {
             // Verificar se usuário está logado
             if (!checkAuth()) return;
-            
+
+            // Eventos do QR modal
+            var btnQr = document.getElementById('btn-inspecao-qr');
+            if (btnQr) {
+                btnQr.onclick = function() {
+                    document.getElementById('modal-qr-inspecao').style.display = 'flex';
+                    startQrReader();
+                };
+            }
+            var btnFecharQr = document.getElementById('fechar-modal-qr');
+            if (btnFecharQr) {
+                btnFecharQr.onclick = function() {
+                    document.getElementById('modal-qr-inspecao').style.display = 'none';
+                    stopQrReader();
+                };
+            }
+
             // Carregar componentes
             await loadNavbarComponent();
             await loadBottomNavComponent();
             setActiveNavItem('extintores');
-            
+
             // Carregar lista de extintores
             await atualizarLista();
         });
@@ -121,11 +339,19 @@
             try {
                 extintores = await carregarExtintores();
                 extintoresFiltrados = [...extintores];
+                atualizarDropdownLocais(extintores);
                 renderizarLista();
             } catch (error) {
                 console.error('Erro ao carregar extintores:', error);
                 showNotification('Erro ao carregar lista de extintores', 'error');
             }
+        }
+
+        function atualizarDropdownLocais(extintores) {
+            const locaisUnicos = [...new Set(extintores.map(e => e.local).filter(Boolean))];
+            const selectLocal = document.getElementById('filtroLocal');
+            selectLocal.innerHTML = '<option value="">Todos os locais</option>' +
+                locaisUnicos.map(local => `<option value="${local}">${local}</option>`).join('');
         }
 
         function aplicarFiltros() {
@@ -176,70 +402,56 @@
                 
                 const div = document.createElement('div');
                 div.className = "extintor-card";
-                div.innerHTML = `
-                    <div class="extintor-header">
-                        <div class="extintor-info">
-                            <h3>${item.numero}</h3>
-                            <span class="status-badge ${statusBadge.class}">${statusBadge.text}</span>
-                        </div>
-                        ${item.photo_url ? `
-                            <div class="extintor-photo" onclick="showPhotoModal('${item.photo_url}', '${item.numero}')">
-                                <img src="${item.photo_url}" alt="Foto do ${item.numero}" loading="lazy" onerror="this.closest('.extintor-photo').style.display='none'">
-                                <div class="photo-overlay">
-                                    <span class="photo-zoom">🔍</span>
-                                </div>
-                            </div>
-                        ` : `
-                            <div class="extintor-photo-placeholder">
-                                <div class="photo-icon">📷</div>
-                                <small>Sem foto</small>
-                            </div>
-                        `}
-                    </div>
-                    
-                    <div class="extintor-content">
-                        <div class="extintor-details">
-                            <div class="detail-item">
-                                <span class="label">Local:</span>
-                                <span class="value">${item.local}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="label">Tipo:</span>
-                                <span class="value">${item.tipo} (${item.peso}kg)</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="label">Validade:</span>
-                                <span class="value">${formatDate(item.validade)}</span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="label">Teste Hidrostático:</span>
-                                <span class="value">${formatDate(item.hidro)}</span>
-                            </div>
-                            ${item.observacoes ? `
-                                <div class="detail-item">
-                                    <span class="label">Observações:</span>
-                                    <span class="value">${item.observacoes}</span>
-                                </div>
-                            ` : ''}
-                        </div>
-                    </div>
-                    
-                    <div class="extintor-actions">
-                        <button onclick="editar(${indexOriginal})" class="btn btn-secondary">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="m18 2 4 4-10 10H8v-4L18 2z"></path>
-                            </svg>
-                            Editar
-                        </button>
-                        <button onclick="confirmarRemocao(${indexOriginal}, '${item.numero}')" class="btn btn-warning">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="3,6 5,6 21,6"></polyline>
-                                <path d="m19,6v14a2,2 0 0,1-2,2H7a2,2 0 0,1-2-2V6m3,0V4a2,2 0 0,1,2-2h4a2,2 0 0,1,2,2v2"></path>
-                            </svg>
-                            Remover
-                        </button>
-                    </div>
-                `;
+                // Montagem das variáveis auxiliares
+                let photoHtml = '';
+                if (item.photo_url) {
+                    photoHtml = '<div class="extintor-photo" onclick="showPhotoModal(\'' + item.photo_url + '\', \'" + item.numero + "\')">' +
+                        '<img src="' + item.photo_url + '" alt="Foto do ' + item.numero + '" loading="lazy" onerror="this.closest(\'.extintor-photo\').style.display=\'none\'">' +
+                        '<div class="photo-overlay"><span class="photo-zoom">🔍</span></div></div>';
+                } else {
+                    photoHtml = '<div class="extintor-photo-placeholder"><div class="photo-icon">📷</div><small>Sem foto</small></div>';
+                }
+                let observacoesHtml = '';
+                if (item.observacoes) {
+                    observacoesHtml = '<div class="detail-item"><span class="label">Observações:</span><span class="value">' + item.observacoes + '</span></div>';
+                }
+                div.innerHTML =
+                    '<div class="extintor-card-row">' +
+                        '<div class="extintor-photo-col">' + photoHtml + '</div>' +
+                        '<div class="extintor-info-col">' +
+                            '<div class="extintor-info">' +
+                                '<h3>' + item.numero + '</h3>' +
+                                '<span class="status-badge ' + statusBadge.class + '">' + statusBadge.text + '</span>' +
+                            '</div>' +
+                            '<div class="extintor-content">' +
+                                '<div class="extintor-details">' +
+                                    '<div class="detail-item"><span class="label">Local:</span><span class="value">' + item.local + '</span></div>' +
+                                    '<div class="detail-item"><span class="label">Tipo:</span><span class="value">' + item.tipo + ' (' + item.peso + 'kg)</span></div>' +
+                                    '<div class="detail-item"><span class="label">Validade:</span><span class="value">' + formatDate(item.validade) + '</span></div>' +
+                                    '<div class="detail-item"><span class="label">Teste Hidrostático:</span><span class="value">' + formatDate(item.hidro) + '</span></div>' +
+                                    observacoesHtml +
+                                '</div>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="extintor-actions-col extintor-actions">' +
+                            '<button onclick="editar(' + indexOriginal + ')" class="btn btn-secondary">' +
+                                '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
+                                    '<path d="m18 2 4 4-10 10H8v-4L18 2z"></path>' +
+                                '</svg>Editar</button>' +
+                            '<button onclick="mostrarQrCodeModal(\'' + item.id + '\', \'' + item.numero + '\', \'' + item.id + '\')" class="btn btn-info" title="Mostrar QR Code">' +
+                                '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
+                                    '<rect x="3" y="3" width="7" height="7" rx="2" stroke="currentColor" stroke-width="2" fill="none"></rect>' +
+                                    '<rect x="14" y="3" width="7" height="7" rx="2" stroke="currentColor" stroke-width="2" fill="none"></rect>' +
+                                    '<rect x="14" y="14" width="7" height="7" rx="2" stroke="currentColor" stroke-width="2" fill="none"></rect>' +
+                                    '<rect x="3" y="14" width="7" height="7" rx="2" stroke="currentColor" stroke-width="2" fill="none"></rect>' +
+                                '</svg>QR Code</button>' +
+                            '<button onclick="confirmarRemocao(' + indexOriginal + ', \'' + item.numero + '\')" class="btn btn-warning">' +
+                                '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
+                                    '<polyline points="3,6 5,6 21,6"></polyline>' +
+                                    '<path d="m19,6v14a2,2 0 0,1-2,2H7a2,2 0 0,1-2-2V6m3,0V4a2,2 0 0,1,2-2h4a2,2 0 0,1,2,2v2"></path>' +
+                                '</svg>Remover</button>' +
+                        '</div>' +
+                    '</div>';
                 lista.appendChild(div);
             });
         }
@@ -263,7 +475,7 @@
         }
 
         async function confirmarRemocao(index, numero) {
-            if (confirm(`Tem certeza que deseja remover o extintor ${numero}?`)) {
+            if (confirm('Tem certeza que deseja remover o extintor ' + numero + '?')) {
                 await remover(index);
             }
         }
@@ -278,7 +490,7 @@
             
             try {
                 if (await deletarExtintor(extintor.id)) {
-                    showNotification(`Extintor ${extintor.numero} removido com sucesso!`);
+                    showNotification('Extintor ' + extintor.numero + ' removido com sucesso!');
                     await atualizarLista();
                 }
             } catch (error) {
@@ -312,23 +524,7 @@
             window.location.href = 'form.html';
         }
 
-        function showPhotoModal(photoUrl) {
-            // Criar modal para exibir foto
-            const modal = document.createElement('div');
-            modal.className = 'photo-modal';
-            modal.onclick = (e) => {
-                if (e.target === modal) modal.remove();
-            };
-            
-            modal.innerHTML = `
-                <div class="photo-modal-content">
-                    <button class="photo-modal-close" onclick="this.parentNode.parentNode.remove()">×</button>
-                    <img src="${photoUrl}" alt="Foto do extintor" />
-                </div>
-            `;
-            
-            document.body.appendChild(modal);
-        }
+    // ...existing code...
     </script>
 
     <style>
@@ -355,9 +551,16 @@
             background: var(--bg-tertiary);
             border: 1px solid var(--border-color);
             border-radius: var(--radius-lg);
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-            transition: transform 0.2s, box-shadow 0.2s;
+            padding: 1.5rem 2rem;
+            margin-bottom: 1.5rem;
+            transition: box-shadow 0.2s, transform 0.2s;
+            display: flex;
+            flex-direction: row;
+            gap: 32px;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            min-height: 120px;
+            position: relative;
         }
 
         .extintor-card:hover {
@@ -367,11 +570,12 @@
 
         .extintor-header {
             display: flex;
-            justify-content: space-between;
+            flex-direction: row;
             align-items: center;
-            margin-bottom: 1rem;
-            padding-bottom: 0.75rem;
-            border-bottom: 1px solid var(--border-color);
+            gap: 16px;
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
         }
 
         .extintor-header h3 {
@@ -390,50 +594,37 @@
         }
 
         .extintor-info {
-            display: grid;
+            display: flex;
+            flex-direction: column;
             gap: 0.5rem;
-            margin-bottom: 1rem;
+            min-width: 100px;
+            margin-bottom: 0;
         }
 
-        .info-item {
-            color: var(--text-secondary);
-            font-size: 0.875rem;
+        .extintor-content {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            flex: 1;
+            justify-content: center;
+            min-width: 180px;
         }
 
         .extintor-actions {
             display: flex;
-            gap: 0.75rem;
-            flex-wrap: wrap;
-        }
-
-        /* Estilos para fotos dos extintores */
-        .extintor-content {
-            display: flex;
-            gap: 1rem;
-            align-items: flex-start;
-            margin-bottom: 1rem;
-        }
-
-        .extintor-photo {
-            flex-shrink: 0;
-            width: 80px;
-            height: 80px;
-            border-radius: 8px;
-            overflow: hidden;
-            position: relative;
-            cursor: pointer;
-            transition: transform 0.2s ease;
-            border: 2px solid #e0e0e0;
-        }
-
-        .extintor-photo:hover {
-            transform: scale(1.05);
+            flex-direction: column;
+            gap: 12px;
+            align-items: flex-end;
+            justify-content: center;
+            min-width: 100px;
         }
 
         .extintor-photo img {
-            width: 100%;
-            height: 100%;
+            width: 72px;
+            height: 72px;
             object-fit: cover;
+            border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
         }
 
         .photo-overlay {
@@ -449,6 +640,15 @@
             opacity: 0;
             transition: opacity 0.2s ease;
             color: white;
+                width: 72px;
+                height: 72px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: #f3f3f3;
+                border-radius: 8px;
+                color: #aaa;
+                font-size: 2rem;
         }
 
         .extintor-photo:hover .photo-overlay {
@@ -519,23 +719,53 @@
             }
         }
 
+        @media (max-width: 900px) {
+            .extintor-card {
+                flex-direction: column !important;
+                gap: 12px !important;
+                padding: 1rem !important;
+                align-items: stretch !important;
+                min-height: unset !important;
+            }
+            .extintor-card-row {
+                flex-direction: column !important;
+                gap: 12px !important;
+                align-items: stretch !important;
+                width: 100% !important;
+            }
+            .extintor-photo-col {
+                justify-content: flex-start !important;
+                margin-bottom: 8px !important;
+                width: 100% !important;
+            }
+            .extintor-info-col {
+                min-width: unset !important;
+                gap: 4px !important;
+                width: 100% !important;
+            }
+            .extintor-actions-col {
+                align-items: stretch !important;
+                min-width: unset !important;
+                margin-top: 8px !important;
+                width: 100% !important;
+            }
+            .extintor-photo img, .extintor-photo-placeholder {
+                width: 56px !important;
+                height: 56px !important;
+            }
+        }
         @media (max-width: 640px) {
-            .filtros-container {
-                grid-template-columns: 1fr;
+            .extintor-card {
+                padding: 0.5rem !important;
+                gap: 8px !important;
             }
-            
-            .extintor-actions {
-                flex-direction: column;
+            .extintor-card-row {
+                gap: 8px !important;
+                padding: 0.5rem !important;
             }
-            
-            .extintor-content {
-                flex-direction: column;
-            }
-
-            .extintor-photo {
-                align-self: center;
-                width: 120px;
-                height: 120px;
+            .extintor-photo img, .extintor-photo-placeholder {
+                width: 44px !important;
+                height: 44px !important;
             }
         }
 
@@ -587,16 +817,60 @@
             box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2);
         }
 
-        @media (max-width: 768px) {
-            .export-buttons {
-                grid-template-columns: 1fr 1fr;
+        /* Botão de inspeção por QR Code */
+        #btn-inspecao-qr {
+            font-size: 1.1rem;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: background 0.2s;
+        }
+        #btn-inspecao-qr:active {
+            background: #0056b3;
+        }
+        @media (max-width: 640px) {
+            #btn-inspecao-qr {
+                width: 90vw;
+                max-width: 340px;
+                font-size: 1.2rem;
+                padding: 1.2rem 0.5rem;
+                margin-bottom: 1.5rem;
+                display: block;
+                margin-left: auto;
+                margin-right: auto;
             }
         }
 
-        @media (max-width: 480px) {
-            .export-buttons {
-                grid-template-columns: 1fr;
-            }
+        /* Layout horizontal do card na web */
+        .extintor-card-row {
+            display: flex;
+            flex-direction: row;
+            gap: 32px;
+            align-items: center;
+            width: 100%;
+        }
+        .extintor-photo-col {
+            flex: 0 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .extintor-info-col {
+            flex: 1 1 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 180px;
+        }
+        .extintor-actions-col {
+            flex: 0 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            align-items: flex-end;
+            justify-content: center;
+            min-width: 100px;
         }
     </style>
     
@@ -607,28 +881,55 @@
         function showPhotoModal(photoUrl, numero) {
             const modal = document.createElement('div');
             modal.className = 'photo-modal-overlay';
-            modal.innerHTML = `
-                <div class="photo-modal">
-                    <div class="photo-modal-header">
-                        <h3>📷 ${numero || 'Foto do Extintor'}</h3>
-                        <button class="modal-close" onclick="this.closest('.photo-modal-overlay').remove()">&times;</button>
-                    </div>
-                    <div class="photo-modal-body">
-                        <img src="${photoUrl}" alt="Foto do ${numero || 'extintor'}" class="photo-modal-image" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZWVlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zNWVtIj5JbWFnZW0gbsOjbyBlbmNvbnRyYWRhPC90ZXh0Pjwvc3ZnPg=='">
-                    </div>
-                    <div class="photo-modal-footer">
-                        <button class="btn-secondary" onclick="window.open('${photoUrl}', '_blank')">
-                            🔗 Abrir em nova aba
-                        </button>
-                        <button class="btn-secondary" onclick="this.closest('.photo-modal-overlay').remove()">
-                            Fechar
-                        </button>
-                    </div>
-                </div>
-            `;
-            
+            // Monta o HTML manualmente para evitar erros de template literal
+            const photoModal = document.createElement('div');
+            photoModal.className = 'photo-modal';
+
+            // Header
+            const header = document.createElement('div');
+            header.className = 'photo-modal-header';
+            const h3 = document.createElement('h3');
+            h3.textContent = '📷 ' + (numero ? numero : 'Foto do Extintor');
+            const closeBtn = document.createElement('button');
+            closeBtn.className = 'modal-close';
+            closeBtn.innerHTML = '&times;';
+            closeBtn.onclick = function() { modal.remove(); };
+            header.appendChild(h3);
+            header.appendChild(closeBtn);
+
+            // Body
+            const body = document.createElement('div');
+            body.className = 'photo-modal-body';
+            const img = document.createElement('img');
+            img.className = 'photo-modal-image';
+            img.src = photoUrl;
+            img.alt = 'Foto do ' + (numero ? numero : 'extintor');
+            img.onerror = function() {
+                this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZWVlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zNWVtIj5JbWFnZW0gbsOjbyBlbmNvbnRyYWRhPC90ZXh0Pjwvc3ZnPg==';
+            };
+            body.appendChild(img);
+
+            // Footer
+            const footer = document.createElement('div');
+            footer.className = 'photo-modal-footer';
+            const openBtn = document.createElement('button');
+            openBtn.className = 'btn-secondary';
+            openBtn.textContent = '🔗 Abrir em nova aba';
+            openBtn.onclick = function() { window.open(photoUrl, '_blank'); };
+            const closeBtn2 = document.createElement('button');
+            closeBtn2.className = 'btn-secondary';
+            closeBtn2.textContent = 'Fechar';
+            closeBtn2.onclick = function() { modal.remove(); };
+            footer.appendChild(openBtn);
+            footer.appendChild(closeBtn2);
+
+            // Monta tudo
+            photoModal.appendChild(header);
+            photoModal.appendChild(body);
+            photoModal.appendChild(footer);
+            modal.appendChild(photoModal);
             document.body.appendChild(modal);
-            
+
             // Fechar com ESC
             const closeOnEsc = (e) => {
                 if (e.key === 'Escape') {
@@ -649,4 +950,126 @@
     
     <!-- <script src="../js/pwa-manager.js"></script> -->
 </body>
+<!-- Modal para exibir QR Code do extintor (fora do loop, uma vez só) -->
+<div id="modal-qr-code" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); z-index:10001; align-items:center; justify-content:center;">
+    <div style="background:#fff; padding:24px; border-radius:8px; max-width:400px; margin:auto; text-align:center;">
+            <h4>QR Code do Extintor</h4>
+            <div id="qr-code-container" style="margin:20px 0;"></div>
+            <div id="qr-code-label" style="margin-bottom:10px; font-size:1rem; color:#333;"></div>
+            <div style="display:flex; flex-direction:column; gap:12px; align-items:center; margin-top:12px;">
+                <button id="btn-print-qr-code" class="btn btn-info" style="width:100%; max-width:260px;">Imprimir QR Code</button>
+                <button id="fechar-modal-qr-code" class="btn btn-secondary" style="width:100%; max-width:260px;">Fechar</button>
+            </div>
+    </div>
+</div>
+
+<!-- Modal para imprimir todos os QR Codes -->
+<div id="modal-impressao-qrcodes" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); z-index:10002; align-items:center; justify-content:center;">
+    <div style="background:#fff; padding:32px 24px; border-radius:16px; max-width:700px; margin:auto; text-align:center; box-shadow:0 8px 32px rgba(0,0,0,0.18); border:1px solid #e0e0e0; display:flex; flex-direction:column; max-height:90vh;">
+        <h3>Imprimir Todos os QR Codes</h3>
+        <div id="container-todos-qrcodes" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:18px; justify-content:center; margin:18px 0; overflow-y:auto; flex:1; max-height:60vh;"></div>
+        <div style="display:flex; flex-direction:column; gap:12px; align-items:center; margin-top:12px;">
+            <button id="btn-print-todos-qrcodes" class="btn btn-info" style="width:100%; max-width:260px;">Imprimir Todos</button>
+            <button id="btn-fechar-modal-todos-qrcodes" class="btn btn-secondary" style="width:100%; max-width:260px;">Fechar</button>
+        </div>
+    </div>
+</div>
+<script>
+function abrirModalImpressaoQRCodes() {
+    var modal = document.getElementById('modal-impressao-qrcodes');
+    var container = document.getElementById('container-todos-qrcodes');
+    // Limpa o container e renderiza apenas os QR Codes atuais
+    while (container.firstChild) container.removeChild(container.firstChild);
+    var lista = (typeof extintoresFiltrados !== 'undefined' && extintoresFiltrados.length > 0) ? extintoresFiltrados : extintores;
+    lista.forEach(function(item) {
+        var div = document.createElement('div');
+        div.style.display = 'flex';
+        div.style.flexDirection = 'column';
+        div.style.alignItems = 'center';
+        div.style.gap = '8px';
+        var qrDiv = document.createElement('div');
+        qrDiv.style.marginBottom = '4px';
+        new QRCode(qrDiv, {
+            text: item.id,
+            width: 100,
+            height: 100,
+            colorDark : '#000000',
+            colorLight : '#ffffff',
+            correctLevel : QRCode.CorrectLevel.H
+        });
+        div.appendChild(qrDiv);
+        var num = document.createElement('div');
+        num.textContent = item.numero + (item.local ? ' - ' + item.local : '');
+        num.style.fontWeight = 'bold';
+        num.style.fontSize = '1rem';
+        num.style.color = '#222';
+        div.appendChild(num);
+        container.appendChild(div);
+    });
+    modal.style.display = 'flex';
+    setTimeout(function() {
+        var btnPrint = document.getElementById('btn-print-todos-qrcodes');
+        if (btnPrint) {
+            btnPrint.onclick = function() {
+                // Gera os QR Codes e aguarda renderização antes de abrir a janela
+                var qrHtmls = [];
+                var total = lista.length;
+                var loaded = 0;
+                lista.forEach(function(item, idx) {
+                    var tempDiv = document.createElement('div');
+                    new QRCode(tempDiv, {
+                        text: item.id,
+                        width: 100,
+                        height: 100,
+                        colorDark : '#000000',
+                        colorLight : '#ffffff',
+                        correctLevel : QRCode.CorrectLevel.H
+                    });
+                    setTimeout(function() {
+                        var qrImg = tempDiv.querySelector('img') || tempDiv.querySelector('canvas');
+                        var imgSrc = '';
+                        if (qrImg && qrImg.tagName === 'IMG') {
+                            imgSrc = qrImg.src;
+                        } else if (qrImg && qrImg.tagName === 'CANVAS') {
+                            imgSrc = qrImg.toDataURL();
+                        }
+                        qrHtmls[idx] = '<div class="qrcode-item"><img src="' + imgSrc + '" style="width:100px;height:100px;" class="qr-print-img" /><br><div class="qrcode-label">' + (item.numero + (item.local ? ' - ' + item.local : '')) + '</div></div>';
+                        loaded++;
+                        if (loaded === total) {
+                            var html = '<html><head><title>Imprimir Todos os QR Codes</title>';
+                            html += '<style>body{margin:0;padding:0;background:#fff;padding-top:38px;} .qrcode-list{display:grid;grid-template-columns:repeat(6, 120px);gap:6px;justify-content:start;align-items:flex-start;width:100%;max-width:none;margin:auto;padding:8px;} .qrcode-item{display:flex;flex-direction:column;align-items:center;margin-bottom:4px;page-break-inside:avoid;} .qrcode-label{font-weight:bold;font-size:0.92rem;margin-top:2px;color:#222;} h2{color:#222;margin-bottom:8px;} @media print{body{zoom:0.85;} .qrcode-list{gap:4px;padding:2px;width:100vw;max-width:none;} .qrcode-item{margin-bottom:2px;} h2{font-size:1rem;margin-bottom:2px;}}</style>';
+                            html += '</head><body style="text-align:center;overflow-y:auto;max-height:100vh;">';
+                            html += '<h2>QR Codes dos Extintores</h2>';
+                            html += '<div class="qrcode-list">' + qrHtmls.join('') + '</div>';
+                            html += '<script>function allLoaded(){var imgs=document.querySelectorAll(".qr-print-img");var loaded=0;imgs.forEach(function(img){if(img.complete)loaded++;else img.onload=function(){loaded++;if(loaded===imgs.length)window.print();};});if(loaded===imgs.length)window.print();}window.onload=allLoaded;<\/script>';
+                            html += '</body></html>';
+                            var win = window.open('', '_blank');
+                            if (!win) {
+                                alert('Permita popups para imprimir!');
+                                return;
+                            }
+                            win.document.write(html);
+                            win.document.close();
+                            win.focus();
+                        }
+                    }, 120);
+                });
+                win.document.write('</div>');
+                win.document.write('<script>');
+                win.document.write('function allLoaded() {\n  var imgs = document.querySelectorAll(".qr-print-img");\n  var loaded = 0;\n  imgs.forEach(function(img){\n    if (img.complete) loaded++;\n    else img.onload = function(){ loaded++; if (loaded === imgs.length) window.print(); };\n  });\n  if (loaded === imgs.length) window.print();\n}\nwindow.onload = allLoaded;');
+                win.document.write('<\/script>');
+                win.document.write('</body></html>');
+                win.document.close();
+                win.focus();
+            };
+        }
+        var btnFechar = document.getElementById('btn-fechar-modal-todos-qrcodes');
+        if (btnFechar) {
+            btnFechar.onclick = function() {
+                modal.style.display = 'none';
+            };
+        }
+    }, 100);
+}
+</script>
 </html>
