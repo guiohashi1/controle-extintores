@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Impressão de QR Code</title>
+  <link rel="stylesheet" href="css/common.css">
+  <link rel="stylesheet" href="css/navigation.css">
+  <style>
+    .back-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+      background: var(--primary-color, #e11d48);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.7em 1.2em;
+      font-size: 1.1em;
+      font-weight: 500;
+      margin: 1em 0 1.5em 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+      cursor: pointer;
+    }
+    .back-btn svg {
+      vertical-align: middle;
+    }
+    @media (hover: hover) {
+      .back-btn:hover {
+        background: #be123c;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button class="back-btn" onclick="history.length > 1 ? history.back() : window.location.href='index.html'">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    Voltar ao app
+  </button>
+  <!-- Conteúdo de impressão do QR Code aqui -->
+  <div id="qr-content" style="text-align:center; margin-top:2em;">
+    <!-- QR code e informações serão inseridos aqui pelo script -->
+  </div>
+  <script src="js/qrcode.min.js"></script>
+  <script>
+    // Exemplo: gerar QR code se necessário
+    // new QRCode(document.getElementById('qr-content'), { text: 'EXEMPLO', width: 200, height: 200 });
+  </script>
+</body>
+</html>

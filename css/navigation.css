@@ -1,3 +1,29 @@
+/* Centraliza o botão de perfil do usuário no topo */
+.nav-user-center {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+}
+/* Centraliza o botão de perfil no topo */
+.nav-center-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  pointer-events: none;
+}
+.nav-center-wrapper .nav-user {
+  pointer-events: auto;
+}
+.main-nav {
+  position: relative;
+}
 /* =============================================================================
    NAVEGAÇÃO - TOP BAR E BOTTOM NAV
    ============================================================================= */
@@ -18,7 +44,7 @@
   z-index: 1000;
   backdrop-filter: blur(10px);
   /* PWA Safe Area Support */
-  padding-top: env(safe-area-inset-top);
+  padding-top: max(16px, env(safe-area-inset-top, 0px));
   padding-left: max(1rem, env(safe-area-inset-left));
   padding-right: max(1rem, env(safe-area-inset-right));
   height: calc(60px + env(safe-area-inset-top));

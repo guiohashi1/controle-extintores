@@ -37,7 +37,7 @@
       <section id="extintor-info" class="card extintor-info" style="display:none; padding: 1.25rem 1rem; margin-bottom: 1.25rem;">
         <h3 class="mb-2" style="font-size: 1.1rem; color: var(--primary-color);">Dados do Extintor</h3>
         <div class="d-flex flex-column" style="gap: 0.25rem;">
-          <div><b>ID:</b> <span id="ext-id"></span></div>
+          <div><b>Número:</b> <span id="ext-numero"></span></div>
           <div><b>Local:</b> <span id="ext-local"></span></div>
           <div><b>Tipo:</b> <span id="ext-tipo"></span></div>
           <div><b>Última inspeção:</b> <span id="ext-inspecao"></span></div>
@@ -63,7 +63,7 @@
             Dentro da validade
           </label>
         </div>
-        <textarea placeholder="Observações..." class="form-control mb-2" style="min-height: 80px; font-size: 1.1rem; padding: 1rem;"></textarea>
+
         <button id="salvar" class="btn btn-primary w-100" style="font-size: 1.1rem; padding: 1rem;">Salvar Inspeção</button>
       </section>
       <div id="placeholder" class="empty-placeholder" style="display:none;">
@@ -146,11 +146,11 @@
         console.error('Erro ao buscar extintores do usuário:', e);
       }
 
-      // Preenche opções dos filtros para cada tabela
-      const locaisVer = Array.from(new Set(extintores.filter(e => inspecoes.some(i => String(i.id) === String(e.id))).map(e => e.local).filter(Boolean)));
-      const tiposVer = Array.from(new Set(extintores.filter(e => inspecoes.some(i => String(i.id) === String(e.id))).map(e => e.tipo).filter(Boolean)));
-      const locaisFal = Array.from(new Set(extintores.filter(e => !inspecoes.some(i => String(i.id) === String(e.id))).map(e => e.local).filter(Boolean)));
-      const tiposFal = Array.from(new Set(extintores.filter(e => !inspecoes.some(i => String(i.id) === String(e.id))).map(e => e.tipo).filter(Boolean)));
+  // Preenche opções dos filtros para cada tabela (agora usando numero)
+  const locaisVer = Array.from(new Set(extintores.filter(e => inspecoes.some(i => String(i.numero) === String(e.numero))).map(e => e.local).filter(Boolean)));
+  const tiposVer = Array.from(new Set(extintores.filter(e => inspecoes.some(i => String(i.numero) === String(e.numero))).map(e => e.tipo).filter(Boolean)));
+  const locaisFal = Array.from(new Set(extintores.filter(e => !inspecoes.some(i => String(i.numero) === String(e.numero))).map(e => e.local).filter(Boolean)));
+  const tiposFal = Array.from(new Set(extintores.filter(e => !inspecoes.some(i => String(i.numero) === String(e.numero))).map(e => e.tipo).filter(Boolean)));
 
       const filtroLocalVer = document.getElementById('filtro-local-verificados');
       const filtroTipoVer = document.getElementById('filtro-tipo-verificados');
@@ -180,10 +180,10 @@
       const localFal = filtroLocalFal ? filtroLocalFal.value : '';
       const tipoFal = filtroTipoFal ? filtroTipoFal.value : '';
 
-      // Mapas para busca rápida
-      const verificadosIds = new Set(inspecoes.map(i => i.id));
-      let verificados = extintores.filter(e => verificadosIds.has(String(e.id)));
-      let faltam = extintores.filter(e => !verificadosIds.has(String(e.id)));
+  // Mapas para busca rápida (agora usando numero)
+  const verificadosNumeros = new Set(inspecoes.map(i => String(i.numero)));
+  let verificados = extintores.filter(e => verificadosNumeros.has(String(e.numero)));
+  let faltam = extintores.filter(e => !verificadosNumeros.has(String(e.numero)));
 
       // Aplica filtros independentes
       if (localVer) verificados = verificados.filter(e => e.local === localVer);
@@ -191,23 +191,70 @@
       if (localFal) faltam = faltam.filter(e => e.local === localFal);
       if (tipoFal) faltam = faltam.filter(e => e.tipo === tipoFal);
 
-      // Render verificados
+      // Render verificados com clique para mostrar checklist
       if (verificados.length) {
+        // Modal HTML (adicionado uma vez só)
+        if (!document.getElementById('modal-checklist')) {
+          const modal = document.createElement('div');
+          modal.id = 'modal-checklist';
+          modal.style = 'display:none; position:fixed; z-index:9999; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.35); align-items:center; justify-content:center;';
+          modal.innerHTML = `<div id="modal-checklist-content" style="background:#fff; border-radius:12px; max-width:90vw; min-width:220px; padding:2rem 1.2rem; box-shadow:0 2px 16px #0002; position:relative;">
+            <button id="modal-checklist-close" style="position:absolute; top:0.5em; right:0.7em; font-size:1.5em; background:none; border:none; cursor:pointer;">&times;</button>
+            <h3 style='margin-bottom:1em; color:var(--primary-color); font-size:1.1em;'>Checklist do Extintor</h3>
+            <div id="modal-checklist-body"></div>
+          </div>`;
+          document.body.appendChild(modal);
+          document.getElementById('modal-checklist-close').onclick = () => {
+            modal.style.display = 'none';
+          };
+          modal.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
+        }
+
         let html = `<table style="width:100%; border-collapse:collapse;">
           <thead><tr style="background:var(--bg-tertiary); color:var(--text-secondary);">
             <th style="padding:8px;">Número</th>
             <th style="padding:8px;">Local</th>
             <th style="padding:8px;">Tipo</th>
+            <th style="padding:8px; text-align:center;">Checklist</th>
           </tr></thead><tbody>`;
         for (const ext of verificados) {
+          const insp = inspecoes.find(i => String(i.numero) === String(ext.numero));
+          let checklistIcon = '';
+          let checklistData = [];
+          if (insp && insp.checklist) {
+            const labels = ['Selo INMETRO', 'Pressão OK', 'Acessível', 'Dentro da validade'];
+            let allOk = labels.every(label => insp.checklist.includes(label));
+            checklistIcon = `<span class="checklist-emoji" data-numero="${ext.numero}" style="font-size:1.3em; cursor:pointer; color:${allOk ? 'var(--success-color)' : 'var(--danger-color)'};">${allOk ? '✔️' : '❌'}</span>`;
+            checklistData = labels.map(label => ({label, ok: insp.checklist.includes(label)}));
+          } else {
+            checklistIcon = '<span style="color:var(--text-muted);">-</span>';
+          }
           html += `<tr style="border-bottom:1px solid var(--border-color);">
             <td style="padding:8px;">${ext.numero || '-'}</td>
             <td style="padding:8px;">${ext.local || '-'}</td>
             <td style="padding:8px;">${ext.tipo || '-'}</td>
+            <td style="padding:8px; text-align:center;">${checklistIcon}</td>
           </tr>`;
         }
         html += '</tbody></table>';
         verificadosDiv.innerHTML = html;
+
+        // Adiciona evento para abrir modal ao clicar no emoji
+        verificadosDiv.querySelectorAll('.checklist-emoji').forEach(el => {
+          el.onclick = function() {
+            const numero = this.getAttribute('data-numero');
+            const insp = inspecoes.find(i => String(i.numero) === String(numero));
+            const labels = ['Selo INMETRO', 'Pressão OK', 'Acessível', 'Dentro da validade'];
+            let html = '<ul style="list-style:none; padding:0; margin:0;">';
+            for (const label of labels) {
+              const ok = insp && insp.checklist && insp.checklist.includes(label);
+              html += `<li style="margin-bottom:0.5em; font-size:1.1em; color:${ok ? 'var(--success-color)' : 'var(--danger-color)'};">${ok ? '✔️' : '❌'} ${label}</li>`;
+            }
+            html += '</ul>';
+            document.getElementById('modal-checklist-body').innerHTML = html;
+            document.getElementById('modal-checklist').style.display = 'flex';
+          };
+        });
       } else {
         verificadosDiv.innerHTML = '<p style="color: var(--text-muted); text-align:center;">Nenhum verificado.</p>';
       }
@@ -244,7 +291,7 @@
 
     // Função para salvar inspeção
     function salvarInspecao() {
-      const id = document.getElementById('ext-id').innerText;
+      const numero = document.getElementById('ext-numero').innerText;
       const local = document.getElementById('ext-local').innerText;
       const tipo = document.getElementById('ext-tipo').innerText;
       const data = new Date().toLocaleDateString('pt-BR');
@@ -260,18 +307,56 @@
       checklistInputs.forEach((input, idx) => {
         if (input.checked) checklistMarcados.push(checklistLabels[idx]);
       });
-      const obs = document.querySelector('#checklist textarea').value;
+  // campo de observações removido
       let inspecoes = JSON.parse(localStorage.getItem('inspecoes') || '[]');
-      inspecoes.unshift({ id, local, tipo, data, checklist: checklistMarcados, obs, createdAt });
+  inspecoes.unshift({ numero, local, tipo, data, checklist: checklistMarcados, createdAt });
       localStorage.setItem('inspecoes', JSON.stringify(inspecoes));
       renderInspecoes();
       // Limpa checklist após salvar
       checklistInputs.forEach(input => input.checked = false);
-      document.querySelector('#checklist textarea').value = '';
+  // campo de observações removido
       // Esconde checklist e info após salvar
       document.getElementById('checklist').style.display = 'none';
       document.getElementById('extintor-info').style.display = 'none';
       document.getElementById('scanner-section').style.display = 'none';
+
+      // Mostra botão para nova inspeção
+      let btnOutra = document.getElementById('btn-outra-inspecao');
+      if (!btnOutra) {
+        btnOutra = document.createElement('button');
+        btnOutra.id = 'btn-outra-inspecao';
+        btnOutra.className = 'btn btn-primary w-100';
+        btnOutra.style.fontSize = '1.1rem';
+        btnOutra.style.padding = '1rem';
+        btnOutra.style.marginTop = '1.2rem';
+        btnOutra.innerText = 'Realizar outra inspeção';
+        btnOutra.onclick = function() {
+          btnOutra.remove();
+          document.getElementById('scanner-section').style.display = 'block';
+          document.getElementById('extintor-info').style.display = 'none';
+          document.getElementById('checklist').style.display = 'none';
+          document.getElementById('placeholder').style.display = 'none';
+          // Sempre reinicializa o scanner para garantir uso da traseira
+          if (html5QrcodeScanner && html5QrcodeScanner.clear) {
+            html5QrcodeScanner.clear();
+            html5QrcodeScanner = null;
+          }
+          if (!window.html5QrcodeInstance) {
+            window.html5QrcodeInstance = new Html5Qrcode("reader");
+          }
+          const config = { fps: 10, qrbox: 200, facingMode: { exact: "environment" } };
+          window.html5QrcodeInstance.start(
+            { facingMode: "environment" },
+            config,
+            onScanSuccess
+          ).catch(err => {
+            document.getElementById("scan-result").innerText = "Erro ao acessar câmera traseira: " + err;
+          });
+        };
+        // Adiciona após a lista de inspeções
+        const main = document.querySelector('main');
+        if (main) main.appendChild(btnOutra);
+      }
       alert('Inspeção salva!');
     }
 
@@ -290,27 +375,60 @@
         document.getElementById('checklist').style.display = 'none';
         document.getElementById('placeholder').style.display = 'none';
         // Inicializa scanner se não existir
-        if (!html5QrcodeScanner) {
-          html5QrcodeScanner = new Html5QrcodeScanner(
-            "reader", { fps: 10, qrbox: 200 });
-          html5QrcodeScanner.render(onScanSuccess);
+        // Sempre reinicializa o scanner para garantir uso da traseira
+        if (html5QrcodeScanner && html5QrcodeScanner.clear) {
+          html5QrcodeScanner.clear();
+          html5QrcodeScanner = null;
         }
+        // Usa diretamente a API Html5Qrcode para escolher a traseira
+        if (!window.html5QrcodeInstance) {
+          window.html5QrcodeInstance = new Html5Qrcode("reader");
+        }
+        const config = { fps: 10, qrbox: 200, facingMode: { exact: "environment" } };
+        window.html5QrcodeInstance.start(
+          { facingMode: "environment" },
+          config,
+          onScanSuccess
+        ).catch(err => {
+          document.getElementById("scan-result").innerText = "Erro ao acessar câmera traseira: " + err;
+        });
       };
     });
 
     function onScanSuccess(decodedText) {
-      document.getElementById("scan-result").innerText = `Extintor encontrado: ${decodedText}`;
-      document.getElementById("ext-id").innerText = decodedText;
+  document.getElementById("scan-result").innerText = `Extintor encontrado!`;
 
-      // Exemplo de dados mockados
-      document.getElementById("ext-local").innerText = "Hangar Principal";
-      document.getElementById("ext-tipo").innerText = "PQS 4kg";
-      document.getElementById("ext-inspecao").innerText = "05/08/2025";
-
-      // Exibe info e checklist
-      document.getElementById("extintor-info").style.display = "block";
-      document.getElementById("checklist").style.display = "block";
-      document.getElementById("scanner-section").style.display = "none";
+      // Buscar informações reais do extintor no Supabase
+      (async () => {
+        let extintor = null;
+        try {
+          let extintores = [];
+          if (window.SupabaseManager) {
+            const supabase = new window.SupabaseManager();
+            extintores = await supabase.getExtintores();
+          } else if (window.supabaseManager) {
+            extintores = await window.supabaseManager.getExtintores();
+          }
+          extintor = extintores.find(e => String(e.id) === String(decodedText));
+        } catch (e) {
+          console.error('Erro ao buscar extintor:', e);
+        }
+        if (extintor) {
+          document.getElementById("ext-numero").innerText = extintor.numero || '-';
+          document.getElementById("ext-local").innerText = extintor.local || '-';
+          document.getElementById("ext-tipo").innerText = extintor.tipo || '-';
+          document.getElementById("ext-inspecao").innerText = extintor.ultima_inspecao || '-';
+        } else {
+          document.getElementById("ext-numero").innerText = '-';
+          document.getElementById("ext-local").innerText = '-';
+          document.getElementById("ext-tipo").innerText = '-';
+          document.getElementById("ext-inspecao").innerText = '-';
+        }
+        // Exibe info e checklist
+        document.getElementById("extintor-info").style.display = "block";
+        document.getElementById("checklist").style.display = "block";
+        document.getElementById("scanner-section").style.display = "none";
+      })();
     }
   </script>
   </body>
