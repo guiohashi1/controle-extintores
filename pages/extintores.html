@@ -20,13 +20,15 @@
     });
     // Função global para mostrar ou gerar QR Code único do extintor
     async function mostrarQrCodeModal(qrCodeValue, numero, extintorId) {
+        console.log('[EXTINTORES] Abrindo modal QR Code:', { qrCodeValue, numero, extintorId });
         var modal = document.getElementById('modal-qr-code');
         var label = document.getElementById('qr-code-label');
         var container = document.getElementById('qr-code-container');
         // O valor do QR Code será sempre o ID do extintor
         let qrCodeFinal = extintorId;
 
-        modal.style.display = 'flex';
+    modal.style.display = 'flex';
+    console.log('[EXTINTORES] Modal QR Code exibido para extintor:', numero);
         label.textContent = 'Número: ' + numero;
         container.innerHTML = '';
         new QRCode(container, {
@@ -39,6 +41,20 @@
         });
         // Garante que o botão fechar funcione sempre
         setTimeout(function() {
+            console.log('[EXTINTORES] Botão fechar do modal QR Code pronto');
+    // Função para abrir o modal de inspeção do extintor (exemplo, ajuste conforme seu código real)
+    function abrirModalInspecaoExtintor(extintor) {
+        console.log('[EXTINTORES] Abrindo modal de inspeção:', extintor);
+        // ...código de abertura do modal de inspeção...
+        // Exemplo de log dos campos:
+        if (extintor) {
+            console.log('[EXTINTORES] Dados recebidos para inspeção:', {
+                numero: extintor.numero,
+                local: extintor.local,
+                id: extintor.id
+            });
+        }
+    }
             var btnFechar = document.getElementById('fechar-modal-qr-code');
             if (btnFechar) {
                 btnFechar.onclick = function() {
@@ -110,13 +126,29 @@
 </head>
 <body>
     <!-- Navigation Bar -->
-    <div id="navbar-container"></div>
+        <div id="navbar-container">
+            <nav class="navbar">
+                <ul class="navbar-list">
+                    <li class="navbar-item"><a href="extintores.html">Extintores</a></li>
+                    <li class="navbar-item"><a href="inspecao.html">Inspeção</a></li>
+                </ul>
+            </nav>
+        </div>
 
     <!-- Main Content -->
     <main class="main-content">
         <div class="screen-header">
             <h1>Extintores</h1>
             <p>Gerencie seus equipamentos</p>
+        </div>
+        <div style="text-align:center; margin-bottom:1.5rem;">
+            <button onclick="window.location.href='relatorios.html'" class="btn btn-warning" style="font-size:1.15rem; padding:1.1rem 2.2rem; border-radius:10px; box-shadow:0 2px 12px rgba(239, 68, 68, 0.10); font-weight:600; color:#fff; background:linear-gradient(90deg,#f59e0b,#ef4444); border:none;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:8px;">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12,6 12,12 16,14"></polyline>
+                </svg>
+                Ir para Relatórios
+            </button>
         </div>
         
         <!-- Filtros -->
@@ -150,11 +182,22 @@
         </div>
     </div>
 </div>
-<!-- Botão para inspeção por QR Code -->
+
+<!-- Botão para inspeção por QR Code (restaurado) -->
+
+<!-- Botão para imprimir todos os QR Codes -->
 <div style="text-align:center; margin-bottom:1rem;">
-    <button id="btn-inspecao-qr" class="btn btn-primary">Inspecionar por QR Code</button>
-    <br>
-    <button onclick="abrirModalImpressaoQRCodes()" class="btn btn-info btn-white-outline" style="margin-top:10px; font-size:1.1rem; padding:1rem 2rem; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.08); transition:background 0.2s; border:2px solid #007bff; color:#007bff; background:#fff; width:100%; max-width:340px; display:block; margin-left:auto; margin-right:auto;">Imprimir todos os QR Codes</button>
+    <button onclick="abrirModalImpressaoQRCodes()" class="btn btn-success" style="margin-top:2px; font-size:1.15rem; padding:1.1rem 2.2rem; border-radius:10px; box-shadow:0 2px 12px rgba(16,185,129,0.10); font-weight:600; color:#fff; background:linear-gradient(90deg,#10b981,#6366f1); border:none; display:flex; align-items:center; justify-content:center; gap:10px; width:100%; max-width:360px; margin-left:auto; margin-right:auto;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+            <rect x="7" y="7" width="3" height="3"></rect>
+            <rect x="14" y="14" width="3" height="3"></rect>
+        </svg>
+        Imprimir todos os QR Codes
+    </button>
 </div>
 
 <!-- Modal para leitura de QR Code -->
@@ -167,24 +210,30 @@
 </div>
 
 <!-- Modal de checklist de inspeção -->
-<div id="modal-checklist-inspecao" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); z-index:10000; align-items:center; justify-content:center;">
+<div id="modal-checklist-inspecao" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:#000; z-index:10000; align-items:center; justify-content:center;">
     <div style="background:#fff; padding:24px; border-radius:8px; max-width:400px; margin:auto;">
         <h4>Inspeção Rápida do Extintor</h4>
+        <div style="font-weight:500;color:#111;margin-bottom:0.2em;">
+            <span style="color:#111;">Extintor:</span> <span id="modal-checklist-numero" style="color:#d32f2f;font-weight:700;">-</span>
+        </div>
+        <div style="font-weight:500;color:#111;margin-bottom:0.7em;">
+            <span style="color:#111;">Local:</span> <span id="modal-checklist-local" style="color:#374151;font-weight:700;">-</span>
+        </div>
         <form id="form-checklist-inspecao">
             <div style="margin-bottom:12px;">
-                <label><input type="checkbox" name="sinalizacao" required> Sinalização visível</label>
+                <label style="color:#111;"><input type="checkbox" name="sinalizacao" required> Sinalização visível</label>
             </div>
             <div style="margin-bottom:12px;">
-                <label><input type="checkbox" name="acesso" required> Acesso desobstruído</label>
+                <label style="color:#111;"><input type="checkbox" name="acesso" required> Acesso desobstruído</label>
             </div>
             <div style="margin-bottom:12px;">
-                <label><input type="checkbox" name="lacre" required> Lacre intacto</label>
+                <label style="color:#111;"><input type="checkbox" name="lacre" required> Lacre intacto</label>
             </div>
             <div style="margin-bottom:12px;">
-                <label><input type="checkbox" name="manometro" required> Manômetro na faixa verde</label>
+                <label style="color:#111;"><input type="checkbox" name="manometro" required> Manômetro na faixa verde</label>
             </div>
             <div style="margin-bottom:12px;">
-                <label><input type="checkbox" name="danos" required> Sem danos aparentes</label>
+                <label style="color:#111;"><input type="checkbox" name="danos" required> Sem danos aparentes</label>
             </div>
             <div style="margin-bottom:12px;">
                 <textarea name="observacoes" placeholder="Observações" style="width:100%;"></textarea>
@@ -216,13 +265,20 @@
                 </div>
             </div>
             
-            <div style="text-align: center; margin-top: 2rem;">
+            <div style="text-align: center; margin-top: 2rem; display: flex; flex-direction: column; gap: 1rem; align-items: center;">
                 <button onclick="adicionarNovoExtintor()" class="btn btn-primary">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="12" y1="5" x2="12" y2="19"></line>
                         <line x1="5" y1="12" x2="19" y2="12"></line>
                     </svg>
                     Novo Extintor
+                </button>
+                <button onclick="window.location.href='relatorios.html'" class="btn btn-secondary">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12,6 12,12 16,14"></polyline>
+                    </svg>
+                    Ir para Relatórios
                 </button>
             </div>
         </div>
@@ -279,25 +335,45 @@
                 }
             }
 
-            function inspecionarExtintorPorQr(qrCode, extintorId, numero) {
-                // Exibe modal de checklist de inspeção rápida
-                document.getElementById('modal-checklist-inspecao').style.display = 'flex';
-                // Opcional: pode preencher dados do extintor no modal se quiser
-                // document.querySelector('#modal-checklist-inspecao h4').innerText = `Inspeção Rápida do Extintor ${numero}`;
-                // Salvar inspeção
+            // Função centralizada para abrir e controlar o modal de inspeção
+            function abrirModalInspecaoExtintor({ numero = '', local = '', onSave = null } = {}) {
+                const modal = document.getElementById('modal-checklist-inspecao');
                 const form = document.getElementById('form-checklist-inspecao');
+                const fecharBtn = document.getElementById('fechar-modal-checklist');
+                // Sempre resetar campos e listeners, mesmo se já estiver aberto
+                if (modal.style.display === 'flex') {
+                    form.reset();
+                    modal.style.display = 'none';
+                }
+                // Sincronizar campos
+                const numeroSpan = document.getElementById('modal-checklist-numero');
+                const localSpan = document.getElementById('modal-checklist-local');
+                if (numeroSpan) numeroSpan.textContent = numero || '-';
+                if (localSpan) localSpan.textContent = local || '-';
+                form.reset();
+                // Remover event listeners antigos
+                form.onsubmit = null;
+                fecharBtn.onclick = null;
+                // Novo submit
                 form.onsubmit = function(e) {
                     e.preventDefault();
                     const dados = Object.fromEntries(new FormData(form));
-                    // Aqui você pode enviar para o backend (Supabase) ou salvar localmente
-                    alert('Inspeção salva!\n' + JSON.stringify(dados, null, 2));
-                    document.getElementById('modal-checklist-inspecao').style.display = 'none';
+                    if (typeof onSave === 'function') onSave(dados);
+                    else alert('Inspeção salva!\n' + JSON.stringify(dados, null, 2));
+                    modal.style.display = 'none';
                     form.reset();
                 };
-                document.getElementById('fechar-modal-checklist').onclick = function() {
-                    document.getElementById('modal-checklist-inspecao').style.display = 'none';
+                fecharBtn.onclick = function() {
+                    modal.style.display = 'none';
                     form.reset();
                 };
+                // Exibir modal
+                modal.style.display = 'flex';
+            }
+
+            // Chamada antiga compatível
+            function inspecionarExtintorPorQr(qrCode, extintorId, numero) {
+                abrirModalInspecaoExtintor({ numero });
             }
             </script>
 
@@ -750,8 +826,8 @@
                 width: 100% !important;
             }
             .extintor-photo img, .extintor-photo-placeholder {
-                width: 56px !important;
-                height: 56px !important;
+                width: 72px !important;
+                height: 72px !important;
             }
         }
         @media (max-width: 640px) {
@@ -764,8 +840,8 @@
                 padding: 0.5rem !important;
             }
             .extintor-photo img, .extintor-photo-placeholder {
-                width: 44px !important;
-                height: 44px !important;
+                width: 56px !important;
+                height: 56px !important;
             }
         }
 

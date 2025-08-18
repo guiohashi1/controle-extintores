@@ -1,889 +1,319 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inspeção Mobile - Extintor</title>
-    <link rel="stylesheet" href="../styles/styles.css">
-    <style>
-        /* ESTILOS MOBILE-FIRST PARA INSPEÇÃO */
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            background: #f8f9fa;
-            min-height: 100vh;
-        }
-
-        .inspection-header {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 20px;
-            text-align: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .inspection-header h1 {
-            margin: 0;
-            font-size: 1.5rem;
-            font-weight: 600;
-        }
-
-        .extintor-info {
-            background: white;
-            margin: 10px;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            border-left: 4px solid #667eea;
-        }
-
-        .extintor-info h3 {
-            margin: 0 0 10px 0;
-            color: #2c3e50;
-            font-size: 1.2rem;
-        }
-
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            margin: 8px 0;
-            padding: 5px 0;
-            border-bottom: 1px solid #ecf0f1;
-        }
-
-        .info-row:last-child {
-            border-bottom: none;
-        }
-
-        .info-label {
-            font-weight: 600;
-            color: #7f8c8d;
-        }
-
-        .info-value {
-            color: #2c3e50;
-            font-weight: 500;
-        }
-
-        .checklist-container {
-            margin: 10px;
-        }
-
-        .checklist-item {
-            background: white;
-            margin: 8px 0;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            border-left: 3px solid #bdc3c7;
-            transition: all 0.3s ease;
-        }
-
-        .checklist-item.conforme {
-            border-left-color: #27ae60;
-            background: #f8fff9;
-        }
-
-        .checklist-item.nao-conforme {
-            border-left-color: #e74c3c;
-            background: #fff8f8;
-        }
-
-        .checklist-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .checklist-title {
-            flex: 1;
-            font-weight: 600;
-            color: #2c3e50;
-            font-size: 0.95rem;
-        }
-
-        .checklist-buttons {
-            display: flex;
-            gap: 10px;
-        }
-
-        .check-btn {
-            padding: 8px 15px;
-            border: 2px solid;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background: white;
-        }
-
-        .check-btn.conforme {
-            border-color: #27ae60;
-            color: #27ae60;
-        }
-
-        .check-btn.conforme.active {
-            background: #27ae60;
-            color: white;
-        }
-
-        .check-btn.nao-conforme {
-            border-color: #e74c3c;
-            color: #e74c3c;
-        }
-
-        .check-btn.nao-conforme.active {
-            background: #e74c3c;
-            color: white;
-        }
-
-        .observacoes-section {
-            background: white;
-            margin: 10px;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-
-        .observacoes-section h3 {
-            margin: 0 0 15px 0;
-            color: #2c3e50;
-            font-size: 1.1rem;
-        }
-
-        .obs-textarea {
-            width: 100%;
-            min-height: 100px;
-            padding: 12px;
-            border: 2px solid #ecf0f1;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            font-family: inherit;
-            resize: vertical;
-            box-sizing: border-box;
-            transition: border-color 0.3s ease;
-        }
-
-        .obs-textarea:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .photo-section {
-            background: white;
-            margin: 10px;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-
-        .photo-section h3 {
-            margin: 0 0 15px 0;
-            color: #2c3e50;
-            font-size: 1.1rem;
-        }
-
-        .photo-input-container {
-            position: relative;
-            margin: 10px 0;
-        }
-
-        .photo-input {
-            position: absolute;
-            opacity: 0;
-            width: 100%;
-            height: 100%;
-            cursor: pointer;
-        }
-
-        .photo-button {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            padding: 15px;
-            background: #667eea;
-            color: white;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.3s ease;
-        }
-
-        .photo-button:hover {
-            background: #5a6fd8;
-        }
-
-        .photo-preview {
-            margin-top: 15px;
-            text-align: center;
-        }
-
-        .photo-preview img {
-            max-width: 100%;
-            max-height: 200px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        .progress-bar {
-            background: white;
-            margin: 10px;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-
-        .progress-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .progress-title {
-            font-weight: 600;
-            color: #2c3e50;
-        }
-
-        .progress-percent {
-            font-weight: 600;
-            color: #667eea;
-        }
-
-        .progress-track {
-            height: 8px;
-            background: #ecf0f1;
-            border-radius: 4px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #667eea, #764ba2);
-            border-radius: 4px;
-            transition: width 0.3s ease;
-            width: 0%;
-        }
-
-        .submit-section {
-            padding: 20px;
-            text-align: center;
-        }
-
-        .submit-btn {
-            width: calc(100% - 20px);
-            max-width: 400px;
-            padding: 15px 20px;
-            background: linear-gradient(135deg, #27ae60, #2ecc71);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
-        }
-
-        .submit-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
-        }
-
-        .submit-btn:disabled {
-            background: #bdc3c7;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        .status-indicator {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 8px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            z-index: 1000;
-        }
-
-        .status-online {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .status-offline {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        /* Responsividade */
-        @media (max-width: 480px) {
-            .inspection-header {
-                padding: 15px 10px;
-            }
-            
-            .extintor-info, .checklist-container, 
-            .observacoes-section, .photo-section, 
-            .progress-bar {
-                margin: 10px 5px;
-                padding: 12px;
-            }
-            
-            .checklist-buttons {
-                gap: 5px;
-            }
-            
-            .check-btn {
-                padding: 6px 12px;
-                font-size: 0.75rem;
-            }
-        }
-
-        /* Loading e Success States */
-        .loading {
-            opacity: 0.7;
-            pointer-events: none;
-        }
-
-        .success-message {
-            background: #d4edda;
-            color: #155724;
-            padding: 15px;
-            margin: 10px;
-            border-radius: 8px;
-            border: 1px solid #c3e6cb;
-            text-align: center;
-            font-weight: 600;
-        }
-
-        .error-message {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 15px;
-            margin: 10px;
-            border-radius: 8px;
-            border: 1px solid #f5c6cb;
-            text-align: center;
-            font-weight: 600;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Inspeção de Extintores</title>
+  <!-- <link rel="stylesheet" href="../styles/styles.css"> -->
+  <link rel="stylesheet" href="../css/common.css">
+  <link rel="stylesheet" href="../css/navigation.css">
+  <link rel="stylesheet" href="../css/mobile-fixes.css">
+  <link rel="stylesheet" href="../css/mobile-enhancements.css">
+  <link rel="stylesheet" href="../css/extintores-page.css">
+  <link rel="stylesheet" href="../css/extintor-cards.css">
+  <link rel="stylesheet" href="../css/plan-styles.css">
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <script src="../js/supabase-config.js"></script>
 </head>
 <body>
-    <!-- Status de Conexão -->
-    <div id="statusIndicator" class="status-indicator status-online">
-        📶 Online
-    </div>
 
-    <!-- Cabeçalho -->
-    <div class="inspection-header">
-        <h1>🔥 Inspeção de Extintor</h1>
-        <p>Check-list NBR 12962 Simplificado</p>
-    </div>
-
-    <!-- Informações do Extintor -->
-    <div id="extintorInfo" class="extintor-info">
-        <h3>📋 Carregando dados do extintor...</h3>
-    </div>
-
-    <!-- Barra de Progresso -->
-    <div class="progress-bar">
-        <div class="progress-header">
-            <div class="progress-title">📊 Progresso da Inspeção</div>
-            <div class="progress-percent" id="progressPercent">0%</div>
-        </div>
-        <div class="progress-track">
-            <div class="progress-fill" id="progressFill"></div>
-        </div>
-    </div>
-
-    <!-- Check-list NBR 12962 -->
-    <div class="checklist-container">
-        <div class="checklist-item" data-item="1">
-            <div class="checklist-header">
-                <div class="checklist-title">🔍 1. Acesso ao extintor desobstruído</div>
-                <div class="checklist-buttons">
-                    <button class="check-btn conforme" onclick="marcarItem(1, 'conforme')">✅ Sim</button>
-                    <button class="check-btn nao-conforme" onclick="marcarItem(1, 'nao-conforme')">❌ Não</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="checklist-item" data-item="2">
-            <div class="checklist-header">
-                <div class="checklist-title">🏷️ 2. Plaqueta de identificação legível</div>
-                <div class="checklist-buttons">
-                    <button class="check-btn conforme" onclick="marcarItem(2, 'conforme')">✅ Sim</button>
-                    <button class="check-btn nao-conforme" onclick="marcarItem(2, 'nao-conforme')">❌ Não</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="checklist-item" data-item="3">
-            <div class="checklist-header">
-                <div class="checklist-title">⚖️ 3. Peso do extintor dentro do especificado</div>
-                <div class="checklist-buttons">
-                    <button class="check-btn conforme" onclick="marcarItem(3, 'conforme')">✅ Sim</button>
-                    <button class="check-btn nao-conforme" onclick="marcarItem(3, 'nao-conforme')">❌ Não</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="checklist-item" data-item="4">
-            <div class="checklist-header">
-                <div class="checklist-title">🛡️ 4. Casco sem danos, corrosão ou deformação</div>
-                <div class="checklist-buttons">
-                    <button class="check-btn conforme" onclick="marcarItem(4, 'conforme')">✅ Sim</button>
-                    <button class="check-btn nao-conforme" onclick="marcarItem(4, 'nao-conforme')">❌ Não</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="checklist-item" data-item="5">
-            <div class="checklist-header">
-                <div class="checklist-title">🎯 5. Ponteiro do manômetro na zona verde</div>
-                <div class="checklist-buttons">
-                    <button class="check-btn conforme" onclick="marcarItem(5, 'conforme')">✅ Sim</button>
-                    <button class="check-btn nao-conforme" onclick="marcarItem(5, 'nao-conforme')">❌ Não</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="checklist-item" data-item="6">
-            <div class="checklist-header">
-                <div class="checklist-title">🔧 6. Gatilho, punho e mangueira em bom estado</div>
-                <div class="checklist-buttons">
-                    <button class="check-btn conforme" onclick="marcarItem(6, 'conforme')">✅ Sim</button>
-                    <button class="check-btn nao-conforme" onclick="marcarItem(6, 'nao-conforme')">❌ Não</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="checklist-item" data-item="7">
-            <div class="checklist-header">
-                <div class="checklist-title">🎪 7. Suporte/gancho de fixação seguro</div>
-                <div class="checklist-buttons">
-                    <button class="check-btn conforme" onclick="marcarItem(7, 'conforme')">✅ Sim</button>
-                    <button class="check-btn nao-conforme" onclick="marcarItem(7, 'nao-conforme')">❌ Não</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="checklist-item" data-item="8">
-            <div class="checklist-header">
-                <div class="checklist-title">📏 8. Altura de instalação adequada (1,6m max.)</div>
-                <div class="checklist-buttons">
-                    <button class="check-btn conforme" onclick="marcarItem(8, 'conforme')">✅ Sim</button>
-                    <button class="check-btn nao-conforme" onclick="marcarItem(8, 'nao-conforme')">❌ Não</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Seção de Observações -->
-    <div class="observacoes-section">
-        <h3>📝 Observações da Inspeção</h3>
-        <textarea 
-            id="observacoes" 
-            class="obs-textarea" 
-            placeholder="Descreva aqui qualquer anormalidade encontrada, ações corretivas necessárias ou outras observações relevantes..."
-        ></textarea>
-    </div>
-
-    <!-- Seção de Fotos -->
-    <div class="photo-section">
-        <h3>📸 Evidências Fotográficas</h3>
-        
-        <div class="photo-input-container">
-            <input type="file" id="photoInput" class="photo-input" accept="image/*" capture="camera" onchange="handlePhotoUpload(this)">
-            <div class="photo-button">
-                📷 Tirar Foto do Extintor
-            </div>
-        </div>
-        
-        <div id="photoPreview" class="photo-preview" style="display: none;">
-            <img id="previewImage" src="" alt="Preview da foto">
-        </div>
-    </div>
-
-    <!-- Botão de Finalizar -->
-    <div class="submit-section">
-        <button id="submitBtn" class="submit-btn" onclick="finalizarInspecao()" disabled>
-            🚀 Finalizar Inspeção
+  <body>
+    <!-- NAVBAR -->
+    <div id="navbar-include"></div>
+    <main class="main-content" style="max-width: 480px;">
+      <div style="display: flex; justify-content: center; margin-bottom: 2rem;">
+        <button id="btn-nova-inspecao" class="btn btn-primary" style="font-size: 1.1rem; padding: 1rem 2rem;">
+          <span style="font-size: 1.3em; vertical-align: middle;">📷</span> Nova Inspeção
         </button>
-    </div>
+      </div>
+      <section id="scanner-section" class="card" style="padding: 1.5rem 1rem; margin-bottom: 1.5rem; display: none;">
+        <div class="d-flex align-items-center mb-2" style="gap: 0.5rem;">
+          <span style="font-size: 1.5rem;">📷</span>
+          <span style="font-weight: 600; font-size: 1.1rem;">Scanner de QR Code</span>
+        </div>
+        <div id="reader"></div>
+        <p id="scan-result" class="text-muted mt-2">Aproxime o QR Code do extintor...</p>
+      </section>
+      <section id="extintor-info" class="card extintor-info" style="display:none; padding: 1.25rem 1rem; margin-bottom: 1.25rem;">
+        <h3 class="mb-2" style="font-size: 1.1rem; color: var(--primary-color);">Dados do Extintor</h3>
+        <div class="d-flex flex-column" style="gap: 0.25rem;">
+          <div><b>ID:</b> <span id="ext-id"></span></div>
+          <div><b>Local:</b> <span id="ext-local"></span></div>
+          <div><b>Tipo:</b> <span id="ext-tipo"></span></div>
+          <div><b>Última inspeção:</b> <span id="ext-inspecao"></span></div>
+        </div>
+      </section>
+      <section id="checklist" class="card checklist" style="display:none; padding: 1.5rem 1rem;">
+        <h3 class="mb-3" style="font-size: 1.2rem; color: var(--primary-color);">Checklist</h3>
+        <div style="display: flex; flex-direction: column; gap: 1.1rem; margin-bottom: 1.5rem;">
+          <label style="display: flex; align-items: center; gap: 1rem; font-size: 1.15rem; font-weight: 500; background: var(--bg-tertiary); border-radius: var(--radius-md); padding: 1rem 1rem 1rem 0.75rem; box-shadow: var(--shadow-sm);">
+            <input type="checkbox" style="width: 1.6em; height: 1.6em; accent-color: var(--primary-color); margin-right: 0.5em;">
+            Selo INMETRO
+          </label>
+          <label style="display: flex; align-items: center; gap: 1rem; font-size: 1.15rem; font-weight: 500; background: var(--bg-tertiary); border-radius: var(--radius-md); padding: 1rem 1rem 1rem 0.75rem; box-shadow: var(--shadow-sm);">
+            <input type="checkbox" style="width: 1.6em; height: 1.6em; accent-color: var(--primary-color); margin-right: 0.5em;">
+            Pressão OK
+          </label>
+          <label style="display: flex; align-items: center; gap: 1rem; font-size: 1.15rem; font-weight: 500; background: var(--bg-tertiary); border-radius: var(--radius-md); padding: 1rem 1rem 1rem 0.75rem; box-shadow: var(--shadow-sm);">
+            <input type="checkbox" style="width: 1.6em; height: 1.6em; accent-color: var(--primary-color); margin-right: 0.5em;">
+            Acessível
+          </label>
+          <label style="display: flex; align-items: center; gap: 1rem; font-size: 1.15rem; font-weight: 500; background: var(--bg-tertiary); border-radius: var(--radius-md); padding: 1rem 1rem 1rem 0.75rem; box-shadow: var(--shadow-sm);">
+            <input type="checkbox" style="width: 1.6em; height: 1.6em; accent-color: var(--primary-color); margin-right: 0.5em;">
+            Dentro da validade
+          </label>
+        </div>
+        <textarea placeholder="Observações..." class="form-control mb-2" style="min-height: 80px; font-size: 1.1rem; padding: 1rem;"></textarea>
+        <button id="salvar" class="btn btn-primary w-100" style="font-size: 1.1rem; padding: 1rem;">Salvar Inspeção</button>
+      </section>
+      <div id="placeholder" class="empty-placeholder" style="display:none;">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" 
+          viewBox="0 0 24 24"><path stroke-linecap="round" 
+          stroke-linejoin="round" stroke-width="2" 
+          d="M15 10l4.553 2.276A1 1 0 0120 13.118V19a1 
+          1 0 01-.553.894L15 22v-5l-6-3v5l-4.447-2.106A1 
+          1 0 014 19v-5.882a1 1 0 01.447-.842L10 
+          10V5l5-3v8z"/></svg>
+        <h3>Nenhum extintor escaneado</h3>
+        <p>Aponte a câmera para o QR Code de um extintor para começar.</p>
+      </div>
+      <!-- Lista de Extintores Verificados -->
+      <section id="inspecoes-list" class="card" style="margin-top: 2rem; display: none;">
+        <h3 style="font-size: 1.1rem; color: var(--primary-color); margin-bottom: 1rem;">Extintores</h3>
+        <div style="display: flex; gap: 2rem; flex-wrap: wrap; justify-content: center;">
+          <div style="flex:1; min-width:220px;">
+            <h4 style="color:var(--success-color); margin-bottom:0.5rem;">Verificados</h4>
+            <div style="display:flex; gap:0.5em; align-items:center; margin-bottom:0.5em;">
+              <label for="filtro-local-verificados" style="font-size:0.95rem;">Local:</label>
+              <select id="filtro-local-verificados" style="min-width:90px; padding:0.3em 0.6em; font-size:0.98rem; border-radius:6px; border:1px solid var(--border-color);"></select>
+              <label for="filtro-tipo-verificados" style="font-size:0.95rem; margin-left:0.5em;">Tipo:</label>
+              <select id="filtro-tipo-verificados" style="min-width:90px; padding:0.3em 0.6em; font-size:0.98rem; border-radius:6px; border:1px solid var(--border-color);"></select>
+            </div>
+            <div id="verificados-table"></div>
+          </div>
+          <div style="flex:1; min-width:220px;">
+            <h4 style="color:var(--warning-color); margin-bottom:0.5rem;">Faltam Verificar</h4>
+            <div style="display:flex; gap:0.5em; align-items:center; margin-bottom:0.5em;">
+              <label for="filtro-local-faltam" style="font-size:0.95rem;">Local:</label>
+              <select id="filtro-local-faltam" style="min-width:90px; padding:0.3em 0.6em; font-size:0.98rem; border-radius:6px; border:1px solid var(--border-color);"></select>
+              <label for="filtro-tipo-faltam" style="font-size:0.95rem; margin-left:0.5em;">Tipo:</label>
+              <select id="filtro-tipo-faltam" style="min-width:90px; padding:0.3em 0.6em; font-size:0.98rem; border-radius:6px; border:1px solid var(--border-color);"></select>
+            </div>
+            <div id="faltam-table"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+    <!-- BOTTOM NAV -->
+    <div id="bottom-nav-include"></div>
+  <!-- BOTTOM NAV -->
+  <div id="bottom-nav-include"></div>
 
-    <!-- Scripts -->
-    <script src="../js/supabase-config.js"></script>
-    <script>
-        // ========== ESTADO DA INSPEÇÃO ========== 
-        let inspecaoData = {
-            extintorId: null,
-            token: null,
-            checklist: {},
-            observacoes: '',
-            foto: null,
-            timestamp: new Date().toISOString(),
-            inspector: 'Mobile App'
-        };
+  <script>
+    // Inclui navbar e bottom-nav
+    fetch('../components/navbar.html').then(r => r.text()).then(html => {
+      document.getElementById('navbar-include').innerHTML = html;
+    });
+    fetch('../components/bottom-nav.html').then(r => r.text()).then(html => {
+      document.getElementById('bottom-nav-include').innerHTML = html;
+    });
 
-        let totalItens = 8;
-        let itensCompletos = 0;
+    // Função para renderizar a tabela/lista de inspeções
 
-        // ========== INICIALIZAÇÃO ========== 
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeInspection();
-            checkOnlineStatus();
-            setInterval(checkOnlineStatus, 5000);
-        });
-
-        function initializeInspection() {
-            // Extrair parâmetros da URL
-            const urlParams = new URLSearchParams(window.location.search);
-            const pathParts = window.location.pathname.split('/');
-            
-            inspecaoData.extintorId = pathParts[pathParts.length - 1] || urlParams.get('id');
-            inspecaoData.token = urlParams.get('token');
-            
-            if (!inspecaoData.extintorId || !inspecaoData.token) {
-                showError('Token de acesso inválido ou extintor não encontrado.');
-                return;
-            }
-            
-            // Validar token e carregar dados
-            validateTokenAndLoadData();
+    async function renderInspecoes() {
+      const listaSection = document.getElementById('inspecoes-list');
+      const verificadosDiv = document.getElementById('verificados-table');
+      const faltamDiv = document.getElementById('faltam-table');
+      let inspecoes = JSON.parse(localStorage.getItem('inspecoes') || '[]');
+      // Remove inspeções com mais de 30 dias
+      const agora = new Date();
+      inspecoes = inspecoes.filter(i => {
+        if (!i.createdAt) return true;
+        const dataCriacao = new Date(i.createdAt);
+        const diffDias = (agora - dataCriacao) / (1000 * 60 * 60 * 24);
+        return diffDias <= 30;
+      });
+      localStorage.setItem('inspecoes', JSON.stringify(inspecoes));
+      let extintores = [];
+      try {
+        if (window.SupabaseManager) {
+          const supabase = new window.SupabaseManager();
+          extintores = await supabase.getExtintores();
+        } else if (window.supabaseManager) {
+          extintores = await window.supabaseManager.getExtintores();
         }
+      } catch (e) {
+        console.error('Erro ao buscar extintores do usuário:', e);
+      }
 
-        async function validateTokenAndLoadData() {
-            try {
-                // Simular validação de token (em produção, fazer request para API)
-                const tokenData = atob(inspecaoData.token).split(':');
-                const extintorId = tokenData[0];
-                const userId = tokenData[1];
-                const timestamp = parseInt(tokenData[2]);
-                
-                // Verificar se token não expirou (24 horas)
-                const now = Date.now();
-                const tokenAge = now - timestamp;
-                const maxAge = 24 * 60 * 60 * 1000; // 24 horas
-                
-                if (tokenAge > maxAge) {
-                    throw new Error('Token expirado');
-                }
-                
-                if (extintorId !== inspecaoData.extintorId) {
-                    throw new Error('Token inválido para este extintor');
-                }
-                
-                // Carregar dados do extintor (simular busca no banco)
-                await loadExtintorData();
-                
-            } catch (error) {
-                console.error('Erro na validação do token:', error);
-                showError('Token inválido ou expirado. Entre em contato com o administrador.');
-            }
+      // Preenche opções dos filtros para cada tabela
+      const locaisVer = Array.from(new Set(extintores.filter(e => inspecoes.some(i => String(i.id) === String(e.id))).map(e => e.local).filter(Boolean)));
+      const tiposVer = Array.from(new Set(extintores.filter(e => inspecoes.some(i => String(i.id) === String(e.id))).map(e => e.tipo).filter(Boolean)));
+      const locaisFal = Array.from(new Set(extintores.filter(e => !inspecoes.some(i => String(i.id) === String(e.id))).map(e => e.local).filter(Boolean)));
+      const tiposFal = Array.from(new Set(extintores.filter(e => !inspecoes.some(i => String(i.id) === String(e.id))).map(e => e.tipo).filter(Boolean)));
+
+      const filtroLocalVer = document.getElementById('filtro-local-verificados');
+      const filtroTipoVer = document.getElementById('filtro-tipo-verificados');
+      const filtroLocalFal = document.getElementById('filtro-local-faltam');
+      const filtroTipoFal = document.getElementById('filtro-tipo-faltam');
+
+      if (filtroLocalVer && filtroTipoVer) {
+        const prevLocal = filtroLocalVer.value;
+        const prevTipo = filtroTipoVer.value;
+        filtroLocalVer.innerHTML = '<option value="">Todos Locais</option>' + locaisVer.map(l => `<option value="${l}">${l}</option>`).join('');
+        filtroTipoVer.innerHTML = '<option value="">Todos Tipos</option>' + tiposVer.map(t => `<option value="${t}">${t}</option>`).join('');
+        if (prevLocal) filtroLocalVer.value = prevLocal;
+        if (prevTipo) filtroTipoVer.value = prevTipo;
+      }
+      if (filtroLocalFal && filtroTipoFal) {
+        const prevLocal = filtroLocalFal.value;
+        const prevTipo = filtroTipoFal.value;
+        filtroLocalFal.innerHTML = '<option value="">Todos Locais</option>' + locaisFal.map(l => `<option value="${l}">${l}</option>`).join('');
+        filtroTipoFal.innerHTML = '<option value="">Todos Tipos</option>' + tiposFal.map(t => `<option value="${t}">${t}</option>`).join('');
+        if (prevLocal) filtroLocalFal.value = prevLocal;
+        if (prevTipo) filtroTipoFal.value = prevTipo;
+      }
+
+      // Lê filtros selecionados
+      const localVer = filtroLocalVer ? filtroLocalVer.value : '';
+      const tipoVer = filtroTipoVer ? filtroTipoVer.value : '';
+      const localFal = filtroLocalFal ? filtroLocalFal.value : '';
+      const tipoFal = filtroTipoFal ? filtroTipoFal.value : '';
+
+      // Mapas para busca rápida
+      const verificadosIds = new Set(inspecoes.map(i => i.id));
+      let verificados = extintores.filter(e => verificadosIds.has(String(e.id)));
+      let faltam = extintores.filter(e => !verificadosIds.has(String(e.id)));
+
+      // Aplica filtros independentes
+      if (localVer) verificados = verificados.filter(e => e.local === localVer);
+      if (tipoVer) verificados = verificados.filter(e => e.tipo === tipoVer);
+      if (localFal) faltam = faltam.filter(e => e.local === localFal);
+      if (tipoFal) faltam = faltam.filter(e => e.tipo === tipoFal);
+
+      // Render verificados
+      if (verificados.length) {
+        let html = `<table style="width:100%; border-collapse:collapse;">
+          <thead><tr style="background:var(--bg-tertiary); color:var(--text-secondary);">
+            <th style="padding:8px;">Número</th>
+            <th style="padding:8px;">Local</th>
+            <th style="padding:8px;">Tipo</th>
+          </tr></thead><tbody>`;
+        for (const ext of verificados) {
+          html += `<tr style="border-bottom:1px solid var(--border-color);">
+            <td style="padding:8px;">${ext.numero || '-'}</td>
+            <td style="padding:8px;">${ext.local || '-'}</td>
+            <td style="padding:8px;">${ext.tipo || '-'}</td>
+          </tr>`;
         }
+        html += '</tbody></table>';
+        verificadosDiv.innerHTML = html;
+      } else {
+        verificadosDiv.innerHTML = '<p style="color: var(--text-muted); text-align:center;">Nenhum verificado.</p>';
+      }
 
-        async function loadExtintorData() {
-            // Simular carregamento dos dados do extintor
-            const extintor = {
-                id: inspecaoData.extintorId,
-                numero: `EXT-${inspecaoData.extintorId}`,
-                localizacao: 'Carregando...',
-                tipo: 'Pó Químico ABC',
-                peso: '6kg',
-                ultimaInspecao: '15/11/2024'
-            };
-            
-            displayExtintorInfo(extintor);
+      // Render faltam
+      if (faltam.length) {
+        let html = `<table style="width:100%; border-collapse:collapse;">
+          <thead><tr style="background:var(--bg-tertiary); color:var(--text-secondary);">
+            <th style="padding:8px;">Número</th>
+            <th style="padding:8px;">Local</th>
+            <th style="padding:8px;">Tipo</th>
+          </tr></thead><tbody>`;
+        for (const ext of faltam) {
+          html += `<tr style="border-bottom:1px solid var(--border-color);">
+            <td style="padding:8px;">${ext.numero || '-'}</td>
+            <td style="padding:8px;">${ext.local || '-'}</td>
+            <td style="padding:8px;">${ext.tipo || '-'}</td>
+          </tr>`;
         }
+        html += '</tbody></table>';
+        faltamDiv.innerHTML = html;
+      } else {
+        faltamDiv.innerHTML = '<p style="color: var(--text-muted); text-align:center;">Todos verificados!</p>';
+      }
 
-        function displayExtintorInfo(extintor) {
-            const infoDiv = document.getElementById('extintorInfo');
-            infoDiv.innerHTML = `
-                <h3>🔥 ${extintor.numero}</h3>
-                <div class="info-row">
-                    <span class="info-label">📍 Localização:</span>
-                    <span class="info-value">${extintor.localizacao}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">🧯 Tipo:</span>
-                    <span class="info-value">${extintor.tipo}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">⚖️ Peso:</span>
-                    <span class="info-value">${extintor.peso}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">📅 Última Inspeção:</span>
-                    <span class="info-value">${extintor.ultimaInspecao}</span>
-                </div>
-            `;
+  // Adiciona eventos de filtro independentes
+  if (filtroLocalVer) filtroLocalVer.onchange = renderInspecoes;
+  if (filtroTipoVer) filtroTipoVer.onchange = renderInspecoes;
+  if (filtroLocalFal) filtroLocalFal.onchange = renderInspecoes;
+  if (filtroTipoFal) filtroTipoFal.onchange = renderInspecoes;
+
+      listaSection.style.display = 'block';
+    }
+
+    // Função para salvar inspeção
+    function salvarInspecao() {
+      const id = document.getElementById('ext-id').innerText;
+      const local = document.getElementById('ext-local').innerText;
+      const tipo = document.getElementById('ext-tipo').innerText;
+      const data = new Date().toLocaleDateString('pt-BR');
+      const createdAt = new Date().toISOString();
+      const checklistLabels = [
+        'Selo INMETRO',
+        'Pressão OK',
+        'Acessível',
+        'Dentro da validade'
+      ];
+      const checklistInputs = document.querySelectorAll('#checklist input[type="checkbox"]');
+      const checklistMarcados = [];
+      checklistInputs.forEach((input, idx) => {
+        if (input.checked) checklistMarcados.push(checklistLabels[idx]);
+      });
+      const obs = document.querySelector('#checklist textarea').value;
+      let inspecoes = JSON.parse(localStorage.getItem('inspecoes') || '[]');
+      inspecoes.unshift({ id, local, tipo, data, checklist: checklistMarcados, obs, createdAt });
+      localStorage.setItem('inspecoes', JSON.stringify(inspecoes));
+      renderInspecoes();
+      // Limpa checklist após salvar
+      checklistInputs.forEach(input => input.checked = false);
+      document.querySelector('#checklist textarea').value = '';
+      // Esconde checklist e info após salvar
+      document.getElementById('checklist').style.display = 'none';
+      document.getElementById('extintor-info').style.display = 'none';
+      document.getElementById('scanner-section').style.display = 'none';
+      alert('Inspeção salva!');
+    }
+
+    // Estado do scanner
+    let html5QrcodeScanner = null;
+
+    // Adiciona eventos
+    document.addEventListener('DOMContentLoaded', function() {
+      const btnSalvar = document.getElementById('salvar');
+      if (btnSalvar) btnSalvar.onclick = salvarInspecao;
+      renderInspecoes();
+      // Botão Nova Inspeção
+      document.getElementById('btn-nova-inspecao').onclick = function() {
+        document.getElementById('scanner-section').style.display = 'block';
+        document.getElementById('extintor-info').style.display = 'none';
+        document.getElementById('checklist').style.display = 'none';
+        document.getElementById('placeholder').style.display = 'none';
+        // Inicializa scanner se não existir
+        if (!html5QrcodeScanner) {
+          html5QrcodeScanner = new Html5QrcodeScanner(
+            "reader", { fps: 10, qrbox: 200 });
+          html5QrcodeScanner.render(onScanSuccess);
         }
+      };
+    });
 
-        // ========== CHECKLIST FUNCTIONS ========== 
-        function marcarItem(itemNumber, status) {
-            const item = document.querySelector(`[data-item="${itemNumber}"]`);
-            const buttons = item.querySelectorAll('.check-btn');
-            
-            // Remover active de todos os botões
-            buttons.forEach(btn => btn.classList.remove('active'));
-            
-            // Adicionar active no botão clicado
-            const activeButton = item.querySelector(`.${status}`);
-            activeButton.classList.add('active');
-            
-            // Atualizar classe do item
-            item.className = `checklist-item ${status}`;
-            
-            // Salvar no estado
-            const wasEmpty = !inspecaoData.checklist[itemNumber];
-            inspecaoData.checklist[itemNumber] = status;
-            
-            // Atualizar contador se era a primeira vez marcando este item
-            if (wasEmpty) {
-                itensCompletos++;
-                updateProgress();
-            }
-            
-            // Feedback visual
-            showMicroFeedback(itemNumber, status);
-        }
+    function onScanSuccess(decodedText) {
+      document.getElementById("scan-result").innerText = `Extintor encontrado: ${decodedText}`;
+      document.getElementById("ext-id").innerText = decodedText;
 
-        function showMicroFeedback(itemNumber, status) {
-            const item = document.querySelector(`[data-item="${itemNumber}"]`);
-            const feedback = document.createElement('div');
-            feedback.style.cssText = `
-                position: absolute;
-                top: -5px;
-                right: -5px;
-                background: ${status === 'conforme' ? '#27ae60' : '#e74c3c'};
-                color: white;
-                padding: 4px 8px;
-                border-radius: 12px;
-                font-size: 0.7rem;
-                font-weight: 600;
-                z-index: 10;
-                animation: fadeInOut 2s ease-in-out;
-            `;
-            feedback.textContent = status === 'conforme' ? '✓' : '⚠';
-            
-            item.style.position = 'relative';
-            item.appendChild(feedback);
-            
-            setTimeout(() => {
-                if (feedback.parentNode) {
-                    feedback.remove();
-                }
-            }, 2000);
-        }
+      // Exemplo de dados mockados
+      document.getElementById("ext-local").innerText = "Hangar Principal";
+      document.getElementById("ext-tipo").innerText = "PQS 4kg";
+      document.getElementById("ext-inspecao").innerText = "05/08/2025";
 
-        function updateProgress() {
-            const percentage = Math.round((itensCompletos / totalItens) * 100);
-            document.getElementById('progressPercent').textContent = `${percentage}%`;
-            document.getElementById('progressFill').style.width = `${percentage}%`;
-            
-            // Habilitar botão de submit quando 100%
-            const submitBtn = document.getElementById('submitBtn');
-            if (percentage === 100) {
-                submitBtn.disabled = false;
-                submitBtn.textContent = '🚀 Finalizar Inspeção (100%)';
-            }
-        }
-
-        // ========== PHOTO FUNCTIONS ========== 
-        function handlePhotoUpload(input) {
-            const file = input.files[0];
-            if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const preview = document.getElementById('photoPreview');
-                const image = document.getElementById('previewImage');
-                
-                image.src = e.target.result;
-                preview.style.display = 'block';
-                
-                // Salvar foto no estado
-                inspecaoData.foto = {
-                    data: e.target.result,
-                    filename: `extintor-${inspecaoData.extintorId}-${Date.now()}.jpg`,
-                    size: file.size
-                };
-                
-                showNotification('📸 Foto capturada com sucesso!', 'success');
-            };
-            reader.readAsDataURL(file);
-        }
-
-        // ========== FINALIZAÇÃO ========== 
-        async function finalizarInspecao() {
-            if (itensCompletos < totalItens) {
-                showError('Complete todos os itens do checklist antes de finalizar.');
-                return;
-            }
-            
-            const submitBtn = document.getElementById('submitBtn');
-            submitBtn.disabled = true;
-            submitBtn.textContent = '⏳ Salvando inspeção...';
-            
-            try {
-                // Capturar observações
-                inspecaoData.observacoes = document.getElementById('observacoes').value;
-                
-                // Calcular resultado geral
-                const conformes = Object.values(inspecaoData.checklist).filter(status => status === 'conforme').length;
-                const naoConformes = totalItens - conformes;
-                
-                inspecaoData.resultado = {
-                    conformes: conformes,
-                    naoConformes: naoConformes,
-                    percentualConformidade: Math.round((conformes / totalItens) * 100),
-                    status: naoConformes === 0 ? 'APROVADO' : 'REPROVADO'
-                };
-                
-                // Simular salvamento (em produção, enviar para API)
-                await saveInspectionData();
-                
-                // Mostrar sucesso
-                showSuccessScreen();
-                
-            } catch (error) {
-                console.error('Erro ao finalizar inspeção:', error);
-                showError('Erro ao salvar inspeção. Verifique sua conexão e tente novamente.');
-                submitBtn.disabled = false;
-                submitBtn.textContent = '🚀 Finalizar Inspeção';
-            }
-        }
-
-        async function saveInspectionData() {
-            // Simular delay de rede
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            
-            // Em produção, aqui seria o POST para a API
-            console.log('Dados da inspeção:', inspecaoData);
-            
-            // Salvar no localStorage como backup
-            localStorage.setItem(`inspecao_${inspecaoData.extintorId}_${Date.now()}`, JSON.stringify(inspecaoData));
-        }
-
-        function showSuccessScreen() {
-            const body = document.querySelector('body');
-            body.innerHTML = `
-                <div style="min-height: 100vh; background: linear-gradient(135deg, #27ae60, #2ecc71); display: flex; align-items: center; justify-content: center; padding: 20px; text-align: center; color: white;">
-                    <div>
-                        <div style="font-size: 5rem; margin-bottom: 20px;">✅</div>
-                        <h1 style="font-size: 2rem; margin-bottom: 15px;">Inspeção Concluída!</h1>
-                        
-                        <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 15px; margin: 20px 0; backdrop-filter: blur(10px);">
-                            <h3 style="margin-bottom: 15px;">📊 Resultado da Inspeção</h3>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 1.1rem;">
-                                <div>✅ Conformes: <strong>${inspecaoData.resultado.conformes}</strong></div>
-                                <div>❌ Não Conformes: <strong>${inspecaoData.resultado.naoConformes}</strong></div>
-                            </div>
-                            <div style="margin-top: 15px; padding: 10px; background: rgba(255,255,255,0.2); border-radius: 10px;">
-                                <strong>Status: ${inspecaoData.resultado.status}</strong>
-                                <br>
-                                <small>Conformidade: ${inspecaoData.resultado.percentualConformidade}%</small>
-                            </div>
-                        </div>
-                        
-                        <p style="font-size: 1.1rem; margin-bottom: 30px; opacity: 0.9;">
-                            Os dados foram salvos automaticamente no sistema.
-                            <br>
-                            Obrigado por usar nosso sistema de inspeção mobile!
-                        </p>
-                        
-                        <button onclick="window.close()" style="
-                            background: white; 
-                            color: #27ae60; 
-                            border: none; 
-                            padding: 15px 30px; 
-                            border-radius: 25px; 
-                            font-size: 1.1rem; 
-                            font-weight: 600; 
-                            cursor: pointer;
-                            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-                            transition: transform 0.3s ease;
-                        " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
-                            ✨ Finalizar
-                        </button>
-                    </div>
-                </div>
-            `;
-        }
-
-        // ========== UTILITIES ========== 
-        function checkOnlineStatus() {
-            const indicator = document.getElementById('statusIndicator');
-            if (navigator.onLine) {
-                indicator.className = 'status-indicator status-online';
-                indicator.textContent = '📶 Online';
-            } else {
-                indicator.className = 'status-indicator status-offline';
-                indicator.textContent = '📵 Offline';
-            }
-        }
-
-        function showNotification(message, type = 'info') {
-            const notification = document.createElement('div');
-            notification.style.cssText = `
-                position: fixed;
-                top: 70px;
-                right: 20px;
-                background: ${type === 'success' ? '#d4edda' : type === 'error' ? '#f8d7da' : '#d1ecf1'};
-                color: ${type === 'success' ? '#155724' : type === 'error' ? '#721c24' : '#0c5460'};
-                padding: 12px 16px;
-                border-radius: 8px;
-                font-weight: 600;
-                z-index: 1001;
-                max-width: 300px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                animation: slideInRight 0.3s ease-out;
-            `;
-            notification.textContent = message;
-            
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.remove();
-            }, 3000);
-        }
-
-        function showError(message) {
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'error-message';
-            errorDiv.textContent = message;
-            
-            const container = document.querySelector('.inspection-header');
-            container.insertAdjacentElement('afterend', errorDiv);
-            
-            setTimeout(() => {
-                errorDiv.remove();
-            }, 5000);
-        }
-
-        // ========== CSS ANIMATIONS ========== 
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes fadeInOut {
-                0% { opacity: 0; transform: scale(0.8); }
-                50% { opacity: 1; transform: scale(1); }
-                100% { opacity: 0; transform: scale(0.8); }
-            }
-            
-            @keyframes slideInRight {
-                from { transform: translateX(100%); opacity: 0; }
-                to { transform: translateX(0); opacity: 1; }
-            }
-        `;
-        document.head.appendChild(style);
-    </script>
+      // Exibe info e checklist
+      document.getElementById("extintor-info").style.display = "block";
+      document.getElementById("checklist").style.display = "block";
+      document.getElementById("scanner-section").style.display = "none";
+    }
+  </script>
+  </body>
+  </html>
 </body>
 </html>

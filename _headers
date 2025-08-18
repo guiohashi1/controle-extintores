@@ -2,27 +2,28 @@
 
 # Admin Panel - Segurança extra
 /admin/*
-  X-Frame-Options: DENY
+  Content-Security-Policy: default-src 'self'; frame-ancestors 'none'
   X-Content-Type-Options: nosniff
-  X-XSS-Protection: 1; mode=block
   Referrer-Policy: strict-origin-when-cross-origin
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
   Cache-Control: no-cache, no-store, must-revalidate
 
 # App Principal
 /pages/*
-  X-Frame-Options: SAMEORIGIN
+  Content-Security-Policy: default-src 'self'; frame-ancestors 'self'
   X-Content-Type-Options: nosniff
-  X-XSS-Protection: 1; mode=block
+  Referrer-Policy: strict-origin-when-cross-origin
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
 
-# Assets estáticos  
+# Assets estáticos
 /css/*
-  Cache-Control: public, max-age=31536000
+  Cache-Control: public, max-age=31536000, immutable
 
 /js/*
-  Cache-Control: public, max-age=31536000
+  Cache-Control: public, max-age=31536000, immutable
 
 /icons/*
-  Cache-Control: public, max-age=31536000
+  Cache-Control: public, max-age=31536000, immutable
 
 # Service Worker
 /sw.js

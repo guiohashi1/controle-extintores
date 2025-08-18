@@ -631,8 +631,10 @@ class SupabaseManager {
   }
 }
 
-// Exportar instância global
+// Exportar instância global e classe para uso em outras páginas
 const supabase = new SupabaseManager();
+window.SupabaseManager = SupabaseManager;
+window.supabaseManager = supabase;
 
 // =============================================================================
 // FUNÇÕES PARA CONTROLE DE ADMIN
