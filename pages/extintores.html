@@ -1000,7 +1000,7 @@
 <!-- Modal para exibir QR Code do extintor (fora do loop, uma vez só) -->
 <div id="modal-qr-code" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); z-index:10001; align-items:center; justify-content:center;">
     <div style="background:#fff; padding:24px; border-radius:8px; max-width:400px; margin:auto; text-align:center;">
-            <h4>QR Code do Extintor</h4>
+            <h4 style="color:#111;">QR Code do Extintor</h4>
             <div id="qr-code-container" style="margin:20px 0;"></div>
             <div id="qr-code-label" style="margin-bottom:10px; font-size:1rem; color:#333;"></div>
             <div style="display:flex; flex-direction:column; gap:12px; align-items:center; margin-top:12px;">
@@ -1013,7 +1013,7 @@
 <!-- Modal para imprimir todos os QR Codes -->
 <div id="modal-impressao-qrcodes" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); z-index:10002; align-items:center; justify-content:center;">
     <div style="background:#fff; padding:32px 24px; border-radius:16px; max-width:700px; margin:auto; text-align:center; box-shadow:0 8px 32px rgba(0,0,0,0.18); border:1px solid #e0e0e0; display:flex; flex-direction:column; max-height:90vh;">
-        <h3>Imprimir Todos os QR Codes</h3>
+        <h3 style="color:#111;">Imprimir Todos os QR Codes</h3>
         <div id="container-todos-qrcodes" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:18px; justify-content:center; margin:18px 0; overflow-y:auto; flex:1; max-height:60vh;"></div>
         <div style="display:flex; flex-direction:column; gap:12px; align-items:center; margin-top:12px;">
             <button id="btn-print-todos-qrcodes" class="btn btn-info" style="width:100%; max-width:260px;">Imprimir Todos</button>
@@ -1084,8 +1084,11 @@ function abrirModalImpressaoQRCodes() {
                         loaded++;
                         if (loaded === total) {
                             var html = '<html><head><title>Imprimir Todos os QR Codes</title>';
-                            html += '<style>body{margin:0;padding:0;background:#fff;padding-top:38px;} .qrcode-list{display:grid;grid-template-columns:repeat(6, 120px);gap:6px;justify-content:start;align-items:flex-start;width:100%;max-width:none;margin:auto;padding:8px;} .qrcode-item{display:flex;flex-direction:column;align-items:center;margin-bottom:4px;page-break-inside:avoid;} .qrcode-label{font-weight:bold;font-size:0.92rem;margin-top:2px;color:#222;} h2{color:#222;margin-bottom:8px;} @media print{body{zoom:0.85;} .qrcode-list{gap:4px;padding:2px;width:100vw;max-width:none;} .qrcode-item{margin-bottom:2px;} h2{font-size:1rem;margin-bottom:2px;}}</style>';
+                            html += '<style>body{margin:0;padding:0;background:#fff;padding-top:38px;} .qrcode-list{display:grid;grid-template-columns:repeat(6, 120px);gap:6px;justify-content:start;align-items:flex-start;width:100%;max-width:none;margin:auto;padding:8px;} .qrcode-item{display:flex;flex-direction:column;align-items:center;margin-bottom:4px;page-break-inside:avoid;} .qrcode-label{font-weight:bold;font-size:0.92rem;margin-top:2px;color:#222;} h2{color:#222;margin-bottom:8px;} .back-btn{display:flex;align-items:center;gap:0.5em;background:#e11d48;color:#fff;border:none;border-radius:8px;padding:0.7em 1.2em;font-size:1.1em;font-weight:500;margin:1em 0 1.5em 0;box-shadow:0 2px 8px rgba(0,0,0,0.07);cursor:pointer;} .back-btn svg{vertical-align:middle;} @media (hover: hover){.back-btn:hover{background:#be123c;}} @media print{.back-btn{display:none;} body{zoom:0.85;} .qrcode-list{gap:4px;padding:2px;width:100vw;max-width:none;} .qrcode-item{margin-bottom:2px;} h2{font-size:1rem;margin-bottom:2px;}}</style>';
                             html += '</head><body style="text-align:center;overflow-y:auto;max-height:100vh;">';
+                            html += '<button class="back-btn" onclick="history.length > 1 ? history.back() : window.location.href=\'dashboard.html\'">'
+                                + '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>'
+                                + 'Voltar ao app</button>';
                             html += '<h2>QR Codes dos Extintores</h2>';
                             html += '<div class="qrcode-list">' + qrHtmls.join('') + '</div>';
                             html += '<script>function allLoaded(){var imgs=document.querySelectorAll(".qr-print-img");var loaded=0;imgs.forEach(function(img){if(img.complete)loaded++;else img.onload=function(){loaded++;if(loaded===imgs.length)window.print();};});if(loaded===imgs.length)window.print();}window.onload=allLoaded;<\/script>';
