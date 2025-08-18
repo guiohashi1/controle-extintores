@@ -200,14 +200,7 @@
     </button>
 </div>
 
-<!-- Modal para leitura de QR Code -->
-<div id="modal-qr-inspecao" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.7); z-index:9999; align-items:center; justify-content:center;">
-    <div style="background:#fff; padding:24px; border-radius:8px; max-width:400px; margin:auto;">
-        <h4>Escaneie o QR Code do extintor</h4>
-        <div id="qr-reader" style="width:320px;"></div>
-        <button id="fechar-modal-qr" class="btn btn-secondary" style="margin-top:16px;">Fechar</button>
-    </div>
-</div>
+
 
 <!-- Modal de checklist de inspeção -->
 <div id="modal-checklist-inspecao" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:#000; z-index:10000; align-items:center; justify-content:center;">
@@ -902,30 +895,8 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
             transition: background 0.2s;
         }
-        #btn-inspecao-qr:active {
-            background: #0056b3;
-        }
-        @media (max-width: 640px) {
-            #btn-inspecao-qr {
-                width: 90vw;
-                max-width: 340px;
-                font-size: 1.2rem;
-                padding: 1.2rem 0.5rem;
-                margin-bottom: 1.5rem;
-                display: block;
-                margin-left: auto;
-                margin-right: auto;
-            }
-        }
 
-        /* Layout horizontal do card na web */
-        .extintor-card-row {
-            display: flex;
-            flex-direction: row;
-            gap: 32px;
-            align-items: center;
-            width: 100%;
-        }
+        
         .extintor-photo-col {
             flex: 0 0 auto;
             display: flex;

@@ -316,9 +316,20 @@
       checklistInputs.forEach(input => input.checked = false);
   // campo de observações removido
       // Esconde checklist e info após salvar
+
       document.getElementById('checklist').style.display = 'none';
       document.getElementById('extintor-info').style.display = 'none';
       document.getElementById('scanner-section').style.display = 'none';
+      // Fecha o scanner de QR code se estiver ativo
+      if (window.html5QrcodeInstance && window.html5QrcodeInstance.stop) {
+        window.html5QrcodeInstance.stop().then(() => {
+          window.html5QrcodeInstance.clear();
+          window.html5QrcodeInstance = null;
+        }).catch(() => {
+          // Se der erro, só limpa mesmo assim
+          window.html5QrcodeInstance = null;
+        });
+      }
 
       // Mostra botão para nova inspeção
       let btnOutra = document.getElementById('btn-outra-inspecao');
