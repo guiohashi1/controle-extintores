@@ -32,6 +32,9 @@
           <span style="font-weight: 600; font-size: 1.1rem;">Scanner de QR Code</span>
         </div>
         <div id="reader"></div>
+        <div style="display:flex; justify-content:center; margin-top:1.2rem;">
+          <button id="btn-cancelar-scanner" class="btn btn-secondary" style="font-size:1rem; padding:0.7em 2.2em;">Cancelar</button>
+        </div>
         <p id="scan-result" class="text-muted mt-2">Aproxime o QR Code do extintor...</p>
       </section>
       <section id="extintor-info" class="card extintor-info" style="display:none; padding: 1.25rem 1rem; margin-bottom: 1.25rem;">
@@ -308,10 +311,13 @@
         if (input.checked) checklistMarcados.push(checklistLabels[idx]);
       });
   // campo de observações removido
-      let inspecoes = JSON.parse(localStorage.getItem('inspecoes') || '[]');
+  let inspecoes = JSON.parse(localStorage.getItem('inspecoes') || '[]');
+  // Remove inspeção anterior deste extintor (pelo número)
+  inspecoes = inspecoes.filter(i => String(i.numero) !== String(numero));
+  // Adiciona a nova inspeção no início
   inspecoes.unshift({ numero, local, tipo, data, checklist: checklistMarcados, createdAt });
-      localStorage.setItem('inspecoes', JSON.stringify(inspecoes));
-      renderInspecoes();
+  localStorage.setItem('inspecoes', JSON.stringify(inspecoes));
+  renderInspecoes();
       // Limpa checklist após salvar
       checklistInputs.forEach(input => input.checked = false);
   // campo de observações removido
@@ -376,6 +382,16 @@
 
     // Adiciona eventos
     document.addEventListener('DOMContentLoaded', function() {
+      // Botão cancelar scanner
+      const btnCancelar = document.getElementById('btn-cancelar-scanner');
+      if (btnCancelar) {
+        btnCancelar.onclick = function() {
+          document.getElementById('scanner-section').style.display = 'none';
+          if (window.html5QrcodeInstance && window.html5QrcodeInstance.stop) {
+            window.html5QrcodeInstance.stop().catch(()=>{});
+          }
+        };
+      }
       const btnSalvar = document.getElementById('salvar');
       if (btnSalvar) btnSalvar.onclick = salvarInspecao;
       renderInspecoes();
