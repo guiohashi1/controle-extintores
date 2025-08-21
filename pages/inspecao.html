@@ -458,6 +458,16 @@
       })();
     }
   </script>
+  <script>
+    // Marca o ícone de inspeções como ativo no bottom-nav
+    document.addEventListener('DOMContentLoaded', function() {
+      setTimeout(function() {
+        document.querySelectorAll('.bottom-nav .nav-item').forEach(el => el.classList.remove('active'));
+        const inspecao = document.querySelector('.bottom-nav .nav-item[data-route="inspecao"]');
+        if (inspecao) inspecao.classList.add('active');
+      }, 100);
+    });
+  </script>
   </body>
   </html>
 </body>

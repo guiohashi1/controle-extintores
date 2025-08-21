@@ -3,6 +3,48 @@
 // =============================================================================
 
 class AdminSupabaseManager {
+    /**
+     * Adicionar novo usuário (admin)
+     */
+    async addUser({ email, name, password, plan, planStatus }) {
+        // Verificar se email já existe
+        const { data: existingUser } = await this.supabase
+            .from('users')
+            .select('id')
+            .eq('email', email)
+            .single();
+
+        if (existingUser) {
+            throw new Error('Este email já está cadastrado no sistema');
+        }
+
+        // Hash da senha
+        if (!window.bcrypt || typeof window.bcrypt.hash !== 'function') {
+            throw new Error('A biblioteca de hash de senha (bcrypt) não foi carregada corretamente. Recarregue a página e tente novamente.');
+        }
+        const saltRounds = 10;
+        const hashedPassword = await window.bcrypt.hash(password, saltRounds);
+
+        // Calcular data de expiração do plano (30 dias a partir de hoje)
+        const planExpiresAt = new Date();
+        planExpiresAt.setDate(planExpiresAt.getDate() + 30);
+
+        // Inserir novo usuário
+        const { error } = await this.supabase
+            .from('users')
+            .insert({
+                email,
+                name,
+                password_hash: hashedPassword,
+                plan,
+                plan_status: planStatus,
+                plan_expires_at: planExpiresAt.toISOString(),
+                subscription: plan === 'starter' ? 'basic' : plan
+            });
+
+        if (error) throw error;
+        return true;
+    }
     constructor() {
         this.baseUrl = SUPABASE_CONFIG.url;
         this.apiKey = SUPABASE_CONFIG.anonKey;

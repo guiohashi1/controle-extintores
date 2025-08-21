@@ -383,33 +383,24 @@ class AdminCore {
     
     async getUsers() {
         try {
-            console.log('👥 Buscando usuários...');
-            
-            const usuarios = await supabase.request('users?select=*&order=created_at.desc');
-            
-            // Se os usuários não têm plan_status definido, atualizar para 'active' por padrão
-            if (usuarios && usuarios.length > 0) {
-                for (const user of usuarios) {
-                    if (!user.plan_status) {
-                        console.log(`🔄 Atualizando status do usuário ${user.email} para 'active'`);
-                        try {
-                            await supabase.request(`users?id=eq.${user.id}`, 'PATCH', {
-                                plan_status: 'active',
-                                updated_at: new Date().toISOString()
-                            });
-                            // Atualizar o objeto local
-                            user.plan_status = 'active';
-                        } catch (updateError) {
-                            console.error(`❌ Erro ao atualizar status do usuário ${user.email}:`, updateError);
-                        }
-                    }
-                }
+            console.log('👥 Buscando usuários via AdminSupabaseManager...');
+            if (window.adminSupabase && typeof window.adminSupabase.getAllUsers === 'function') {
+                let usuarios = await window.adminSupabase.getAllUsers();
+                // Adaptar campos para o renderizador
+                usuarios = usuarios.map(u => ({
+                    ...u,
+                    extintores_count: u.extintores_count ?? u.extinguisher_count ?? 0,
+                    // Converter plano para starter/professional/enterprise
+                    plan: (u.plan === 'basic') ? 'starter' : (u.plan === 'business' ? 'professional' : (u.plan || 'starter')),
+                    plan_status: u.plan_status || 'active',
+                }));
+                return usuarios || [];
+            } else {
+                console.error('❌ AdminSupabaseManager não está disponível!');
+                return [];
             }
-            
-            return usuarios || [];
-            
         } catch (error) {
-            console.error('❌ Erro ao buscar usuários:', error);
+            console.error('❌ Erro ao buscar usuários via AdminSupabaseManager:', error);
             return [];
         }
     }
@@ -1188,7 +1179,6 @@ class AdminCore {
 
     async handleAddUser(e, modal) {
         e.preventDefault();
-        
         try {
             const email = document.getElementById('newEmail').value;
             const name = document.getElementById('newName').value;
@@ -1196,49 +1186,21 @@ class AdminCore {
             const plan = document.getElementById('newPlan').value;
             const planStatus = document.getElementById('newPlanStatus').value;
 
-            // Verificar se email já existe
-            const { data: existingUser } = await supabase
-                .from('users')
-                .select('id')
-                .eq('email', email)
-                .single();
-
-            if (existingUser) {
-                alert('❌ Este email já está cadastrado no sistema');
+            if (!window.adminSupabase || typeof window.adminSupabase.addUser !== 'function') {
+                alert('❌ Função de cadastro de usuário não disponível!');
                 return;
             }
 
-            // Fazer hash da senha
-            const saltRounds = 10;
-            const hashedPassword = await bcrypt.hash(password, saltRounds);
+            await window.adminSupabase.addUser({ email, name, password, plan, planStatus });
 
-            // Calcular data de expiração do plano (30 dias a partir de hoje)
-            const planExpiresAt = new Date();
-            planExpiresAt.setDate(planExpiresAt.getDate() + 30);
-
-            // Inserir novo usuário
-            const { error } = await supabase
-                .from('users')
-                .insert({
-                    email,
-                    name,
-                    password_hash: hashedPassword,
-                    plan,
-                    plan_status: planStatus,
-                    plan_expires_at: planExpiresAt.toISOString(),
-                    subscription: plan === 'starter' ? 'basic' : plan
-                });
-
-            if (error) throw error;
-
-        alert('✅ Usuário criado com sucesso!');
-        modal.remove();
-        this.loadUsers(); // Recarregar lista
-    } catch (error) {
-        console.error('❌ Erro ao criar usuário:', error);
-        alert('❌ Erro ao criar usuário: ' + (error.message || 'Erro desconhecido'));
+            alert('✅ Usuário criado com sucesso!');
+            modal.remove();
+            this.loadUsuarios(); // Recarregar lista
+        } catch (error) {
+            console.error('❌ Erro ao criar usuário:', error);
+            alert('❌ Erro ao criar usuário: ' + (error.message || 'Erro desconhecido'));
+        }
     }
-}
 
 async viewUserDetails(userId) {
     try {

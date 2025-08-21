@@ -850,6 +850,10 @@
                 </select>
             </div>
 
+            <button class="btn-primary" onclick="showAddUserModal()">
+                <i class="fas fa-user-plus"></i>
+                Adicionar Usuário
+            </button>
             <button class="btn-primary" onclick="loadUsers()">
                 <i class="fas fa-sync-alt"></i>
                 Atualizar Lista
@@ -881,10 +885,11 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bcryptjs@2.4.3/dist/bcrypt.min.js"></script>
-    <script src="../js/supabase-config.js"></script>
-    <script src="js/admin-core.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="admin/bcrypt.min.js"></script>
+<script src="../js/supabase-config.js"></script>
+<script src="js/admin-core.js"></script>
+<script src="admin-supabase.js"></script>
     <script>
         class AdminDashboard {
             constructor() {

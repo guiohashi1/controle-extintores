@@ -291,17 +291,6 @@
                 startQrReader(extintorId, numero);
             }
 
-            document.getElementById('btn-inspecao-qr').onclick = function() {
-                document.getElementById('modal-qr-inspecao').style.display = 'flex';
-                startQrReader();
-            };
-
-            // Fechar modal
-            document.getElementById('fechar-modal-qr').onclick = function() {
-                document.getElementById('modal-qr-inspecao').style.display = 'none';
-                stopQrReader();
-            };
-
             let qrReader;
             function startQrReader(extintorId, numero) {
                 if (!qrReader) {

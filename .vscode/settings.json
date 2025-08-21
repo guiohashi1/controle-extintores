@@ -1,0 +1,24 @@
+{
+  // ===== Fonte =====
+  "editor.fontFamily": "Fira Code, JetBrains Mono, Cascadia Code, Consolas, 'Courier New', monospace",
+  "editor.fontLigatures": true, // ativa ligaduras (=> vira →, != vira ≠, etc.)
+  "editor.fontSize": 13, // tamanho confortável
+  "editor.lineHeight": 1.6, // altura da linha (mais respiro entre as linhas)
+
+  // ===== Cursor =====
+  "editor.cursorStyle": "line", // opções: line | block | underline
+  "editor.cursorBlinking": "smooth", // piscar suave
+  "editor.cursorWidth": 2, // cursor mais grosso, fácil de achar
+
+  // ===== Aparência =====
+  "editor.renderWhitespace": "selection", // só mostra espaços quando selecionados
+  "editor.minimap.enabled": false, // tira o "mapinha" da direita (fica mais clean)
+  "editor.smoothScrolling": true, // scroll mais suave
+  "editor.renderLineHighlight": "all", // destaca a linha inteira onde está o cursor
+  "editor.guides.indentation": true, // guia visual de indentação
+
+  // ===== Extras =====
+  "workbench.colorTheme": "One Dark Pro Night Flat", // tema bonito (instala pela extensão)
+  "editor.bracketPairColorization.enabled": true, // colchetes/chaves coloridos
+  "editor.tabSize": 2 // padrão de identação (bom pra JS/TS/React)
+}
